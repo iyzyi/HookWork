@@ -145,6 +145,11 @@
   <ItemGroup>
     <ClCompile Include="NetworkFrame.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleHookEngine\SimpleHookEngine.vcxproj">
+      <Project>{0e055caf-c68b-42cb-a302-f775ca5a917f}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -40,53 +40,54 @@ PFN_Send TrueSend = (PFN_Send)((QWORD)GetModuleHandleA("SGSOL.exe") + (QWORD)(0x
 
 
 // ***************************自定义HOOK函数***************************
-VOID SetWebSocketSSL(LPVOID ssl, void* buf, int len) {
-	if (len > 17) {
-		CHAR PartOfFirstRecvPacket[] = { 0x55, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x3a, 0x77, 0x65, 0x62, 0x73, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x00 };		//Upgrade:websocket
-		PCHAR szData = new CHAR[len + 12];
-		memset(szData, 0, len + 12);
-		memcpy(szData, buf, len);			// buf中第num个字节未必是\x00，所以需要拷贝到szData中再调用strstr
-
-		if (strstr(szData, PartOfFirstRecvPacket)) {
-			pWebSocketSSL = ssl;
-			m_pDataLog->LogFormatString(64, "[INFO] Find WebSocket SSL: 0x%llx\n\n", ssl);
-		}
-	}
-}
-
-
-BOOL IsWebSocketSSL(LPVOID pCurrentSSL) {
-	if (pWebSocketSSL != NULL) {
-		return pWebSocketSSL == pCurrentSSL;
-	}
-	return FALSE;
-}
+//VOID SetWebSocketSSL(LPVOID ssl, void* buf, int len) {
+//	if (len > 17) {
+//		CHAR PartOfFirstRecvPacket[] = { 0x55, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x3a, 0x77, 0x65, 0x62, 0x73, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x00 };		//Upgrade:websocket
+//		PCHAR szData = new CHAR[len + 12];
+//		memset(szData, 0, len + 12);
+//		memcpy(szData, buf, len);			// buf中第num个字节未必是\x00，所以需要拷贝到szData中再调用strstr
+//
+//		if (strstr(szData, PartOfFirstRecvPacket)) {
+//			pWebSocketSSL = ssl;
+//			m_pDataLog->LogFormatString(64, "[INFO] Find WebSocket SSL: 0x%llx\n\n", ssl);
+//		}
+//	}
+//}
+//
+//
+//BOOL IsWebSocketSSL(LPVOID pCurrentSSL) {
+//	if (pWebSocketSSL != NULL) {
+//		return pWebSocketSSL == pCurrentSSL;
+//	}
+//	return FALSE;
+//}
 
 
 int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
 {
+	//MessageBoxA(NULL, "弹窗2", "弹窗2", NULL);
 	int ret = TrueRecv(ssl, buf, num);
 	if (ret > 0) {
-		if (pWebSocketSSL == NULL) {
-			SetWebSocketSSL(ssl, buf, ret);
-		}
+		//if (pWebSocketSSL == NULL) {
+		//	SetWebSocketSSL(ssl, buf, ret);
+		//}
 
-		if (IsWebSocketSSL(ssl)) {
+		//if (IsWebSocketSSL(ssl)) {
 			m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Recv Data (%d Bytes): \n", GetCurrentProcessId(), ssl, ret);
 			m_pDataLog->LogHexData("", (PBYTE)buf, ret);
 			m_pDataLog->LogString("\n\n");
-		}
+		//}
 	}
 	return ret;
 }
 
 int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 {
-	if (IsWebSocketSSL(ssl)) {
+	//if (IsWebSocketSSL(ssl)) {
 		m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Send Data (%d Bytes): \n", GetCurrentProcessId(), ssl, num);
 		m_pDataLog->LogHexData("", (PBYTE)buf, num);
 		m_pDataLog->LogString("\n\n");
-	}
+	//}
 
 	return TrueSend(ssl, buf, num);
 }
@@ -104,6 +105,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
 		InstallHook((void**)&TrueRecv, My_Recv);
 		InstallHook((void**)&TrueSend, My_Send);
 		break;

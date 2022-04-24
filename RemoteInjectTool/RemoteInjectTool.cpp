@@ -7,9 +7,12 @@
 #pragma comment(lib, "shlwapi.lib")
 #include "atlconv.h"
 #include <assert.h>
+#include <direct.h>
+#pragma warning(disable:4996) 
 
 
 #define PROCESS_ID_LIST_NUMBER 24						// 通过进程名称来查找进程可能会找到多个PID
+
 
 DWORD GetProcessIDByName(PWCHAR pwszName, PDWORD ProcessIdList)
 {
@@ -85,15 +88,20 @@ HMODULE GetModuleBaseAddress(DWORD dwPID, PWCHAR pwszName) {
 	return NULL;
 }
 
+bool isFileExists(char* name) {
+	struct stat buffer;
+	return (stat(name, &buffer) == 0);
+}
+
 
 BOOL RemoteInject(DWORD dwPid, PCHAR szDllPath) {
-	HANDLE	hThread;								// 远程线程，线程函数为LoadLibrary
-	HANDLE	hProcess;								// 远程进程句柄;
-	void* pDllPathRemote;							// szDllPath拷贝到远程进程的空间中
-	DWORD hDllRemoteBaseAddr;						// 远程注入的DLL在远程进程中的基地址（HMODULE）;
-	HMODULE hKernel32;								// Kernel32.dll的基址
-	CHAR	szLoadLibrary[] = "LoadLibraryA";		// A还是W，取决于szDllPath是PCHAR还是PWCHAR
-	HMODULE hModule;								// 注入到远程进程中的DLL的HModule
+	HANDLE			hThread;								// 远程线程，线程函数为LoadLibrary
+	HANDLE			hProcess;								// 远程进程句柄;
+	void*			pDllPathRemote;							// szDllPath拷贝到远程进程的空间中
+	DWORD			hDllRemoteBaseAddr;						// 远程注入的DLL在远程进程中的基地址（HMODULE）;
+	HMODULE			hKernel32;								// Kernel32.dll的基址
+	CHAR			szLoadLibrary[] = "LoadLibraryA";		// A还是W，取决于szDllPath是PCHAR还是PWCHAR
+	HMODULE			hModule;								// 注入到远程进程中的DLL的HModule
 
 	// 打开句柄
 	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
@@ -113,6 +121,7 @@ BOOL RemoteInject(DWORD dwPid, PCHAR szDllPath) {
 
 	// 创建远程线程，线程函数为LoadLibrary(pDllPathRemote);
 	hThread = ::CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pLoadLibraryAddress, pDllPathRemote, 0, NULL);
+	printf("hThread = 0x%x\n", hThread);
 	if (hThread == NULL) {
 		printf("创建远程线程失败\n");
 		return FALSE;
@@ -134,7 +143,7 @@ BOOL RemoteInject(DWORD dwPid, PCHAR szDllPath) {
 	hModule = GetHModuleIDByName(dwPid, (PWCHAR)L"RemoteInjectDll.dll");
 	if (hModule == NULL)
 	{
-		printf("DLL注入失败");
+		printf("DLL注入失败\n\n");
 		return FALSE;
 	}
 
@@ -152,8 +161,21 @@ int main()
 
 	for (DWORD i = 0; i < dwProcessIdNumbers; i++) {
 		printf("pid=%d\n", ProcessIdList[i]);
-		CHAR szDllPath[] = "RemoteInjectDll.dll";
-		RemoteInject(ProcessIdList[i], szDllPath);
+		
+		CHAR szDllPath[MAX_PATH + 1] = { 0 };
+		GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
+		(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
+		strcat(szDllPath, "SGSOL.dll");						// 拼接上DLL的名称
+
+		// 必须是绝对路径，因为是跨进程执行的，工作路径是目标程序的工作路径，而非本程序的工作路径
+		// CHAR szDllPath[] = "D:\\桌面\\HookWork\\x64\\Debug\\SGSOL.dll";			
+		
+		if (!isFileExists(szDllPath)) {
+			printf("%s 不存在\n", szDllPath);
+		}
+		else {
+			RemoteInject(ProcessIdList[i], szDllPath);
+		}
 	}
 
 	system("pause");
