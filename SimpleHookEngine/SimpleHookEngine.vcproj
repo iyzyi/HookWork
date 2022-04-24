@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="HookWork"
+	Name="SimpleHookEngine"
 	ProjectGUID="{0E055CAF-C68B-42CB-A302-F775CA5A917F}"
 	RootNamespace="mhooktest"
 	Keyword="Win32Proj"
@@ -331,7 +331,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\HookWork.cpp"
+				RelativePath=".\SimpleHookEngine.cpp"
 				>
 			</File>
 			<File
@@ -371,7 +371,7 @@
 				</FileConfiguration>
 			</File>
 			<Filter
-				Name="HookWork"
+				Name="SimpleHookEngine"
 				>
 				<File
 					RelativePath=".\mhook\mhook.cpp"

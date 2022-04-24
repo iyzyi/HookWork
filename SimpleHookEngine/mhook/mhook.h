@@ -24,7 +24,7 @@
 #define _M_IX86_X64
 #endif
 
-BOOL InstallHook(PVOID *ppSystemFunction, PVOID pHookFunction);
-BOOL UninstallHook(PVOID *ppHookedFunction);
+BOOL SetHook(PVOID *ppSystemFunction, PVOID pHookFunction);
+BOOL UnHook(PVOID *ppHookedFunction);
 
 #define MHOOKS_MAX_SUPPORTED_HOOKS 32768

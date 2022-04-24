@@ -773,7 +773,7 @@ BOOL Mhook_SetHook(PVOID *ppSystemFunction, PVOID pHookFunction) {
 	return (pTrampoline != NULL);
 }
 
-BOOL InstallHook(PVOID* ppSystemFunction, PVOID pHookFunction) {
+BOOL SetHook(PVOID* ppSystemFunction, PVOID pHookFunction) {
 	return Mhook_SetHook(ppSystemFunction, pHookFunction);
 }
 
@@ -816,7 +816,7 @@ BOOL Mhook_Unhook(PVOID *ppHookedFunction) {
 	return bRet;
 }
 
-BOOL UninstallHook(PVOID* ppHookedFunction) {
+BOOL UnHook(PVOID* ppHookedFunction) {
 	return Mhook_Unhook(ppHookedFunction);
 }
 

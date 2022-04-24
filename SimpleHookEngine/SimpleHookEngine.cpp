@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "mhook/mhook.h"
+#include "SimpleHookEngine.h"
 
 
 typedef int
@@ -30,4 +31,13 @@ int wmain(int argc, WCHAR* argv[]) {
     UninstallHook((void**)&TrueMessageBoxA);
 
     MessageBoxA(NULL, "≤‚ ‘Œƒ±æ3", "≤‚ ‘3", NULL);
+}
+
+
+BOOL InstallHook(PVOID* ppSystemFunction, PVOID pHookFunction) {
+    return SetHook(ppSystemFunction, pHookFunction);
+}
+
+BOOL UninstallHook(PVOID* ppHookedFunction) {
+    return UnHook(ppHookedFunction);
 }

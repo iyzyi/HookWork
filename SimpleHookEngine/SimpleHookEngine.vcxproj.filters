@@ -71,5 +71,8 @@
     <ClInclude Include="mhook\mhook.h">
       <Filter>头文件\mhook</Filter>
     </ClInclude>
+    <ClInclude Include="SimpleHookEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
