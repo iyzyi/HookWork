@@ -773,6 +773,10 @@ BOOL Mhook_SetHook(PVOID *ppSystemFunction, PVOID pHookFunction) {
 	return (pTrampoline != NULL);
 }
 
+BOOL InstallHook(PVOID* ppSystemFunction, PVOID pHookFunction) {
+	return Mhook_SetHook(ppSystemFunction, pHookFunction);
+}
+
 //=========================================================================
 BOOL Mhook_Unhook(PVOID *ppHookedFunction) {
 	ODPRINTF((L"mhooks: Mhook_Unhook: %p", *ppHookedFunction));
@@ -810,6 +814,10 @@ BOOL Mhook_Unhook(PVOID *ppHookedFunction) {
 	}
 	LeaveCritSec();
 	return bRet;
+}
+
+BOOL UninstallHook(PVOID* ppHookedFunction) {
+	return Mhook_Unhook(ppHookedFunction);
 }
 
 //=========================================================================
