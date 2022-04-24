@@ -12,13 +12,13 @@ typedef int
 
 PFN_MessageBoxA TrueMessageBoxA = (PFN_MessageBoxA)GetProcAddress(GetModuleHandle(L"user32"), "MessageBoxA");
 
-int WINAPI My_MessageBoxA(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
+int WINAPI MyMessageBoxA(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 {
     int ret;
     char newText[1024] = { 0 };
     char newCaption[256] = "iyzyi";
     strcpy_s(newText, (char*)lpText);
-    strcat_s(newText, "\n\tMessageBox Hacked by iyzyi!");//篡改消息框内容
+    strcat_s(newText, "\nMessageBox Hacked by iyzyi!");//篡改消息框内容
     uType |= MB_ICONERROR;							
     ret = TrueMessageBoxA(hWnd, (LPCTSTR)newText, (LPCTSTR)newCaption, uType);
     return ret;
@@ -26,14 +26,15 @@ int WINAPI My_MessageBoxA(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uTy
 
 
 int wmain(int argc, WCHAR* argv[]) {
-	MessageBoxA(NULL, "测试文本", "测试", NULL);
+	MessageBoxA(NULL, "测试文本1", "测试1", NULL);
 
+	Mhook_SetHook((PVOID*)&TrueMessageBoxA, MyMessageBoxA);
 
+	MessageBoxA(NULL, "测试文本2", "测试2", NULL);
 
-	
-	Mhook_SetHook((PVOID*)&TrueMessageBoxA, My_MessageBoxA);
+    Mhook_Unhook((PVOID*)&TrueMessageBoxA);
 
-	MessageBoxA(NULL, "测试文本2", "测试", NULL);
+    MessageBoxA(NULL, "测试文本3", "测试3", NULL);
 }
 
 
@@ -49,71 +50,88 @@ int wmain(int argc, WCHAR* argv[]) {
 
 
 
-typedef struct _CLIENT_ID {
-	DWORD_PTR UniqueProcess;
-	DWORD_PTR UniqueThread;
-} CLIENT_ID, *PCLIENT_ID;
-
-typedef ULONG (WINAPI* _NtOpenProcess)(OUT PHANDLE ProcessHandle, 
-	     IN ACCESS_MASK AccessMask, IN PVOID ObjectAttributes, 
-		 IN PCLIENT_ID ClientId ); 
-
-typedef HGDIOBJ (WINAPI* _SelectObject)(HDC hdc, HGDIOBJ hgdiobj); 
-
-typedef int (WSAAPI* _getaddrinfo)(const char* nodename, const char* servname, const struct addrinfo* hints, struct addrinfo** res);
-
-typedef LPVOID (WINAPI *_HeapAlloc)(HANDLE, DWORD, SIZE_T);
-
-typedef ULONG (WINAPI* _NtClose)(IN HANDLE Handle);
 
 
-_NtOpenProcess TrueNtOpenProcess = (_NtOpenProcess)
-	GetProcAddress(GetModuleHandle(L"ntdll"), "NtOpenProcess");
-
-_SelectObject TrueSelectObject = (_SelectObject)
-	GetProcAddress(GetModuleHandle(L"gdi32"), "SelectObject");
-
-_getaddrinfo Truegetaddrinfo = (_getaddrinfo)GetProcAddress(GetModuleHandle(L"ws2_32"), "getaddrinfo");
-
-_HeapAlloc TrueHeapAlloc = (_HeapAlloc)GetProcAddress(GetModuleHandle(L"kernel32"), "HeapAlloc");
-
-_NtClose TrueNtClose = (_NtClose)GetProcAddress(GetModuleHandle(L"ntdll"), "NtClose");
-
-ULONG WINAPI HookNtOpenProcess(OUT PHANDLE ProcessHandle, 
-							   IN ACCESS_MASK AccessMask, 
-							   IN PVOID ObjectAttributes, 
-							   IN PCLIENT_ID ClientId)
-{
-	printf("***** Call to open process %d\n", ClientId->UniqueProcess);
-	return TrueNtOpenProcess(ProcessHandle, AccessMask, 
-		ObjectAttributes, ClientId);
-}
 
 
-HGDIOBJ WINAPI HookSelectobject(HDC hdc, HGDIOBJ hgdiobj)
-{
-	printf("***** Call to SelectObject(0x%p, 0x%p)\n", hdc, hgdiobj);
-	return TrueSelectObject(hdc, hgdiobj);
-}
 
 
-int WSAAPI Hookgetaddrinfo(const char* nodename, const char* servname, const struct addrinfo* hints, struct addrinfo** res)
-{
-	printf("***** Call to getaddrinfo(0x%p, 0x%p, 0x%p, 0x%p)\n", nodename, servname, hints, res);
-	return Truegetaddrinfo(nodename, servname, hints, res);
-}
 
 
-LPVOID WINAPI HookHeapAlloc(HANDLE a_Handle, DWORD a_Bla, SIZE_T a_Bla2) {
-	printf("***** Call to HeapAlloc(0x%p, %u, 0x%p)\n", a_Handle, a_Bla, a_Bla2);
-	return TrueHeapAlloc(a_Handle, a_Bla, a_Bla2);
-}
 
 
-ULONG WINAPI HookNtClose(HANDLE hHandle) {
-	printf("***** Call to NtClose(0x%p)\n", hHandle);
-	return TrueNtClose(hHandle);
-}
+
+
+
+
+
+
+//
+//typedef struct _CLIENT_ID {
+//	DWORD_PTR UniqueProcess;
+//	DWORD_PTR UniqueThread;
+//} CLIENT_ID, *PCLIENT_ID;
+//
+//typedef ULONG (WINAPI* _NtOpenProcess)(OUT PHANDLE ProcessHandle, 
+//	     IN ACCESS_MASK AccessMask, IN PVOID ObjectAttributes, 
+//		 IN PCLIENT_ID ClientId ); 
+//
+//typedef HGDIOBJ (WINAPI* _SelectObject)(HDC hdc, HGDIOBJ hgdiobj); 
+//
+//typedef int (WSAAPI* _getaddrinfo)(const char* nodename, const char* servname, const struct addrinfo* hints, struct addrinfo** res);
+//
+//typedef LPVOID (WINAPI *_HeapAlloc)(HANDLE, DWORD, SIZE_T);
+//
+//typedef ULONG (WINAPI* _NtClose)(IN HANDLE Handle);
+//
+//
+//_NtOpenProcess TrueNtOpenProcess = (_NtOpenProcess)
+//	GetProcAddress(GetModuleHandle(L"ntdll"), "NtOpenProcess");
+//
+//_SelectObject TrueSelectObject = (_SelectObject)
+//	GetProcAddress(GetModuleHandle(L"gdi32"), "SelectObject");
+//
+//_getaddrinfo Truegetaddrinfo = (_getaddrinfo)GetProcAddress(GetModuleHandle(L"ws2_32"), "getaddrinfo");
+//
+//_HeapAlloc TrueHeapAlloc = (_HeapAlloc)GetProcAddress(GetModuleHandle(L"kernel32"), "HeapAlloc");
+//
+//_NtClose TrueNtClose = (_NtClose)GetProcAddress(GetModuleHandle(L"ntdll"), "NtClose");
+//
+//ULONG WINAPI HookNtOpenProcess(OUT PHANDLE ProcessHandle, 
+//							   IN ACCESS_MASK AccessMask, 
+//							   IN PVOID ObjectAttributes, 
+//							   IN PCLIENT_ID ClientId)
+//{
+//	printf("***** Call to open process %d\n", ClientId->UniqueProcess);
+//	return TrueNtOpenProcess(ProcessHandle, AccessMask, 
+//		ObjectAttributes, ClientId);
+//}
+//
+//
+//HGDIOBJ WINAPI HookSelectobject(HDC hdc, HGDIOBJ hgdiobj)
+//{
+//	printf("***** Call to SelectObject(0x%p, 0x%p)\n", hdc, hgdiobj);
+//	return TrueSelectObject(hdc, hgdiobj);
+//}
+//
+//
+//int WSAAPI Hookgetaddrinfo(const char* nodename, const char* servname, const struct addrinfo* hints, struct addrinfo** res)
+//{
+//	printf("***** Call to getaddrinfo(0x%p, 0x%p, 0x%p, 0x%p)\n", nodename, servname, hints, res);
+//	return Truegetaddrinfo(nodename, servname, hints, res);
+//}
+//
+//
+//LPVOID WINAPI HookHeapAlloc(HANDLE a_Handle, DWORD a_Bla, SIZE_T a_Bla2) {
+//	printf("***** Call to HeapAlloc(0x%p, %u, 0x%p)\n", a_Handle, a_Bla, a_Bla2);
+//	return TrueHeapAlloc(a_Handle, a_Bla, a_Bla2);
+//}
+//
+//
+//ULONG WINAPI HookNtClose(HANDLE hHandle) {
+//	printf("***** Call to NtClose(0x%p)\n", hHandle);
+//	return TrueNtClose(hHandle);
+//}
 
 
 //int wmain(int argc, WCHAR* argv[])
