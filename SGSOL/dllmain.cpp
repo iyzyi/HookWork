@@ -9,6 +9,9 @@
 #define QWORD unsigned long long int
 #define PQWORD QWORD*
 
+
+HANDLE hPipe = NULL;
+
 CDataLog* m_pDataLog;
 
 
@@ -69,6 +72,16 @@ int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
 		m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Recv Data (%d Bytes): \n", GetCurrentProcessId(), ssl, ret);
 		m_pDataLog->LogHexData("", (PBYTE)buf, ret);
 		m_pDataLog->LogString("\n\n");
+
+
+		CHAR szBuffer[1024] = { 0 };
+		DWORD dwReturn = 0;
+		sprintf(szBuffer, "recv(0x%p, 0x%p, %d)", ssl, buf, num);
+		DllPrintf(szBuffer);
+		if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+		{
+			printf("Write Failed\n");
+		}
 	}
 	return ret;
 }
@@ -93,12 +106,13 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 #define COMMAND_PIPE_BUF_SIZE			4096
 #define DATA_PIPE_BUF_SIZE				0xffffff
+// CommandPipe命令管道：server写，本dll读
+// DataPipe数据管道：本dll写，server读
+
 #define PIPE							"\\\\.\\pipe\\Pipe"
 
 
-DWORD WINAPI ThreadProc(LPVOID lpParameter) {
-
-	HANDLE hPipe = NULL;
+DWORD WINAPI ThreadFunc(LPVOID lpParameter) {
 	char  szBuffer[COMMAND_PIPE_BUF_SIZE] = { 0 };
 	DWORD dwReturn = 0;
 
@@ -147,6 +161,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 }
 
 
+
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
@@ -156,7 +171,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 		DllPrintf("远程注入DLL......\n");
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc, NULL, 0, NULL);
 		break;
 
 	case DLL_THREAD_ATTACH:

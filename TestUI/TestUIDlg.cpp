@@ -20,6 +20,7 @@
 
 
 BOOL ThreadFuncCommandPipe();
+DWORD WINAPI ThreadFuncDataPipe();
 
 
 
@@ -180,11 +181,14 @@ HCURSOR CTestUIDlg::OnQueryDragIcon()
 
 
 #define COMMAND_PIPE_BUF_SIZE			4096
+#define COMMAND_PIPE					"\\\\.\\pipe\\CommandPipe"
+
 #define DATA_PIPE_BUF_SIZE				0xffffff
-#define PIPE							"\\\\.\\pipe\\Pipe"
+#define DATA_PIPE						"\\\\.\\pipe\\DataPipe"
 
 // 创建命名管道
-HANDLE hPipe = NULL;
+HANDLE hCommandPipe = NULL;
+HANDLE hDataPipe = NULL;
 
 BOOL ThreadFuncCommandPipe() {
 	
@@ -215,8 +219,21 @@ BOOL ThreadFuncCommandPipe() {
 
 	//DisconnectNamedPipe(hPipe);
 	//CloseHandle(hPipe);
+
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFuncDataPipe, NULL, 0, NULL);
 }
 
+
+DWORD WINAPI ThreadFuncDataPipe() {
+	PCHAR szBuffer = new CHAR[DATA_PIPE_BUF_SIZE];
+	DWORD dwReturn = 0;
+
+	while (ReadFile(hPipe, szBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
+		szBuffer[dwReturn] = '\0';
+		printf("收到: %s\n", szBuffer);
+	}
+	return 0;
+}
 
 
 // 远程注入
