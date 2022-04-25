@@ -14,8 +14,12 @@
 #define PROCESS_ID_LIST_NUMBER 24						// 通过进程名称来查找进程可能会找到多个PID
 
 
-DWORD GetProcessIDByName(PWCHAR pwszName, PDWORD ProcessIdList)
+DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList)
 {
+	int dwWideSize = MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), NULL, 0);
+	PWCHAR pwszName = (wchar_t*)malloc(dwWideSize * sizeof(wchar_t));
+	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), pwszName, dwWideSize);
+
 	DWORD dwProcessIdNumbers = 0;
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (INVALID_HANDLE_VALUE == hSnapshot) {
@@ -39,8 +43,12 @@ DWORD GetProcessIDByName(PWCHAR pwszName, PDWORD ProcessIdList)
 }
 
 
-HMODULE GetHModuleIDByName(DWORD dwPid, PWCHAR pwszName)
+HMODULE GetHModuleIDByName(DWORD dwPid, PCHAR szName)
 {
+	int dwWideSize = MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), NULL, 0);
+	PWCHAR pwszName = (wchar_t*)malloc(dwWideSize * sizeof(wchar_t));
+	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), pwszName, dwWideSize);
+
 	DWORD dwProcessIdNumbers = 0;
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPid);
 	if (INVALID_HANDLE_VALUE == hSnapshot) {
@@ -63,7 +71,11 @@ HMODULE GetHModuleIDByName(DWORD dwPid, PWCHAR pwszName)
 }
 
 
-HMODULE GetModuleBaseAddress(DWORD dwPID, PWCHAR pwszName) {
+HMODULE GetModuleBaseAddress(DWORD dwPID, PCHAR szName) {
+	int dwWideSize = MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), NULL, 0);
+	PWCHAR pwszName = (wchar_t*)malloc(dwWideSize * sizeof(wchar_t));
+	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), pwszName, dwWideSize);
+
 	HANDLE hSnapShot;
 	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
 	if (hSnapShot == INVALID_HANDLE_VALUE)
@@ -94,7 +106,7 @@ bool isFileExists(char* name) {
 }
 
 
-BOOL RemoteInject(DWORD dwPid, PCHAR szDllPath) {
+BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath) {
 	HANDLE			hThread;								// 远程线程，线程函数为LoadLibrary
 	HANDLE			hProcess;								// 远程进程句柄;
 	void*			pDllPathRemote;							// szDllPath拷贝到远程进程的空间中
@@ -139,44 +151,59 @@ BOOL RemoteInject(DWORD dwPid, PCHAR szDllPath) {
 	// 释放内存
 	VirtualFreeEx(hProcess, pDllPathRemote, sizeof(szDllPath), MEM_RELEASE);
 
+	// 从路径中提取DLL的名称
+	CHAR szDllName[MAX_PATH], * p;
+	strcpy(szDllName, (p = strrchr(szDllPath, '\\')) ? p + 1 : szDllPath);
+
 	// 在远程进程中查找注入的DLL Module，若找不到说明注入失败
-	hModule = GetHModuleIDByName(dwPid, (PWCHAR)L"RemoteInjectDll.dll");
+	hModule = GetHModuleIDByName(dwPid, szDllName);
 	if (hModule == NULL)
 	{
-		printf("DLL注入失败\n\n");
+		printf("[PID=0x%x] %s注入失败\n\n", dwPid, szDllName);
 		return FALSE;
 	}
+	else {
+		printf("[PID=0x%x] %s注入成功\n\n", dwPid, szDllName);
+		return TRUE;
+	}
+}
 
-	return TRUE;
+
+// 如果ProcessName对应多个ProcessId，则逐一对这些进程注入
+// 返回值高16bit为符合ProcessName的进程数量，低16bit为成功注入的进程数量
+DWORD RemoteInjectByProcessName(PCHAR szProcessName, PCHAR szDllPath) {
+	DWORD ProcessIdList[PROCESS_ID_LIST_NUMBER];
+	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
+	printf("%s共%d个进程\n", szProcessName, dwProcessIdNumbers);
+	DWORD dwSuccessNumbers = 0;
+
+	if (!isFileExists(szDllPath)) {
+		printf("%s 不存在\n", szDllPath);
+		return FALSE;
+	}
+	else {
+		for (DWORD i = 0; i < dwProcessIdNumbers; i++) {
+			printf("pid=%d\n", ProcessIdList[i]);
+			if (RemoteInjectByProcessId(ProcessIdList[i], szDllPath))
+				dwSuccessNumbers++;
+		}
+	}
+	return ((dwProcessIdNumbers & 0xffff) << 16) | (dwSuccessNumbers & 0xffff);
 }
 
 
 
 int main()
 {
-	WCHAR ProcessName[] = L"SGSOL.exe";
-	DWORD ProcessIdList[PROCESS_ID_LIST_NUMBER];
-	DWORD dwProcessIdNumbers = GetProcessIDByName(ProcessName, ProcessIdList);
-	printf("共%d个进程\n", dwProcessIdNumbers);
+	CHAR szDllPath[MAX_PATH + 1] = { 0 };
+	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
+	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
+	strcat(szDllPath, "SGSOL.dll");						// 拼接上DLL的名称
 
-	for (DWORD i = 0; i < dwProcessIdNumbers; i++) {
-		printf("pid=%d\n", ProcessIdList[i]);
-		
-		CHAR szDllPath[MAX_PATH + 1] = { 0 };
-		GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
-		(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
-		strcat(szDllPath, "SGSOL.dll");						// 拼接上DLL的名称
+	// 必须是绝对路径，因为是跨进程执行的，工作路径是目标程序的工作路径，而非本程序的工作路径
+	// CHAR szDllPath[] = "D:\\桌面\\HookWork\\x64\\Debug\\SGSOL.dll";	
 
-		// 必须是绝对路径，因为是跨进程执行的，工作路径是目标程序的工作路径，而非本程序的工作路径
-		// CHAR szDllPath[] = "D:\\桌面\\HookWork\\x64\\Debug\\SGSOL.dll";			
-		
-		if (!isFileExists(szDllPath)) {
-			printf("%s 不存在\n", szDllPath);
-		}
-		else {
-			RemoteInject(ProcessIdList[i], szDllPath);
-		}
-	}
+	RemoteInjectByProcessName("SGSOL.exe", szDllPath);
 
 	system("pause");
 	return 0;
