@@ -62,6 +62,12 @@ END_MESSAGE_MAP()
 CTestUIDlg::CTestUIDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_TESTUI_DIALOG, pParent)
 {
+	// 开启控制台窗口
+	AllocConsole();
+	FILE* stream = nullptr;
+	freopen_s(&stream, "CONOUT$", "w", stdout);
+
+
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 	// ****************************************************************iyzyi
@@ -240,10 +246,9 @@ BOOL test_pipe_thread_func() {
 void CTestUIDlg::OnBnClickedButton2()
 {
 	DWORD dwReturn = 0;
-	char szBuffer[BUF_SIZE] = { 0 };
+	char szBuffer[BUF_SIZE] = "InstallHook";
 
 	// 向客户端发送数据
-	szBuffer[0] = 'Y';
 	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
 		printf("Write Failed\n");
@@ -256,10 +261,9 @@ void CTestUIDlg::OnBnClickedButton2()
 void CTestUIDlg::OnBnClickedButton1()
 {
 	DWORD dwReturn = 0;
-	char szBuffer[BUF_SIZE] = { 0 };
+	char szBuffer[BUF_SIZE] = "UninstallHook";
 
 	// 向客户端发送数据
-	szBuffer[0] = 'N';
 	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
 		printf("Write Failed\n");

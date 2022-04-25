@@ -100,7 +100,7 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 #define EXAMP_PIPE      "\\\\.\\pipe\\ReadPipe"   
 
 DWORD WINAPI ThreadProc(LPVOID lpParameter) {
-	//MessageBoxA(NULL, "IYZYI", "", NULL);
+
 	HANDLE hPipe = NULL;
 	char  szBuffer[BUF_SIZE] = { 0 };
 	DWORD dwReturn = 0;
@@ -123,26 +123,21 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 		return 0;
 	}
 
+	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");			// 创建日志
+
 	while (ReadFile(hPipe, szBuffer, BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
-		MessageBoxA(NULL, szBuffer, "收到", NULL);
+		//MessageBoxA(NULL, szBuffer, "收到", NULL);
+
+		if (strcmp(szBuffer, "InstallHook")) {
+			//InstallHook((void**)&TrueRecv, My_Recv);
+			//InstallHook((void**)&TrueSend, My_Send);
+			MessageBoxA(NULL, szBuffer, "收到", NULL);
+		}
+		else if (strcmp(szBuffer, "UninstallHook")) {
+			MessageBoxA(NULL, szBuffer, "收到", NULL);
+		}
 	}
-
-	//// 读取服务端发来的数据
-	//if ()
-	//{
-	//	
-	//}
-	//else
-	//{
-	//	printf("Read Failed\n");
-	//}
-	// CloseHandle(hPipe);
-
-
-	/*m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
-	InstallHook((void**)&TrueRecv, My_Recv);
-	InstallHook((void**)&TrueSend, My_Send);*/
 
 	return 0;
 }
