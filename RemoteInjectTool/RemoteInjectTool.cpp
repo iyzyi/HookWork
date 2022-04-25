@@ -119,7 +119,7 @@ BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath) {
 	// 打开句柄
 	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
 	if (hProcess == NULL) {
-		printf("打开句柄失败\n");
+		printf("打开[PID=0x%.8x]进程句柄失败\n", dwPid);
 		return FALSE;
 	}
 

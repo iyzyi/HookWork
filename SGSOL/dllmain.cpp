@@ -103,7 +103,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 	// 判断是否有可以利用的命名管道  
 	if (!WaitNamedPipeA(EXAMP_PIPE, NMPWAIT_USE_DEFAULT_WAIT))
 	{
-		DllPrintf("No Read Pipe Accessible");
+		DllPrintf("无可用管道\n");
 		return 0;
 	}
 
@@ -114,7 +114,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		DllPrintf("Open Read Pipe Error");
+		DllPrintf("管道打开失败\n");
 		return 0;
 	}
 
@@ -122,15 +122,15 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 
 	while (ReadFile(hPipe, szBuffer, BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
-		DllPrintf("收到命令: %s\n", szBuffer);
+		//DllPrintf("收到命令: %s\n", szBuffer);
 
 		if (strcmp(szBuffer, "InstallHook") == 0) {
-			DllPrintf("即将Install");
+			DllPrintf("InstallHook......\n");
 			InstallHook((void**)&TrueRecv, My_Recv);
 			InstallHook((void**)&TrueSend, My_Send);
 		}
 		else if (strcmp(szBuffer, "UninstallHook") == 0) {
-			DllPrintf("即将Uninstall");
+			DllPrintf("UninstallHook......\n");
 			UninstallHook((void**)&TrueRecv);
 			UninstallHook((void**)&TrueSend);
 		}
@@ -148,9 +148,10 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		DllPrintf("正在注入DLL......\n");
+		DllPrintf("远程注入DLL......\n");
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);
 		break;
+
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:

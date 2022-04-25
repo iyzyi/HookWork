@@ -245,7 +245,6 @@ BOOL test_pipe_thread_func() {
 // 远程注入
 void CTestUIDlg::OnBnClickedButton1()
 {
-	printf("OnBnClickedButton1");
 	test_remote_inject();
 }
 
@@ -253,7 +252,6 @@ void CTestUIDlg::OnBnClickedButton1()
 // 安装HOOK
 void CTestUIDlg::OnBnClickedButton2()
 {
-	printf("OnBnClickedButton2");
 	DWORD dwReturn = 0;
 	char szBuffer[BUF_SIZE] = "InstallHook";
 
@@ -268,8 +266,6 @@ void CTestUIDlg::OnBnClickedButton2()
 // 卸载HOOK
 void CTestUIDlg::OnBnClickedButton3()
 {
-	printf("OnBnClickedButton3");
-
 	DWORD dwReturn = 0;
 	char szBuffer[BUF_SIZE] = "UninstallHook";
 
