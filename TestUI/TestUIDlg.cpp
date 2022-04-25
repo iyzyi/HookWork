@@ -19,8 +19,7 @@
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 
-void test_remote_inject();
-BOOL test_pipe_thread_func();
+BOOL ThreadFuncCommandPipe();
 
 
 
@@ -70,10 +69,8 @@ CTestUIDlg::CTestUIDlg(CWnd* pParent /*=nullptr*/)
 
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-	// ****************************************************************iyzyi 创建管道
-	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)test_pipe_thread_func, NULL, 0, NULL);
-	//Sleep(1000);
-	//test_remote_inject();
+	// ******************************创建管道线程**********************************
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFuncCommandPipe, NULL, 0, NULL);
 }
 
 void CTestUIDlg::DoDataExchange(CDataExchange* pDX)
@@ -181,8 +178,50 @@ HCURSOR CTestUIDlg::OnQueryDragIcon()
 
 
 
+
+#define COMMAND_PIPE_BUF_SIZE			4096
+#define DATA_PIPE_BUF_SIZE				0xffffff
+#define PIPE							"\\\\.\\pipe\\Pipe"
+
+// 创建命名管道
+HANDLE hPipe = NULL;
+
+BOOL ThreadFuncCommandPipe() {
+	
+	hPipe = CreateNamedPipeA(
+		PIPE,
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		COMMAND_PIPE_BUF_SIZE,
+		DATA_PIPE_BUF_SIZE,
+		0,
+		NULL);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		printf("创建CommandPipe管道失败\n");
+		return FALSE;
+	}
+
+	// 等待客户端的连接（好像是阻塞的）
+	if (!ConnectNamedPipe(hPipe, NULL))
+	{
+		printf("CommandPipe管道等待连接失败\n");
+	}
+	else {
+		printf("CommandPipe管道等待连接成功\n");
+	}
+
+	//DisconnectNamedPipe(hPipe);
+	//CloseHandle(hPipe);
+}
+
+
+
 // 远程注入
-void test_remote_inject() {
+void CTestUIDlg::OnBnClickedButton1()
+{
 	CHAR szDllPath[MAX_PATH + 1] = { 0 };
 	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
 	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
@@ -196,56 +235,6 @@ void test_remote_inject() {
 	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
 	int i = 2;
 	RemoteInjectByProcessId(ProcessIdList[i], szDllPath);
-
-	//system("pause");
-}
-
-#define BUF_SIZE        4096
-#define EXAMP_PIPE      "\\\\.\\pipe\\ReadPipe"   
-
-// 创建命名管道
-HANDLE hPipe = NULL;
-
-BOOL test_pipe_thread_func() {
-	
-	hPipe = CreateNamedPipeA(
-		EXAMP_PIPE,
-		PIPE_ACCESS_DUPLEX,
-		PIPE_TYPE_MESSAGE |
-		PIPE_READMODE_MESSAGE |
-		PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		BUF_SIZE,
-		BUF_SIZE,
-		0,
-		NULL);
-
-	if (hPipe == INVALID_HANDLE_VALUE)
-	{
-		printf("Create Read Pipe Error\n");
-		return FALSE;
-	}
-
-	// 等待客户端的连接（是阻塞的）
-
-	if (!ConnectNamedPipe(hPipe, NULL))
-	{
-		printf("管道Connect Failed\n");
-	}
-	else {
-		printf("管道Connect Success!\n");
-	}
-
-	//DisconnectNamedPipe(hPipe);
-	//CloseHandle(hPipe);
-}
-
-
-
-// 远程注入
-void CTestUIDlg::OnBnClickedButton1()
-{
-	test_remote_inject();
 }
 
 
@@ -253,7 +242,7 @@ void CTestUIDlg::OnBnClickedButton1()
 void CTestUIDlg::OnBnClickedButton2()
 {
 	DWORD dwReturn = 0;
-	char szBuffer[BUF_SIZE] = "InstallHook";
+	char szBuffer[] = "InstallHook";
 
 	// 向客户端发送数据
 	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
@@ -267,7 +256,7 @@ void CTestUIDlg::OnBnClickedButton2()
 void CTestUIDlg::OnBnClickedButton3()
 {
 	DWORD dwReturn = 0;
-	char szBuffer[BUF_SIZE] = "UninstallHook";
+	char szBuffer[] = "UninstallHook";
 
 	// 向客户端发送数据
 	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))

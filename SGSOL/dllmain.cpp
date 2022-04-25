@@ -91,36 +91,43 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 
 
-#define BUF_SIZE        4096
-#define EXAMP_PIPE      "\\\\.\\pipe\\ReadPipe"   
+#define COMMAND_PIPE_BUF_SIZE			4096
+#define DATA_PIPE_BUF_SIZE				0xffffff
+#define PIPE							"\\\\.\\pipe\\Pipe"
+
 
 DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 
 	HANDLE hPipe = NULL;
-	char  szBuffer[BUF_SIZE] = { 0 };
+	char  szBuffer[COMMAND_PIPE_BUF_SIZE] = { 0 };
 	DWORD dwReturn = 0;
 
 	// 判断是否有可以利用的命名管道  
-	if (!WaitNamedPipeA(EXAMP_PIPE, NMPWAIT_USE_DEFAULT_WAIT))
+	if (!WaitNamedPipeA(PIPE, NMPWAIT_USE_DEFAULT_WAIT))
 	{
-		DllPrintf("无可用管道\n");
+		DllPrintf("未找到CommandPipe管道\n");
 		return 0;
 	}
 
 	// 打开可用的命名管道 , 并与服务器端进程进行通信  
-	hPipe = CreateFileA(EXAMP_PIPE, GENERIC_READ | GENERIC_WRITE,
+	hPipe = CreateFileA(
+		PIPE,
+		GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		NULL, OPEN_EXISTING, 0, NULL);
+		NULL, 
+		OPEN_EXISTING, 
+		0, 
+		NULL);
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		DllPrintf("管道打开失败\n");
+		DllPrintf("CommandPipe管道打开失败\n");
 		return 0;
 	}
 
 	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");			// 创建日志
 
-	while (ReadFile(hPipe, szBuffer, BUF_SIZE, &dwReturn, NULL)) {
+	while (ReadFile(hPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
 		//DllPrintf("收到命令: %s\n", szBuffer);
 
