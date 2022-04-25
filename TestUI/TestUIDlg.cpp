@@ -234,16 +234,12 @@ void CTestUIDlg::OnBnClickedButton1()
 	CHAR szDllPath[MAX_PATH + 1] = { 0 };
 	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
 	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
-	strcat_s(szDllPath, "SGSOL.dll");			        // 拼接上DLL的名称
+	strcat_s(szDllPath, "InjectDll.dll");			        // 拼接上DLL的名称
 
-	//RemoteInjectByProcessName("SGSOL.exe", szDllPath);
-
-	// SGSOL.exe共6个进程，只有第二个进程是含有网络通信的。
 	DWORD ProcessIdList[32];
-	CHAR szProcessName[] = "SGSOL.exe";
+	CHAR szProcessName[] = "WebBrowser.exe";
 	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
-	int i = 2;
-	RemoteInjectByProcessId(ProcessIdList[i], szDllPath);
+	RemoteInjectByProcessId(ProcessIdList[0], szDllPath);
 
 
 	// 创建两个命令管道。
