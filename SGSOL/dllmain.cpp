@@ -96,6 +96,34 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 
 
+int dllPrintf(char* fmt, ...)
+{
+	//不定参数格式化
+	va_list argptr;
+	va_start(argptr, fmt);
+	char buffer[512] = { 0 };
+	int cnt = vsprintf(buffer, fmt, argptr);
+	va_end(argptr);
+
+	//创建控制台窗口
+	static HANDLE gHConsole = INVALID_HANDLE_VALUE;
+	if (INVALID_HANDLE_VALUE == gHConsole) {
+		AllocConsole();					// 为调用进程分配一个新的控制台。
+		gHConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
+	//打印到指定的控制台窗口
+	DWORD dw;
+	WriteConsoleA(gHConsole, buffer, strlen(buffer), &dw, NULL);
+
+	return(cnt);
+}
+
+
+
+
+
+
+
 #define BUF_SIZE        4096
 #define EXAMP_PIPE      "\\\\.\\pipe\\ReadPipe"   
 
@@ -153,6 +181,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		dllPrintf("Hello World\n");
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);
 		break;
 	case DLL_THREAD_ATTACH:
