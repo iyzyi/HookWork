@@ -10,9 +10,18 @@
 #define PQWORD QWORD*
 
 
-HANDLE hPipe = NULL;
-
 CDataLog* m_pDataLog;
+
+
+
+#define COMMAND_PIPE_BUF_SIZE		4096
+#define COMMAND_PIPE				"\\\\.\\pipe\\CommandPipe"
+
+#define DATA_PIPE_BUF_SIZE			0xffffff
+#define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
+
+HANDLE	hCommandPipe = NULL;
+HANDLE	hDataPipe = NULL;
 
 
 // ***************************相关函数原型***************************
@@ -78,7 +87,7 @@ int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
 		DWORD dwReturn = 0;
 		sprintf(szBuffer, "recv(0x%p, 0x%p, %d)", ssl, buf, num);
 		DllPrintf(szBuffer);
-		if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+		if (!WriteFile(hDataPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 		{
 			printf("Write Failed\n");
 		}
@@ -101,47 +110,12 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 
 
-
-
-
-#define COMMAND_PIPE_BUF_SIZE			4096
-#define DATA_PIPE_BUF_SIZE				0xffffff
-// CommandPipe命令管道：server写，本dll读
-// DataPipe数据管道：本dll写，server读
-
-#define PIPE							"\\\\.\\pipe\\Pipe"
-
-
-DWORD WINAPI ThreadFunc(LPVOID lpParameter) {
-	char  szBuffer[COMMAND_PIPE_BUF_SIZE] = { 0 };
+// 接收数据的线程 
+DWORD WINAPI ThreadFunc_CommandPipeRecv() {
+	PCHAR szBuffer = new CHAR[COMMAND_PIPE_BUF_SIZE];
 	DWORD dwReturn = 0;
 
-	// 判断是否有可以利用的命名管道  
-	if (!WaitNamedPipeA(PIPE, NMPWAIT_USE_DEFAULT_WAIT))
-	{
-		DllPrintf("未找到CommandPipe管道\n");
-		return 0;
-	}
-
-	// 打开可用的命名管道 , 并与服务器端进程进行通信  
-	hPipe = CreateFileA(
-		PIPE,
-		GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		NULL, 
-		OPEN_EXISTING, 
-		0, 
-		NULL);
-
-	if (hPipe == INVALID_HANDLE_VALUE)
-	{
-		DllPrintf("CommandPipe管道打开失败\n");
-		return 0;
-	}
-
-	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");			// 创建日志
-
-	while (ReadFile(hPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
+	while (ReadFile(hCommandPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
 		//DllPrintf("收到命令: %s\n", szBuffer);
 
@@ -156,6 +130,43 @@ DWORD WINAPI ThreadFunc(LPVOID lpParameter) {
 			UninstallHook((void**)&TrueSend);
 		}
 	}
+	return 0;
+}
+
+
+HANDLE ConnectPipe(LPSTR szPipeName) {
+	// 判断是否有可以使用的命名管道实例，不成功就继续尝试 
+	while (!WaitNamedPipeA(szPipeName, NMPWAIT_USE_DEFAULT_WAIT)) {
+		printf("%s: No Read Pipe Accessible\n", szPipeName);
+		Sleep(100);
+	}
+
+	// 打开可用的命名管道 , 并与服务器端进程进行通信  
+	HANDLE hPipe = CreateFileA(szPipeName, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL, OPEN_EXISTING, 0, NULL);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		printf("Open Read Pipe Error\n");
+		return NULL;
+	}
+	return hPipe;
+}
+
+
+
+DWORD WINAPI ThreadFunc_Main(LPVOID lpParameter) {
+	hCommandPipe = ConnectPipe(COMMAND_PIPE);
+	hDataPipe = ConnectPipe(DATA_PIPE);
+
+	if (hCommandPipe == NULL || hDataPipe == NULL)
+		return 0;
+
+	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");			// 创建日志
+
+	// 接收数据的线程 
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_CommandPipeRecv, NULL, 0, NULL);
 
 	return 0;
 }
@@ -171,7 +182,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 		DllPrintf("远程注入DLL......\n");
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc, NULL, 0, NULL);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_Main, NULL, 0, NULL);
 		break;
 
 	case DLL_THREAD_ATTACH:

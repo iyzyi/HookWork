@@ -19,11 +19,6 @@
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 
-BOOL ThreadFuncCommandPipe();
-DWORD WINAPI ThreadFuncDataPipe();
-
-
-
 class CAboutDlg : public CDialogEx
 {
 public:
@@ -71,7 +66,7 @@ CTestUIDlg::CTestUIDlg(CWnd* pParent /*=nullptr*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 	// ******************************创建管道线程**********************************
-	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFuncCommandPipe, NULL, 0, NULL);
+	
 }
 
 void CTestUIDlg::DoDataExchange(CDataExchange* pDX)
@@ -176,64 +171,61 @@ HCURSOR CTestUIDlg::OnQueryDragIcon()
 
 
 
+#define COMMAND_PIPE_BUF_SIZE		4096
+#define COMMAND_PIPE				"\\\\.\\pipe\\CommandPipe"
+
+#define DATA_PIPE_BUF_SIZE			0xffffff
+#define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
+
+HANDLE	hCommandPipe				= NULL;
+HANDLE	hDataPipe					= NULL;
 
 
 
+// 接收数据的线程函数
+DWORD WINAPI ThreadFunc_DataPipeRecv() {
+	PCHAR szBuffer = new CHAR[DATA_PIPE_BUF_SIZE];
+	DWORD dwReturn = 0;
 
-#define COMMAND_PIPE_BUF_SIZE			4096
-#define COMMAND_PIPE					"\\\\.\\pipe\\CommandPipe"
+	while (ReadFile(hDataPipe, szBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
+		szBuffer[dwReturn] = '\0';
+		printf("接收: %s\n", szBuffer);
+	}
+	return 0;
+}
 
-#define DATA_PIPE_BUF_SIZE				0xffffff
-#define DATA_PIPE						"\\\\.\\pipe\\DataPipe"
 
-// 创建命名管道
-HANDLE hCommandPipe = NULL;
-HANDLE hDataPipe = NULL;
-
-BOOL ThreadFuncCommandPipe() {
-	
-	hPipe = CreateNamedPipeA(
-		PIPE,
+HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
+	// 创建命名管道
+	HANDLE hPipe = CreateNamedPipeA(
+		szPipeName,
 		PIPE_ACCESS_DUPLEX,
-		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_TYPE_MESSAGE |
+		PIPE_READMODE_MESSAGE |
+		PIPE_WAIT,
 		PIPE_UNLIMITED_INSTANCES,
-		COMMAND_PIPE_BUF_SIZE,
-		DATA_PIPE_BUF_SIZE,
+		dwBufLen,
+		dwBufLen,
 		0,
 		NULL);
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		printf("创建CommandPipe管道失败\n");
-		return FALSE;
+		printf("Create Read Pipe Error\n");
+		return NULL;
 	}
 
-	// 等待客户端的连接（好像是阻塞的）
+	// 等待客户端的连接(是阻塞的)
 	if (!ConnectNamedPipe(hPipe, NULL))
 	{
-		printf("CommandPipe管道等待连接失败\n");
-	}
-	else {
-		printf("CommandPipe管道等待连接成功\n");
+		printf("Connect Failed\n");
+		return NULL;
 	}
 
-	//DisconnectNamedPipe(hPipe);
-	//CloseHandle(hPipe);
-
-	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFuncDataPipe, NULL, 0, NULL);
+	printf("%s等待连接成功", szPipeName);
+	return hPipe;
 }
 
-
-DWORD WINAPI ThreadFuncDataPipe() {
-	PCHAR szBuffer = new CHAR[DATA_PIPE_BUF_SIZE];
-	DWORD dwReturn = 0;
-
-	while (ReadFile(hPipe, szBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
-		szBuffer[dwReturn] = '\0';
-		printf("收到: %s\n", szBuffer);
-	}
-	return 0;
-}
 
 
 // 远程注入
@@ -252,6 +244,19 @@ void CTestUIDlg::OnBnClickedButton1()
 	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
 	int i = 2;
 	RemoteInjectByProcessId(ProcessIdList[i], szDllPath);
+
+
+	// 创建两个命令管道。
+	// CommandPipe命令管道：本程序写，DLL读
+	// DataPipe数据管道：DLL写，本程序读
+	hCommandPipe = CreatePipeAndWaitConnect(COMMAND_PIPE, COMMAND_PIPE_BUF_SIZE);
+	hDataPipe = CreatePipeAndWaitConnect(DATA_PIPE, DATA_PIPE_BUF_SIZE);
+
+	if (hCommandPipe == NULL || hDataPipe == NULL)
+		return ;
+
+	// 接收数据的线程
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_DataPipeRecv, NULL, 0, NULL);
 }
 
 
@@ -262,7 +267,7 @@ void CTestUIDlg::OnBnClickedButton2()
 	char szBuffer[] = "InstallHook";
 
 	// 向客户端发送数据
-	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
 		printf("Write Failed\n");
 	}
@@ -276,7 +281,7 @@ void CTestUIDlg::OnBnClickedButton3()
 	char szBuffer[] = "UninstallHook";
 
 	// 向客户端发送数据
-	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
 		printf("Write Failed\n");
 	}
