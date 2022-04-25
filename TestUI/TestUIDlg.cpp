@@ -211,18 +211,18 @@ HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		printf("Create Read Pipe Error\n");
+		printf("%s管道创建失败\n", szPipeName);
 		return NULL;
 	}
 
 	// 等待客户端的连接(是阻塞的)
 	if (!ConnectNamedPipe(hPipe, NULL))
 	{
-		printf("Connect Failed\n");
+		printf("%s管道等待连接失败\n", szPipeName);
 		return NULL;
 	}
 
-	printf("%s等待连接成功", szPipeName);
+	printf("%s管道等待连接成功\n", szPipeName);
 	return hPipe;
 }
 
@@ -269,7 +269,7 @@ void CTestUIDlg::OnBnClickedButton2()
 	// 向客户端发送数据
 	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
-		printf("Write Failed\n");
+		printf("向CommandPipe管道写入数据失败\n");
 	}
 }
 
@@ -283,6 +283,6 @@ void CTestUIDlg::OnBnClickedButton3()
 	// 向客户端发送数据
 	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
-		printf("Write Failed\n");
+		printf("向CommandPipe管道写入数据失败\n");
 	}
 }

@@ -13,7 +13,6 @@
 CDataLog* m_pDataLog;
 
 
-
 #define COMMAND_PIPE_BUF_SIZE		4096
 #define COMMAND_PIPE				"\\\\.\\pipe\\CommandPipe"
 
@@ -75,18 +74,16 @@ int DllPrintf(PCHAR fmt, ...)
 // ***************************自定义HOOK函数***************************
 int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
 {
-	DllPrintf("recv ");
 	int ret = TrueRecv(ssl, buf, num);
 	if (ret > 0) {
 		m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Recv Data (%d Bytes): \n", GetCurrentProcessId(), ssl, ret);
 		m_pDataLog->LogHexData("", (PBYTE)buf, ret);
 		m_pDataLog->LogString("\n\n");
 
-
 		CHAR szBuffer[1024] = { 0 };
 		DWORD dwReturn = 0;
-		sprintf(szBuffer, "recv(0x%p, 0x%p, %d)", ssl, buf, num);
-		DllPrintf(szBuffer);
+		sprintf(szBuffer, "SSL_recv(0x%p, 0x%p, %d)", ssl, buf, num);
+
 		if (!WriteFile(hDataPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 		{
 			printf("Write Failed\n");
@@ -97,7 +94,6 @@ int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
 
 int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 {
-	DllPrintf("send ");
 	m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Send Data (%d Bytes): \n", GetCurrentProcessId(), ssl, num);
 	m_pDataLog->LogHexData("", (PBYTE)buf, num);
 	m_pDataLog->LogString("\n\n");
@@ -117,7 +113,7 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 
 	while (ReadFile(hCommandPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
-		//DllPrintf("收到命令: %s\n", szBuffer);
+		//DllPrintf("接收: % s\n", szBuffer);
 
 		if (strcmp(szBuffer, "InstallHook") == 0) {
 			DllPrintf("InstallHook......\n");
@@ -137,7 +133,7 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 HANDLE ConnectPipe(LPSTR szPipeName) {
 	// 判断是否有可以使用的命名管道实例，不成功就继续尝试 
 	while (!WaitNamedPipeA(szPipeName, NMPWAIT_USE_DEFAULT_WAIT)) {
-		printf("%s: No Read Pipe Accessible\n", szPipeName);
+		printf("%s管道无可用实例\n", szPipeName);
 		Sleep(100);
 	}
 
@@ -148,7 +144,7 @@ HANDLE ConnectPipe(LPSTR szPipeName) {
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
-		printf("Open Read Pipe Error\n");
+		printf("%s管道打开失败\n", szPipeName);
 		return NULL;
 	}
 	return hPipe;
