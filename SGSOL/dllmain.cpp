@@ -130,12 +130,14 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 		//MessageBoxA(NULL, szBuffer, "收到", NULL);
 
 		if (strcmp(szBuffer, "InstallHook")) {
-			//InstallHook((void**)&TrueRecv, My_Recv);
-			//InstallHook((void**)&TrueSend, My_Send);
+			InstallHook((void**)&TrueRecv, My_Recv);
+			InstallHook((void**)&TrueSend, My_Send);
 			MessageBoxA(NULL, szBuffer, "收到", NULL);
 		}
 		else if (strcmp(szBuffer, "UninstallHook")) {
 			MessageBoxA(NULL, szBuffer, "收到", NULL);
+			UninstallHook((void**)&TrueRecv);
+			UninstallHook((void**)&TrueSend);
 		}
 	}
 
