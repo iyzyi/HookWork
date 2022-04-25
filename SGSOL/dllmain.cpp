@@ -95,10 +95,50 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 
 
+
+#define BUF_SIZE        4096
+#define EXAMP_PIPE      "\\\\.\\pipe\\ReadPipe"   
+
 DWORD WINAPI ThreadProc(LPVOID lpParameter) {
-	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
+	//MessageBoxA(NULL, "IYZYI", "", NULL);
+	HANDLE hPipe = NULL;
+	char  szBuffer[BUF_SIZE] = { 0 };
+	DWORD dwReturn = 0;
+
+	// 判断是否有可以利用的命名管道  
+	if (!WaitNamedPipeA(EXAMP_PIPE, NMPWAIT_USE_DEFAULT_WAIT))
+	{
+		MessageBoxA(NULL, "No Read Pipe Accessible", "", NULL);
+		return 0;
+	}
+
+	// 打开可用的命名管道 , 并与服务器端进程进行通信  
+	hPipe = CreateFileA(EXAMP_PIPE, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL, OPEN_EXISTING, 0, NULL);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		MessageBoxA(NULL, "Open Read Pipe Error", "", NULL);
+		return 0;
+	}
+
+	// 读取服务端发来的数据
+	if (ReadFile(hPipe, szBuffer, BUF_SIZE, &dwReturn, NULL))
+	{
+		szBuffer[dwReturn] = '\0';
+		MessageBoxA(NULL, szBuffer, "收到", NULL);
+	}
+	else
+	{
+		printf("Read Failed\n");
+	}
+	// CloseHandle(hPipe);
+
+
+	/*m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
 	InstallHook((void**)&TrueRecv, My_Recv);
-	InstallHook((void**)&TrueSend, My_Send);
+	InstallHook((void**)&TrueSend, My_Send);*/
 
 	return 0;
 }
