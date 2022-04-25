@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestUI", "TestUI\TestUI.vcx
 		{BBE0B803-DF49-424A-BAA7-27EA63B9D609} = {BBE0B803-DF49-424A-BAA7-27EA63B9D609}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InjectDll", "InjectDll\InjectDll.vcxproj", "{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -64,6 +66,14 @@ Global
 		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|Win32.Build.0 = Release|Win32
 		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|x64.ActiveCfg = Release|x64
 		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|x64.Build.0 = Release|x64
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Debug|Win32.Build.0 = Debug|Win32
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Debug|x64.ActiveCfg = Debug|x64
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Debug|x64.Build.0 = Debug|x64
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Release|Win32.ActiveCfg = Release|Win32
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Release|Win32.Build.0 = Release|Win32
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Release|x64.ActiveCfg = Release|x64
+		{7AF0D8DE-F77E-4FC0-BFDE-5677F40F6A48}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
