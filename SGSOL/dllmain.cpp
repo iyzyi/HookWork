@@ -96,7 +96,7 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 
 
-int dllPrintf(char* fmt, ...)
+int DllPrintf(PCHAR fmt, ...)
 {
 	//不定参数格式化
 	va_list argptr;
@@ -181,7 +181,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		dllPrintf("Hello World\n");
+		DllPrintf("Hello World\n");
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);
 		break;
 	case DLL_THREAD_ATTACH:
