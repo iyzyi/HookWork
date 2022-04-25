@@ -86,7 +86,7 @@ int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
 
 		if (!WriteFile(hDataPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 		{
-			printf("Write Failed\n");
+			printf("向DataPipe管道写入数据失败\n");
 		}
 	}
 	return ret;
@@ -97,6 +97,15 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 	m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Send Data (%d Bytes): \n", GetCurrentProcessId(), ssl, num);
 	m_pDataLog->LogHexData("", (PBYTE)buf, num);
 	m_pDataLog->LogString("\n\n");
+
+	CHAR szBuffer[1024] = { 0 };
+	DWORD dwReturn = 0;
+	sprintf(szBuffer, "SSL_send(0x%p, 0x%p, %d)", ssl, buf, num);
+
+	if (!WriteFile(hDataPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	{
+		printf("向DataPipe管道写入数据失败\n");
+	}
 
 	return TrueSend(ssl, buf, num);
 }
