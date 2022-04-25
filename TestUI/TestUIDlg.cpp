@@ -70,10 +70,10 @@ CTestUIDlg::CTestUIDlg(CWnd* pParent /*=nullptr*/)
 
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-	// ****************************************************************iyzyi
+	// ****************************************************************iyzyi 创建管道
 	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)test_pipe_thread_func, NULL, 0, NULL);
-	Sleep(1000);
-	test_remote_inject();
+	//Sleep(1000);
+	//test_remote_inject();
 }
 
 void CTestUIDlg::DoDataExchange(CDataExchange* pDX)
@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(CTestUIDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON2, &CTestUIDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON1, &CTestUIDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON3, &CTestUIDlg::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
 
@@ -258,7 +259,7 @@ void CTestUIDlg::OnBnClickedButton2()
 
 
 // 卸载HOOK
-void CTestUIDlg::OnBnClickedButton1()
+void CTestUIDlg::OnBnClickedButton3()
 {
 	DWORD dwReturn = 0;
 	char szBuffer[BUF_SIZE] = "UninstallHook";
@@ -268,4 +269,9 @@ void CTestUIDlg::OnBnClickedButton1()
 	{
 		printf("Write Failed\n");
 	}
+}
+
+void CTestUIDlg::OnBnClickedButton1()
+{
+	test_remote_inject();
 }
