@@ -17,8 +17,8 @@
 DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList)
 {
 	int dwWideSize = MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), NULL, 0);
-	PWCHAR pwszName = (wchar_t*)malloc(dwWideSize * sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), pwszName, dwWideSize);
+	WCHAR pwszName[MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), (LPWSTR)pwszName, dwWideSize);
 
 	DWORD dwProcessIdNumbers = 0;
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -44,8 +44,8 @@ DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList)
 HMODULE GetHModuleIDByName(DWORD dwPid, PCHAR szName)
 {
 	int dwWideSize = MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), NULL, 0);
-	PWCHAR pwszName = (wchar_t*)malloc(dwWideSize * sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), pwszName, dwWideSize);
+	WCHAR pwszName[MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), (LPWSTR)pwszName, dwWideSize);
 
 	DWORD dwProcessIdNumbers = 0;
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPid);
@@ -69,8 +69,8 @@ HMODULE GetHModuleIDByName(DWORD dwPid, PCHAR szName)
 
 HMODULE GetModuleBaseAddress(DWORD dwPID, PCHAR szName) {
 	int dwWideSize = MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), NULL, 0);
-	PWCHAR pwszName = (wchar_t*)malloc(dwWideSize * sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), pwszName, dwWideSize);
+	WCHAR pwszName[MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_ACP, 0, szName, strlen(szName), (LPWSTR)pwszName, dwWideSize);
 
 	HANDLE hSnapShot;
 	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
