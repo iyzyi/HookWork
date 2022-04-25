@@ -13,6 +13,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SGSOL", "SGSOL\SGSOL.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCode", "TestCode\TestCode.vcxproj", "{E0C05BF2-79AA-4217-8DE8-083822E23885}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestUI", "TestUI\TestUI.vcxproj", "{32C50C94-8B82-49DF-A348-A6FAB8CBB047}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BBE0B803-DF49-424A-BAA7-27EA63B9D609} = {BBE0B803-DF49-424A-BAA7-27EA63B9D609}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -61,6 +66,14 @@ Global
 		{E0C05BF2-79AA-4217-8DE8-083822E23885}.Release|Win32.Build.0 = Release|Win32
 		{E0C05BF2-79AA-4217-8DE8-083822E23885}.Release|x64.ActiveCfg = Release|x64
 		{E0C05BF2-79AA-4217-8DE8-083822E23885}.Release|x64.Build.0 = Release|x64
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Debug|Win32.ActiveCfg = Debug|Win32
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Debug|Win32.Build.0 = Debug|Win32
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Debug|x64.ActiveCfg = Debug|x64
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Debug|x64.Build.0 = Debug|x64
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|Win32.ActiveCfg = Release|Win32
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|Win32.Build.0 = Release|Win32
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|x64.ActiveCfg = Release|x64
+		{32C50C94-8B82-49DF-A348-A6FAB8CBB047}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

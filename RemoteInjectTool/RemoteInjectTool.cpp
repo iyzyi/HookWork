@@ -31,7 +31,7 @@ DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList)
 	{
 		if (wcscmp(pe.szExeFile, pwszName) == 0)
 		{
-			assert(dwProcessIdNumbers + 1 <= PROCESS_ID_LIST_NUMBER);
+			//assert(dwProcessIdNumbers + 1 <= PROCESS_ID_LIST_NUMBER);
 			ProcessIdList[dwProcessIdNumbers] = pe.th32ProcessID;
 			dwProcessIdNumbers++;
 		}
@@ -96,8 +96,9 @@ HMODULE GetModuleBaseAddress(DWORD dwPID, PCHAR szName) {
 }
 
 bool isFileExists(char* name) {
-	struct stat buffer;
-	return (stat(name, &buffer) == 0);
+	//struct stat buffer;
+	//return (stat(name, &buffer) == 0);
+	return PathFileExistsA(name);
 }
 
 
