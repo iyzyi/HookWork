@@ -110,6 +110,11 @@ BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath) {
 	CHAR			szLoadLibrary[] = "LoadLibraryA";		// A还是W，取决于szDllPath是PCHAR还是PWCHAR
 	HMODULE			hModule;								// 注入到远程进程中的DLL的HModule
 
+	if (!isFileExists(szDllPath)) {
+		printf("%s 不存在\n", szDllPath);
+		return FALSE;
+	}
+
 	// 打开句柄
 	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
 	if (hProcess == NULL) {
@@ -169,17 +174,11 @@ DWORD RemoteInjectByProcessName(PCHAR szProcessName, PCHAR szDllPath) {
 	printf("%s共%d个进程\n", szProcessName, dwProcessIdNumbers);
 	DWORD dwSuccessNumbers = 0;
 
-	if (!isFileExists(szDllPath)) {
-		printf("%s 不存在\n", szDllPath);
-		return FALSE;
+	for (DWORD i = 0; i < dwProcessIdNumbers; i++) {
+		if (RemoteInjectByProcessId(ProcessIdList[i], szDllPath))
+			dwSuccessNumbers++;
 	}
-	else {
-		for (DWORD i = 0; i < dwProcessIdNumbers; i++) {
-			printf("pid=%d\n", ProcessIdList[i]);
-			if (RemoteInjectByProcessId(ProcessIdList[i], szDllPath))
-				dwSuccessNumbers++;
-		}
-	}
+
 	return ((dwProcessIdNumbers & 0xffff) << 16) | (dwSuccessNumbers & 0xffff);
 }
 

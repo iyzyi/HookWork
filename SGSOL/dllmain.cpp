@@ -99,6 +99,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
 	InstallHook((void**)&TrueRecv, My_Recv);
 	InstallHook((void**)&TrueSend, My_Send);
+
 	return 0;
 }
 

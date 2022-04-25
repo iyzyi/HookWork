@@ -45,7 +45,15 @@ void test_remote_inject() {
     (strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
     strcat_s(szDllPath, "SGSOL.dll");			        // 拼接上DLL的名称
 
-    RemoteInjectByProcessName("SGSOL.exe", szDllPath);
+    //RemoteInjectByProcessName("SGSOL.exe", szDllPath);
+
+    // SGSOL.exe共6个进程，只有第二个进程是含有网络通信的。
+    DWORD ProcessIdList[32];
+    CHAR szProcessName[] = "SGSOL.exe";
+    DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
+    int i = 2;
+    printf("pid=%d\n", ProcessIdList[i]);
+    RemoteInjectByProcessId(ProcessIdList[i], szDllPath);
 
     system("pause");
 }

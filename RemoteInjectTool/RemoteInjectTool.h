@@ -20,3 +20,10 @@ extern BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath);
 /// <param name="szDllPath">必须是绝对路径，因为是跨进程执行的，工作路径是目标程序的工作路径，而非本程序的工作路径</param>
 /// <returns></returns>
 extern DWORD RemoteInjectByProcessName(PCHAR szProcessName, PCHAR szDllPath);
+
+
+
+
+DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList);
+HMODULE GetHModuleIDByName(DWORD dwPid, PCHAR szName);
+HMODULE GetModuleBaseAddress(DWORD dwPID, PCHAR szName);
