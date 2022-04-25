@@ -230,22 +230,30 @@ BOOL test_pipe_thread_func() {
 
 	if (!ConnectNamedPipe(hPipe, NULL))
 	{
-		printf("Connect Failed\n");
+		printf("管道Connect Failed\n");
 	}
 	else {
-		printf("Connect Success!\n");
+		printf("管道Connect Success!\n");
 	}
 
 	//DisconnectNamedPipe(hPipe);
 	//CloseHandle(hPipe);
-
 }
 
+
+
+// 远程注入
+void CTestUIDlg::OnBnClickedButton1()
+{
+	printf("OnBnClickedButton1");
+	test_remote_inject();
+}
 
 
 // 安装HOOK
 void CTestUIDlg::OnBnClickedButton2()
 {
+	printf("OnBnClickedButton2");
 	DWORD dwReturn = 0;
 	char szBuffer[BUF_SIZE] = "InstallHook";
 
@@ -257,10 +265,11 @@ void CTestUIDlg::OnBnClickedButton2()
 }
 
 
-
 // 卸载HOOK
 void CTestUIDlg::OnBnClickedButton3()
 {
+	printf("OnBnClickedButton3");
+
 	DWORD dwReturn = 0;
 	char szBuffer[BUF_SIZE] = "UninstallHook";
 
@@ -269,9 +278,4 @@ void CTestUIDlg::OnBnClickedButton3()
 	{
 		printf("Write Failed\n");
 	}
-}
-
-void CTestUIDlg::OnBnClickedButton1()
-{
-	test_remote_inject();
 }

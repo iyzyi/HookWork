@@ -30,33 +30,6 @@ PFN_Send TrueSend = (PFN_Send)((QWORD)GetModuleHandleA("SGSOL.exe") + (QWORD)(0x
 
 
 
-
-
-// ***************************自定义HOOK函数***************************
-int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
-{
-	int ret = TrueRecv(ssl, buf, num);
-	if (ret > 0) {
-		m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Recv Data (%d Bytes): \n", GetCurrentProcessId(), ssl, ret);
-		m_pDataLog->LogHexData("", (PBYTE)buf, ret);
-		m_pDataLog->LogString("\n\n");
-	}
-	return ret;
-}
-
-int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
-{
-	m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Send Data (%d Bytes): \n", GetCurrentProcessId(), ssl, num);
-	m_pDataLog->LogHexData("", (PBYTE)buf, num);
-	m_pDataLog->LogString("\n\n");
-
-	return TrueSend(ssl, buf, num);
-}
-// ***************************自定义HOOK函数***************************
-
-
-
-
 int DllPrintf(PCHAR fmt, ...)
 {
 	//不定参数格式化
@@ -79,6 +52,41 @@ int DllPrintf(PCHAR fmt, ...)
 
 	return(cnt);
 }
+
+
+
+
+
+
+
+
+// ***************************自定义HOOK函数***************************
+int WINAPI My_Recv(LPVOID ssl, void* buf, int num)
+{
+	DllPrintf("recv ");
+	int ret = TrueRecv(ssl, buf, num);
+	if (ret > 0) {
+		m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Recv Data (%d Bytes): \n", GetCurrentProcessId(), ssl, ret);
+		m_pDataLog->LogHexData("", (PBYTE)buf, ret);
+		m_pDataLog->LogString("\n\n");
+	}
+	return ret;
+}
+
+int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
+{
+	DllPrintf("send ");
+	m_pDataLog->LogFormatString(64, "[PID:%d\tSSL:0x%llx] Send Data (%d Bytes): \n", GetCurrentProcessId(), ssl, num);
+	m_pDataLog->LogHexData("", (PBYTE)buf, num);
+	m_pDataLog->LogString("\n\n");
+
+	return TrueSend(ssl, buf, num);
+}
+// ***************************自定义HOOK函数***************************
+
+
+
+
 
 
 
@@ -116,11 +124,13 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 		szBuffer[dwReturn] = '\0';
 		DllPrintf("收到命令: %s\n", szBuffer);
 
-		if (strcmp(szBuffer, "InstallHook")) {
+		if (strcmp(szBuffer, "InstallHook") == 0) {
+			DllPrintf("即将Install");
 			InstallHook((void**)&TrueRecv, My_Recv);
 			InstallHook((void**)&TrueSend, My_Send);
 		}
-		else if (strcmp(szBuffer, "UninstallHook")) {
+		else if (strcmp(szBuffer, "UninstallHook") == 0) {
+			DllPrintf("即将Uninstall");
 			UninstallHook((void**)&TrueRecv);
 			UninstallHook((void**)&TrueSend);
 		}
@@ -138,7 +148,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		DllPrintf("Hello World\n");
+		DllPrintf("正在注入DLL......\n");
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);
 		break;
 	case DLL_THREAD_ATTACH:
