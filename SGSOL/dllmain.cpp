@@ -95,6 +95,12 @@ int WINAPI My_Send(LPVOID ssl, const void* buf, int num)
 
 
 
+DWORD WINAPI ThreadProc(LPVOID lpParameter) {
+	m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
+	InstallHook((void**)&TrueRecv, My_Recv);
+	InstallHook((void**)&TrueSend, My_Send);
+	return 0;
+}
 
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -105,9 +111,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		m_pDataLog = new CDataLog("d:\\桌面\\sanguosha.log");
-		InstallHook((void**)&TrueRecv, My_Recv);
-		InstallHook((void**)&TrueSend, My_Send);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);
 		break;
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
