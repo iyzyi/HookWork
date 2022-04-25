@@ -18,7 +18,11 @@
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
+
 void test_remote_inject();
+BOOL test_pipe_thread_func();
+
+
 
 class CAboutDlg : public CDialogEx
 {
@@ -60,6 +64,9 @@ CTestUIDlg::CTestUIDlg(CWnd* pParent /*=nullptr*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
+	// ****************************************************************iyzyi
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)test_pipe_thread_func, NULL, 0, NULL);
+	Sleep(1000);
 	test_remote_inject();
 }
 
@@ -189,9 +196,11 @@ void test_remote_inject() {
 #define BUF_SIZE        4096
 #define EXAMP_PIPE      "\\\\.\\pipe\\ReadPipe"   
 
+// 创建命名管道
+HANDLE hPipe = NULL;
+
 BOOL test_pipe_thread_func() {
-	// 创建命名管道
-	HANDLE hPipe = NULL;
+	
 	hPipe = CreateNamedPipeA(
 		EXAMP_PIPE,
 		PIPE_ACCESS_DUPLEX,
@@ -220,16 +229,6 @@ BOOL test_pipe_thread_func() {
 		printf("Connect Success!\n");
 	}
 
-	DWORD dwReturn = 0;
-	char szBuffer[BUF_SIZE] = { 0 };
-
-	// 向客户端发送数据
-	szBuffer[0] = 'Y';
-	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
-	{
-		printf("Write Failed\n");
-	}
-
 	//DisconnectNamedPipe(hPipe);
 	//CloseHandle(hPipe);
 
@@ -240,7 +239,15 @@ BOOL test_pipe_thread_func() {
 // 安装HOOK
 void CTestUIDlg::OnBnClickedButton2()
 {
-	// TODO: 在此添加控件通知处理程序代码
+	DWORD dwReturn = 0;
+	char szBuffer[BUF_SIZE] = { 0 };
+
+	// 向客户端发送数据
+	szBuffer[0] = 'Y';
+	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	{
+		printf("Write Failed\n");
+	}
 }
 
 
@@ -248,5 +255,13 @@ void CTestUIDlg::OnBnClickedButton2()
 // 卸载HOOK
 void CTestUIDlg::OnBnClickedButton1()
 {
-	// TODO: 在此添加控件通知处理程序代码
+	DWORD dwReturn = 0;
+	char szBuffer[BUF_SIZE] = { 0 };
+
+	// 向客户端发送数据
+	szBuffer[0] = 'N';
+	if (!WriteFile(hPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	{
+		printf("Write Failed\n");
+	}
 }

@@ -123,16 +123,20 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter) {
 		return 0;
 	}
 
-	// 读取服务端发来的数据
-	if (ReadFile(hPipe, szBuffer, BUF_SIZE, &dwReturn, NULL))
-	{
+	while (ReadFile(hPipe, szBuffer, BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
 		MessageBoxA(NULL, szBuffer, "收到", NULL);
 	}
-	else
-	{
-		printf("Read Failed\n");
-	}
+
+	//// 读取服务端发来的数据
+	//if ()
+	//{
+	//	
+	//}
+	//else
+	//{
+	//	printf("Read Failed\n");
+	//}
 	// CloseHandle(hPipe);
 
 
