@@ -1,5 +1,7 @@
 #include "pch.h"
+#include "../SimpleHookEngine/SimpleHookEngine.h"
 #include "CommunicationPipe.h"
+#include "MyFunction.h"
 #include "Misc.h"
 #include <stdio.h>
 
@@ -19,13 +21,13 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 
 		if (strcmp(szBuffer, "InstallHook") == 0) {
 			DllPrintf("InstallHook......\n");
-			//InstallHook((void**)&TrueRecv, My_Recv);
-			//InstallHook((void**)&TrueSend, My_Send);
+			InstallHook((void**)&True_Recv, My_Recv);
+			InstallHook((void**)&True_Send, My_Send);
 		}
 		else if (strcmp(szBuffer, "UninstallHook") == 0) {
 			DllPrintf("UninstallHook......\n");
-			//UninstallHook((void**)&TrueRecv);
-			//UninstallHook((void**)&TrueSend);
+			UninstallHook((void**)&True_Recv);
+			UninstallHook((void**)&True_Send);
 		}
 	}
 	return 0;

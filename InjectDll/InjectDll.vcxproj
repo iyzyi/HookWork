@@ -158,8 +158,7 @@
     <ClInclude Include="CommunicationPipe.h" />
     <ClInclude Include="EnumFunction.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="FunctionPointer.h" />
-    <ClInclude Include="FunctionPrototype.h" />
+    <ClInclude Include="TrueFunction.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="MyFunction.h" />
     <ClInclude Include="pch.h" />
@@ -167,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="CommunicationPipe.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="TrueFunction.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="MyFunction.cpp" />
     <ClCompile Include="pch.cpp">

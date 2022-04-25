@@ -36,10 +36,7 @@
     <ClInclude Include="MyFunction.h">
       <Filter>头文件\Hook函数</Filter>
     </ClInclude>
-    <ClInclude Include="FunctionPrototype.h">
-      <Filter>头文件\Hook函数</Filter>
-    </ClInclude>
-    <ClInclude Include="FunctionPointer.h">
+    <ClInclude Include="TrueFunction.h">
       <Filter>头文件\Hook函数</Filter>
     </ClInclude>
     <ClInclude Include="EnumFunction.h">
@@ -60,6 +57,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MyFunction.cpp">
+      <Filter>源文件\Hook函数</Filter>
+    </ClCompile>
+    <ClCompile Include="TrueFunction.cpp">
       <Filter>源文件\Hook函数</Filter>
     </ClCompile>
   </ItemGroup>

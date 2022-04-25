@@ -1,5 +1,5 @@
 #pragma once
-#include "FunctionPointer.h"
+#include "TrueFunction.h"
 
 
 int My_Send(SOCKET s, const char* buf, int len, int flags);
