@@ -185,15 +185,15 @@ DWORD RemoteInjectByProcessName(PCHAR szProcessName, PCHAR szDllPath) {
 
 
 
-int main()
-{
-	CHAR szDllPath[MAX_PATH + 1] = { 0 };
-	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
-	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
-	strcat(szDllPath, "SGSOL.dll");						// 拼接上DLL的名称
-
-	RemoteInjectByProcessName("SGSOL.exe", szDllPath);
-
-	system("pause");
-	return 0;
-}
+//int main()
+//{
+//	CHAR szDllPath[MAX_PATH + 1] = { 0 };
+//	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
+//	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
+//	strcat(szDllPath, "SGSOL.dll");						// 拼接上DLL的名称
+//
+//	RemoteInjectByProcessName("SGSOL.exe", szDllPath);
+//
+//	system("pause");
+//	return 0;
+//}
