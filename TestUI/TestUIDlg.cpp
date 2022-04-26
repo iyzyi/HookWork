@@ -141,24 +141,24 @@ void CTestUIDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // 用于绘制的设备上下文
+	CPaintDC dc(this); // 用于绘制的设备上下文
 
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+	SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// 使图标在工作区矩形中居中
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CRect rect;
-		GetClientRect(&rect);
-		int x = (rect.Width() - cxIcon + 1) / 2;
-		int y = (rect.Height() - cyIcon + 1) / 2;
+	// 使图标在工作区矩形中居中
+	int cxIcon = GetSystemMetrics(SM_CXICON);
+	int cyIcon = GetSystemMetrics(SM_CYICON);
+	CRect rect;
+	GetClientRect(&rect);
+	int x = (rect.Width() - cxIcon + 1) / 2;
+	int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// 绘制图标
-		dc.DrawIcon(x, y, m_hIcon);
+	// 绘制图标
+	dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
 	{
-		CDialogEx::OnPaint();
+	CDialogEx::OnPaint();
 	}
 }
 
@@ -177,9 +177,12 @@ HCURSOR CTestUIDlg::OnQueryDragIcon()
 #define DATA_PIPE_BUF_SIZE			0xffffff
 #define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
 
-HANDLE	hCommandPipe				= NULL;
-HANDLE	hDataPipe					= NULL;
+HANDLE	hCommandPipe = NULL;
+HANDLE	hDataPipe = NULL;
 
+
+DWORD dwRecvDataNum = 0;
+BOOL bInjectSuccess = FALSE;
 
 
 // 接收数据的线程函数
@@ -189,7 +192,8 @@ DWORD WINAPI ThreadFunc_DataPipeRecv() {
 
 	while (ReadFile(hDataPipe, szBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
-		printf("接收: %s\n", szBuffer);
+		printf("%.8d 接收: %s\n", dwRecvDataNum, szBuffer);
+		dwRecvDataNum++;
 	}
 	return 0;
 }
@@ -239,8 +243,17 @@ void CTestUIDlg::OnBnClickedButton1()
 	DWORD ProcessIdList[32];
 	CHAR szProcessName[] = "WebBrowser.exe";
 	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
-	RemoteInjectByProcessId(ProcessIdList[0], szDllPath);
-
+	if (dwProcessIdNumbers > 0){
+		bInjectSuccess = RemoteInjectByProcessId(ProcessIdList[0], szDllPath);
+		if (!bInjectSuccess) {
+			return;
+		}
+	}
+	else {
+		printf("未找到进程%s\n", szProcessName);
+		return;
+	}
+	
 
 	// 创建两个命令管道。
 	// CommandPipe命令管道：本程序写，DLL读
@@ -262,6 +275,11 @@ void CTestUIDlg::OnBnClickedButton2()
 	DWORD dwReturn = 0;
 	char szBuffer[] = "InstallHook";
 
+	if (!bInjectSuccess) {
+		printf("DLL未成功注入，无法安装HOOK\n");
+		return;
+	}
+
 	// 向客户端发送数据
 	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
@@ -275,6 +293,11 @@ void CTestUIDlg::OnBnClickedButton3()
 {
 	DWORD dwReturn = 0;
 	char szBuffer[] = "UninstallHook";
+
+	if (!bInjectSuccess) {
+		printf("DLL未成功注入，无法卸载HOOK\n");
+		return;
+	}
 
 	// 向客户端发送数据
 	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
