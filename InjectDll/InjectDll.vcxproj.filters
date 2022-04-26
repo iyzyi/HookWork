@@ -62,5 +62,8 @@
     <ClCompile Include="TrueFunction.cpp">
       <Filter>源文件\Hook函数</Filter>
     </ClCompile>
+    <ClCompile Include="EnumFunction.cpp">
+      <Filter>源文件\Hook函数</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

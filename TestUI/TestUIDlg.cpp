@@ -242,9 +242,11 @@ void CTestUIDlg::OnBnClickedButton1()
 
 	DWORD ProcessIdList[32];
 	CHAR szProcessName[] = "WebBrowser.exe";
+	//CHAR szProcessName[] = "SGSOL.exe";
 	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
 	if (dwProcessIdNumbers > 0){
 		bInjectSuccess = RemoteInjectByProcessId(ProcessIdList[0], szDllPath);
+		//bInjectSuccess = RemoteInjectByProcessId(ProcessIdList[2], szDllPath);
 		if (!bInjectSuccess) {
 			return;
 		}

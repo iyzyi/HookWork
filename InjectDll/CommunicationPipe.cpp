@@ -21,13 +21,31 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 
 		if (strcmp(szBuffer, "InstallHook") == 0) {
 			DllPrintf("InstallHook......\n");
-			InstallHook((void**)&True_Recv, My_Recv);
-			InstallHook((void**)&True_Send, My_Send);
+
+			InstallHook((void**)&True_send, My_send);
+			InstallHook((void**)&True_sendto, My_sendto);
+			InstallHook((void**)&True_WSASend, My_WSASend);
+			InstallHook((void**)&True_WSASendTo, My_WSASendTo);
+			InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
+
+			InstallHook((void**)&True_recv, My_recv);
+			InstallHook((void**)&True_recvfrom, My_recvfrom);
+			InstallHook((void**)&True_WSARecv, My_WSARecv);
+			InstallHook((void**)&True_WSARecvFrom, My_WSARecvFrom);
 		}
 		else if (strcmp(szBuffer, "UninstallHook") == 0) {
 			DllPrintf("UninstallHook......\n");
-			UninstallHook((void**)&True_Recv);
-			UninstallHook((void**)&True_Send);
+
+			UninstallHook((void**)&True_send);
+			UninstallHook((void**)&True_sendto);
+			UninstallHook((void**)&True_WSASend);
+			UninstallHook((void**)&True_WSASendTo);
+			UninstallHook((void**)&True_WSASendMsg);
+
+			UninstallHook((void**)&True_recv);
+			UninstallHook((void**)&True_recvfrom);
+			UninstallHook((void**)&True_WSARecv);
+			UninstallHook((void**)&True_WSARecvFrom);
 		}
 	}
 	return 0;

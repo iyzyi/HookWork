@@ -166,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="CommunicationPipe.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EnumFunction.cpp" />
     <ClCompile Include="TrueFunction.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="MyFunction.cpp" />
