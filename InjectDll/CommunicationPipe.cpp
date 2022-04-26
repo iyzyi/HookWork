@@ -68,3 +68,26 @@ DWORD WINAPI ThreadFunc_Main(LPVOID lpParameter) {
 
 	return 0;
 }
+
+
+
+
+DWORD SendData(PCHAR szBuffer, DWORD dwBufLen) {
+	DWORD dwReturn = 0;
+
+	if (hDataPipe == NULL) {
+		DllPrintf("hDataPipe为NULL");
+		return 0;
+	}
+
+	if (!WriteFile(hDataPipe, szBuffer, dwBufLen, &dwReturn, NULL))
+	{
+		DllPrintf("向DataPipe管道写入数据失败\n");
+	}
+	return dwReturn;
+}
+
+
+DWORD SendData(PCHAR szBuffer) {
+	return SendData(szBuffer, strlen(szBuffer));
+}

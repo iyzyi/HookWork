@@ -12,4 +12,10 @@
 extern HANDLE	hCommandPipe;
 extern HANDLE	hDataPipe;
 
+
 DWORD WINAPI ThreadFunc_Main(LPVOID lpParameter);
+
+
+// 向server发数据（DataPipe管道）
+DWORD SendData(PCHAR szBuffer, DWORD dwBufLen);
+DWORD SendData(PCHAR szBuffer);
