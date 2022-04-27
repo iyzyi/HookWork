@@ -1,5 +1,6 @@
 #pragma once
 #include "TrueFunction.h"
+#include "EnumFunction.h"
 
 
 int WSAAPI My_send(SOCKET s, const char* buf, int len, int flags);

@@ -3,7 +3,9 @@
 #include "pch.h"
 #include "MyFunction.h"
 #include "CommunicationPipe.h"
+#include "../MyMessagePack/MyMessagePack.h"
 #include "Misc.h"
+
 
 
 
@@ -20,15 +22,21 @@ int WSAAPI My_sendto(SOCKET s, const char FAR* buf, int len, int flags, const st
 }
 
 
+struct _Data_WSASend {
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(sbuffer)
+};
 int WSAAPI My_WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
-	SendData("Call My_WSASend");
+	PrintData((LPBYTE)lpBuffers, dwBufferCount);
+	
+	_Data_WSASend data;
+	data.sbuffer.ptr = (char*)lpBuffers;
+	data.sbuffer.size = dwBufferCount;
 
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_WSASend>(data, pBuffer, ID_WSASend);
 
-	//PBYTE dwBuffer = new BYTE[dwBufferCount + 128];
-	//dwBuffer[0] = 0;
-	//
-
-	//SendData();
+	SendData(pBuffer, dwBufferSize);
 
 	return True_WSASend(s, lpBuffers, dwBufferCount, lpNumberOfBytesSent, dwFlags, lpOverlapped, lpCompletionRoutine);
 }

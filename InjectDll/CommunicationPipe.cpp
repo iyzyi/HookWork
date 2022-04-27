@@ -90,7 +90,7 @@ DWORD WINAPI ThreadFunc_Main(LPVOID lpParameter) {
 
 
 
-DWORD SendData(PCHAR szBuffer, DWORD dwBufLen) {
+DWORD SendData(PBYTE pBuffer, DWORD dwBufLen) {
 	DWORD dwReturn = 0;
 
 	if (hDataPipe == NULL) {
@@ -98,7 +98,7 @@ DWORD SendData(PCHAR szBuffer, DWORD dwBufLen) {
 		return 0;
 	}
 
-	if (!WriteFile(hDataPipe, szBuffer, dwBufLen, &dwReturn, NULL))
+	if (!WriteFile(hDataPipe, pBuffer, dwBufLen, &dwReturn, NULL))
 	{
 		DllPrintf("向DataPipe管道写入数据失败\n");
 	}
@@ -107,5 +107,5 @@ DWORD SendData(PCHAR szBuffer, DWORD dwBufLen) {
 
 
 DWORD SendData(PCHAR szBuffer) {
-	return SendData(szBuffer, strlen(szBuffer));
+	return SendData((PBYTE)szBuffer, strlen(szBuffer));
 }

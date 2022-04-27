@@ -8,8 +8,13 @@
 #include "TestUIDlg.h"
 #include "afxdialogex.h"
 
+#include "ParsePacket.h"
+
 #include "../SimpleHookEngine/SimpleHookEngine.h"
 #include "../RemoteInjectTool/RemoteInjectTool.h"
+
+
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -187,12 +192,16 @@ BOOL bInjectSuccess = FALSE;
 
 // 接收数据的线程函数
 DWORD WINAPI ThreadFunc_DataPipeRecv() {
-	PCHAR szBuffer = new CHAR[DATA_PIPE_BUF_SIZE];
+	PBYTE pBuffer = new BYTE[DATA_PIPE_BUF_SIZE];
 	DWORD dwReturn = 0;
 
-	while (ReadFile(hDataPipe, szBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
-		szBuffer[dwReturn] = '\0';
-		printf("%.8d 接收: %s\n", dwRecvDataNum, szBuffer);
+	while (ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
+		pBuffer[dwReturn] = '\0';
+		
+		ParsePacket(pBuffer, dwReturn);
+
+		//printf("%.8d 接收: \n", dwRecvDataNum);
+		//PrintData((LPBYTE)szBuffer, dwReturn);
 		dwRecvDataNum++;
 	}
 	return 0;

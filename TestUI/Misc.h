@@ -1,10 +1,4 @@
 #pragma once
-#include <windows.h>
-
-
-int DllPrintf(PCHAR fmt, ...);
-
-
 
 #include <random>
 #include <windows.h>
