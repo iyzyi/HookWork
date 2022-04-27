@@ -8,38 +8,41 @@
 
 
 
-struct _Data_WSASend {
+struct _Data_recv {
+	SOCKET						socket;
 	msgpack::type::raw_ref		sbuffer;
-	MSGPACK_DEFINE(sbuffer)
+	MSGPACK_DEFINE(socket, sbuffer)
 };
+
 
 VOID ParsePacket(PBYTE pBuffer, DWORD dwBufferSize) {
 
-	printf((char*)pBuffer);
-	printf("\n");
+	//printf((char*)pBuffer);
+	//printf("\n");
 
 	//PrintData(pBuffer, dwBufferSize);
 
-	//if (dwBufferSize <= 4) {
-	//	printf("接收到长度为%d的无效数据\n", dwBufferSize);
-	//	return;
-	//}
+	if (dwBufferSize <= 4) {
+		printf("接收到长度为%d的无效数据\n", dwBufferSize);
+		return;
+	}
 
-	//DWORD dwFuncId = GetDwordFromBuffer(pBuffer, 0);
-	//PBYTE pMsgBuffer = pBuffer + 4;
+	DWORD dwFuncId = GetDwordFromBuffer(pBuffer, 0);
+	PBYTE pMsgBuffer = pBuffer + 4;
 
-	//switch (dwFuncId)
-	//{
-	//case ID_WSASend: 
-	//{
-	//	_Data_WSASend data = MsgUnpack<_Data_WSASend>(pMsgBuffer, dwBufferSize);
-	//	PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
-	//	break;
-	//}
+	switch (dwFuncId)
+	{
+	case ID_recv: 
+	{
+		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwBufferSize);
+		printf("socket = 0x%p:\n", socket);
+		PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
+		break;
+	}
 
-	//default:
-	//	break;
-	//}
+	default:
+		break;
+	}
 
 	
 }

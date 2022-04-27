@@ -66,18 +66,23 @@ int WSAAPI My_WSASendMsg(SOCKET Handle, LPWSAMSG lpMsg, DWORD dwFlags, LPDWORD l
 }
 
 
+struct _Data_recv {
+	SOCKET						socket;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(socket, sbuffer)
+};
 int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
-	//DllPrintf("My_recv ");
-	//SendData("Call My_recv");
-	
-	//return True_recv(s, buf, len, flags);
-
 	int iRet = True_recv(s, buf, len, flags);
 	if (iRet > 0) {
-		CHAR szBuffer[32];
-		sprintf_s(szBuffer, "My_recv len = %d", iRet);
-		SendData(szBuffer);
+		_Data_recv data;
+		data.socket = s;
+		data.sbuffer.ptr = (char*)buf;
+		data.sbuffer.size = iRet;
 
+		PBYTE pBuffer = NULL;
+		DWORD dwBufferSize = MsgPackWithFuncId<_Data_recv>(data, pBuffer, ID_recv);
+
+		SendData(pBuffer, dwBufferSize);
 	}
 	return iRet;
 }
