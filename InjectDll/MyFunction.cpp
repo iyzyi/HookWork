@@ -81,8 +81,9 @@ int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 
 		PBYTE pBuffer = NULL;
 		DWORD dwBufferSize = MsgPackWithFuncId<_Data_recv>(data, pBuffer, ID_recv);
-
+		DllPrintf("socket = 0x%p\n", s);
 		SendData(pBuffer, dwBufferSize);
+		delete[] pBuffer;
 	}
 	return iRet;
 }

@@ -35,7 +35,7 @@ VOID ParsePacket(PBYTE pBuffer, DWORD dwBufferSize) {
 	case ID_recv: 
 	{
 		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwBufferSize);
-		printf("socket = 0x%p:\n", socket);
+		printf("socket = 0x%p:\n", data.socket);
 		PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
 		break;
 	}
