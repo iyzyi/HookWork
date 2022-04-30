@@ -13,6 +13,7 @@
 #include "../SimpleHookEngine/SimpleHookEngine.h"
 #include "../RemoteInjectTool/RemoteInjectTool.h"
 
+#include "CChooseProcess.h"
 
 
 
@@ -86,6 +87,7 @@ BEGIN_MESSAGE_MAP(CTestUIDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON2, &CTestUIDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON1, &CTestUIDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON3, &CTestUIDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CTestUIDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -315,4 +317,10 @@ void CTestUIDlg::OnBnClickedButton3()
 	{
 		printf("向CommandPipe管道写入数据失败\n");
 	}
+}
+
+void CTestUIDlg::OnBnClickedButton4()
+{
+	CChooseProcess dlgChooseProcess;
+	dlgChooseProcess.DoModal();
 }

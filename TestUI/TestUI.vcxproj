@@ -189,6 +189,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CChooseProcess.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ParsePacket.h" />
@@ -199,6 +200,7 @@
     <ClInclude Include="TestUIDlg.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CChooseProcess.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="ParsePacket.cpp" />
     <ClCompile Include="pch.cpp">
