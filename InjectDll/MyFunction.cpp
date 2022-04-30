@@ -14,10 +14,20 @@
 // 比如函数体内没写其他代码，直接return True_Func()时
 // 如果开了优化选项，会删去整个函数汇编，直接用一个jmp跳转到True_Func()
 // 这样会使得注入的程序崩溃。
+
+
 int WSAAPI My_send(SOCKET s, const char* buf, int len, int flags) {
-	//printf("asdf");
-	//DllPrintf("My_send ");
-	//SendData("Call My_Send");
+	_Data_send data;
+	data.socket = s;
+	data.sbuffer.ptr = (char*)buf;
+	data.sbuffer.size = len;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_send>(data, pBuffer, ID_send);
+	DllPrintf("send socket = 0x%p\n", s);
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
 	return True_send(s, buf, len, flags);
 }
 
@@ -28,10 +38,7 @@ int WSAAPI My_sendto(SOCKET s, const char FAR* buf, int len, int flags, const st
 }
 
 
-struct _Data_WSASend {
-	msgpack::type::raw_ref		sbuffer;
-	MSGPACK_DEFINE(sbuffer)
-};
+
 int WSAAPI My_WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
 	
 	//SendData("Call My_WSASendTo");
@@ -66,11 +73,7 @@ int WSAAPI My_WSASendMsg(SOCKET Handle, LPWSAMSG lpMsg, DWORD dwFlags, LPDWORD l
 }
 
 
-struct _Data_recv {
-	SOCKET						socket;
-	msgpack::type::raw_ref		sbuffer;
-	MSGPACK_DEFINE(socket, sbuffer)
-};
+
 int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 	int iRet = True_recv(s, buf, len, flags);
 	if (iRet > 0) {
@@ -81,7 +84,7 @@ int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 
 		PBYTE pBuffer = NULL;
 		DWORD dwBufferSize = MsgPackWithFuncId<_Data_recv>(data, pBuffer, ID_recv);
-		DllPrintf("socket = 0x%p\n", s);
+		DllPrintf("recv socket = 0x%p\n", s);
 		SendData(pBuffer, dwBufferSize);
 		delete[] pBuffer;
 	}

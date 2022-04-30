@@ -62,13 +62,13 @@ DWORD MsgPack(T MsgData, PBYTE& pOutBuffer) {
 
 
 /// <summary>
-/// 将MsgData序列化。
+/// 将MsgData序列化。输出缓冲区的前4个字节是函数ID
 /// </summary>
 /// <typeparam name="T"></typeparam>
 /// <param name="MsgData">自定义的struct</param>
 /// <param name="pOutBuffer">输出缓冲区。注意使用完后要手动delete这个缓冲区</param>
 /// <param name="dwFuncId">HOOK的函数的ID，写在输出缓冲区的前4个字节。然后往后才是MsgPack的数据</param>
-/// <returns>输出缓冲区的大小</returns>
+/// <returns>输出缓冲区的大小(含开头四字节是函数ID)</returns>
 template <class T>
 DWORD MsgPackWithFuncId(T MsgData, PBYTE& pOutBuffer, DWORD dwFuncId) {
     msgpack::sbuffer sbuffer;
