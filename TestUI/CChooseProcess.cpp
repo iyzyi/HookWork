@@ -137,6 +137,41 @@ int Is64BitsProcess(DWORD dwProcessId)
 }
 
 
+//******************
+
+struct ProcessWindowData
+{
+	HWND hWnd;
+	unsigned long lProcessId;
+};
+
+BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
+{
+	ProcessWindowData& wndData = *(ProcessWindowData*)lParam;
+	unsigned long lProcessId = 0;
+	::GetWindowThreadProcessId(hWnd, &lProcessId);
+	if ((wndData.lProcessId != lProcessId) || (::GetWindow(hWnd, GW_OWNER) != (HWND)0) || !::IsWindowVisible(hWnd))
+	{
+		return TRUE;
+	}
+	wndData.hWnd = hWnd;
+	return FALSE;
+}
+
+HWND GetMainWindowHwnd(unsigned long lProcessId)
+{
+	ProcessWindowData wndData;
+	wndData.hWnd = 0;
+	wndData.lProcessId = lProcessId;
+	::EnumWindows(EnumWindowsProc, (LPARAM)&wndData);
+	return wndData.hWnd;
+}
+
+
+
+//***************************
+
+
 // 获取进程对应程序的所在路径
 CString GetProcessExePath(DWORD dwPID) {
 
@@ -187,8 +222,19 @@ BOOL CChooseProcess::ListProcess() {
 		CString csPID;
 		csPID.Format(L"%.8X", dwPID);
 
+		// 获取进程主窗口标题，如果没有标题则获取其class name
+		CString csProcMainWinTitle = CString(_T(""));
+		csProcMainWinTitle.GetBufferSetLength(512);
+		HWND hwnd = GetMainWindowHwnd(dwPID);
+		if (hwnd != NULL) {
+			if (!::GetWindowText(hwnd, csProcMainWinTitle.GetBuffer(), 512)) {
+				::GetClassNameW((HWND)hwnd, csProcMainWinTitle.GetBuffer(), 512);
+			}
+		}
+
 		m_List.SetItemText(dwInsertIndex, 0, csPID);
 		m_List.SetItemText(dwInsertIndex, 1, pe.szExeFile);
+		m_List.SetItemText(dwInsertIndex, 2, csProcMainWinTitle);
 		m_List.SetItemText(dwInsertIndex, 3, GetProcessExePath(dwPID));
 	}
 	CloseHandle(hSnapshot);
@@ -232,6 +278,7 @@ void CChooseProcess::OnBnClickedButton1()
 {
 	m_List.DeleteAllItems();
 	ListProcess();
+	SortDataByCol(1);		// 默认按第二列排序
 }
 
 

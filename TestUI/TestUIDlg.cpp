@@ -183,16 +183,6 @@ HCURSOR CTestUIDlg::OnQueryDragIcon()
 
 
 
-#define COMMAND_PIPE_BUF_SIZE		4096
-#define COMMAND_PIPE				"\\\\.\\pipe\\CommandPipe"
-
-#define DATA_PIPE_BUF_SIZE			0xffffff
-#define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
-
-
-BOOL bInjectSuccess = FALSE;
-
-
 // 接收数据的线程函数
 DWORD WINAPI ThreadFunc_DataPipeRecv() {
 	PBYTE pBuffer = new BYTE[DATA_PIPE_BUF_SIZE];
@@ -249,8 +239,8 @@ void CTestUIDlg::OnBnClickedButton1()
 	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
 	strcat_s(szDllPath, "InjectDll.dll");			    // 拼接上DLL的名称
 
-	bInjectSuccess = RemoteInjectByProcessId(m_CurrentChooseProcId, szDllPath);
-	if (!bInjectSuccess) {
+	m_bInjectSuccess = RemoteInjectByProcessId(m_CurrentChooseProcId, szDllPath);
+	if (!m_bInjectSuccess) {
 		printf("向进程[PID=%.8X]注入失败\n", m_CurrentChooseProcId);
 		return;
 	}
@@ -275,7 +265,7 @@ void CTestUIDlg::OnBnClickedButton2()
 	DWORD dwReturn = 0;
 	char szBuffer[] = "InstallHook";
 
-	if (!bInjectSuccess) {
+	if (!m_bInjectSuccess) {
 		printf("DLL未成功注入，无法安装HOOK\n");
 		return;
 	}
@@ -294,7 +284,7 @@ void CTestUIDlg::OnBnClickedButton3()
 	DWORD dwReturn = 0;
 	char szBuffer[] = "UninstallHook";
 
-	if (!bInjectSuccess) {
+	if (!m_bInjectSuccess) {
 		printf("DLL未成功注入，无法卸载HOOK\n");
 		return;
 	}
@@ -320,12 +310,14 @@ LRESULT CTestUIDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 	CString* pcsProcName = (CString*)l;
 
 	m_CurrentChooseProcId = dwPID;
+	m_bInjectSuccess = FALSE;
+	m_hCommandPipe = NULL;
+	m_hDataPipe = NULL;	
 
 	CString csText;
 	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
 
 	SetDlgItemText(IDC_STATIC, csText);
-	//UpdateData(false);
 
 	delete pcsProcName;
 	return 0;

@@ -44,4 +44,13 @@ public:
 
 	HANDLE	m_hCommandPipe = NULL;
 	HANDLE	m_hDataPipe = NULL;
+
+	BOOL m_bInjectSuccess = FALSE;
 };
+
+
+#define COMMAND_PIPE_BUF_SIZE		4096
+#define COMMAND_PIPE				"\\\\.\\pipe\\CommandPipe"
+
+#define DATA_PIPE_BUF_SIZE			0xffffff
+#define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
