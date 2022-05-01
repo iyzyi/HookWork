@@ -9,6 +9,8 @@
 
 #include <TlHelp32.h>
 #include <tchar.h>
+#include <Psapi.h>
+#pragma comment(lib,"psapi.lib")
 
 
 // CChooseProcess 对话框
@@ -40,6 +42,12 @@ BOOL CChooseProcess::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
+#ifdef _WIN64
+	SetWindowText(L"选择需要注入的64位进程");
+#elif _WIN32
+	SetWindowText(L"选择需要注入的32位进程");
+#endif
+
 	bIs64BitsOperateSystem = Is64BitsOperateSystem();
 
 	// 以下是List Control
@@ -50,7 +58,7 @@ BOOL CChooseProcess::OnInitDialog()
 	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 62);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
 	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 180);
 	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 150);
-	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 150);
+	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 300);
 	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 350);
 
 	//设置风格样式
@@ -61,6 +69,7 @@ BOOL CChooseProcess::OnInitDialog()
 	// 以上是List Control
 
 	ListProcess();
+	SortDataByCol(1);		// 默认按第二列排序
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
@@ -98,7 +107,7 @@ BOOL Is64BitsOperateSystem()
 
 
 // 判断指定进程的位数
-// 返回值-1表示判断失败，0表示32位，1表示64位
+// 返回值-1表示判断失败（比如有的进程是SYSTEM权限的），0表示32位，1表示64位
 int Is64BitsProcess(DWORD dwProcessId)
 {
 	// TODO 这里没测试32位windows系统。
@@ -117,7 +126,6 @@ int Is64BitsProcess(DWORD dwProcessId)
 	hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
 	if (NULL == hProcess)
 	{
-		printf("OpenProcess Error\n");
 		return -1;
 	}
 
@@ -128,6 +136,19 @@ int Is64BitsProcess(DWORD dwProcessId)
 }
 
 
+// 获取进程对应程序的所在路径
+CString GetProcessExePath(DWORD dwPID) {
+
+	MODULEENTRY32 me;
+	me.dwSize = sizeof(me);
+
+	HANDLE hModule = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
+
+	Module32First(hModule, &me);
+	
+	return CString(me.szExePath);
+}
+
 
 BOOL CChooseProcess::ListProcess() {
 
@@ -135,22 +156,21 @@ BOOL CChooseProcess::ListProcess() {
 	if (INVALID_HANDLE_VALUE == hSnapshot) {
 		return FALSE;
 	}
+	
 	PROCESSENTRY32 pe;
 	pe.dwSize = sizeof(pe);
+
 	for (BOOL ret = Process32First(hSnapshot, &pe); ret; ret = Process32Next(hSnapshot, &pe))
 	{
-
 		int iRet = Is64BitsProcess(pe.th32ProcessID);
 #ifdef _WIN64
 		// 64位程序只能选择64位进程
-		if (iRet == -1 || iRet == 0) {
+		if (iRet == -1 || iRet == 0)
 			continue;
-		}
 #elif _WIN32
 		// 32位程序只能选择32位进程
-		if (iRet == -1 || iRet == 1) {
+		if (iRet == -1 || iRet == 1) 
 			continue;
-		}
 #endif
 
 		DWORD dwInsertIndex = m_List.GetItemCount();
@@ -163,12 +183,15 @@ BOOL CChooseProcess::ListProcess() {
 		m_List.InsertItem(&lvitemData);
 
 		CHAR szPID[12] = { 0 };
-		sprintf_s(szPID, "%.8X", pe.th32ProcessID);
+		DWORD dwPID = pe.th32ProcessID;
+		sprintf_s(szPID, "%.8X", dwPID);
+
 
 		USES_CONVERSION;
 
 		m_List.SetItemText(dwInsertIndex, 0, A2W(szPID));
 		m_List.SetItemText(dwInsertIndex, 1, pe.szExeFile);
+		m_List.SetItemText(dwInsertIndex, 3, GetProcessExePath(dwPID));
 	}
 	CloseHandle(hSnapshot);
 	return TRUE;
@@ -220,7 +243,7 @@ struct _SortData {
 	DWORD			dwCol;
 }SortData;
 
-// 排序
+// 回调函数：排序函数的主体(排序无视大小写)
 int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData)
 {
 	CListCtrl* pListCtrl = ((_SortData*)lpSortData)->m_lpList;
@@ -253,30 +276,35 @@ int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData)
 	}
 }
 
-
-// 单击列
-void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);	
-
+// 按列排序
+void CChooseProcess::SortDataByCol(DWORD dwCol) {
 	// 设置索引，不然没法排序
 	for (int i = 0; i < m_List.GetItemCount(); i++) {
 		m_List.SetItemData(i, i);
 	}
 
-	// 获取点击的是第几列
-	int dwCol = pNMLV->iSubItem;
+	//// 设置▲or▼
+	//CHeaderCtrl* pHead = m_List.GetHeaderCtrl();
 
-	// 设置▲or▼
-	CHeaderCtrl* pHead = m_List.GetHeaderCtrl();
-	
 
 	_SortData SortData;
 	SortData.m_lpList = &m_List;
 	SortData.dwCol = dwCol;
-	
+
 	// 排序
 	m_List.SortItems(ListCompare, (LPARAM)&SortData);
+}
+
+
+// 单击表头的某一列自动触发
+void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);	
+
+	// 获取点击的是第几列
+	int dwCol = pNMLV->iSubItem;
+
+	SortDataByCol(dwCol);
 
 	*pResult = 0;
 }

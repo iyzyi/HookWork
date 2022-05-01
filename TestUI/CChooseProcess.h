@@ -34,6 +34,8 @@ public:
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult);
 	virtual BOOL OnInitDialog();
+
+	void SortDataByCol(DWORD dwCol);
 };
 
 
