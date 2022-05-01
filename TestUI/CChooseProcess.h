@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-
 // CChooseProcess 对话框
 
 class CChooseProcess : public CDialogEx
@@ -23,12 +22,18 @@ protected:
 
 
 public:
-	CListCtrl m_List;
+	CListCtrl		m_List;
+
+	CEdit			m_EditTextBox;
 
 
 public:
 	BOOL ListProcess();
 	afx_msg void OnEnChangeEdit1();
-	CEdit m_EditTextBox;
+	
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult);
+	virtual BOOL OnInitDialog();
 };
+
+
