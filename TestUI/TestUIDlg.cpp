@@ -248,30 +248,19 @@ HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
 
 
 
-// 远程注入
+// 远程注入(需要保证InjectDll.dll和本程序在同一路径下)
 void CTestUIDlg::OnBnClickedButton1()
 {
 	CHAR szDllPath[MAX_PATH + 1] = { 0 };
 	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
 	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
-	strcat_s(szDllPath, "InjectDll.dll");			        // 拼接上DLL的名称
+	strcat_s(szDllPath, "InjectDll.dll");			    // 拼接上DLL的名称
 
-	DWORD ProcessIdList[32];
-	CHAR szProcessName[] = "WebBrowser.exe";
-	//CHAR szProcessName[] = "SGSOL.exe";
-	DWORD dwProcessIdNumbers = GetProcessIDByName(szProcessName, ProcessIdList);
-	if (dwProcessIdNumbers > 0){
-		bInjectSuccess = RemoteInjectByProcessId(ProcessIdList[0], szDllPath);
-		//bInjectSuccess = RemoteInjectByProcessId(ProcessIdList[2], szDllPath);
-		if (!bInjectSuccess) {
-			return;
-		}
-	}
-	else {
-		printf("未找到进程%s\n", szProcessName);
+	bInjectSuccess = RemoteInjectByProcessId(m_CurrentChooseProcId, szDllPath);
+	if (!bInjectSuccess) {
+		printf("向进程[PID=%.8X]注入失败\n", m_CurrentChooseProcId);
 		return;
 	}
-	
 
 	// 创建两个命令管道。
 	// CommandPipe命令管道：本程序写，DLL读
@@ -337,11 +326,13 @@ LRESULT CTestUIDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 	DWORD dwPID = (DWORD)w;
 	CString* pcsProcName = (CString*)l;
 
+	m_CurrentChooseProcId = dwPID;
+
 	CString csText;
 	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
 
 	SetDlgItemText(IDC_STATIC, csText);
-	UpdateData(false);
+	//UpdateData(false);
 
 	delete pcsProcName;
 	return 0;

@@ -38,4 +38,7 @@ public:
 	afx_msg void OnBnClickedButton4();
 
 	afx_msg LRESULT OnGetChooseProcessId(WPARAM w, LPARAM l);
+
+public:
+	DWORD m_CurrentChooseProcId = NULL;
 };
