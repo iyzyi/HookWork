@@ -138,33 +138,86 @@ int Is64BitsProcess(DWORD dwProcessId)
 
 
 //******************
+//
+//struct ProcessWindowData
+//{
+//	HWND hWnd;
+//	unsigned long lProcessId;
+//};
+//
+//BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
+//{
+//	ProcessWindowData& wndData = *(ProcessWindowData*)lParam;
+//	unsigned long lProcessId = 0;
+//	::GetWindowThreadProcessId(hWnd, &lProcessId);
+//	if ((wndData.lProcessId != lProcessId) || (::GetWindow(hWnd, GW_OWNER) != (HWND)0) || !::IsWindowVisible(hWnd))
+//	{
+//		return TRUE;
+//	}
+//	wndData.hWnd = hWnd;
+//	return FALSE;
+//}
+//
+//HWND GetMainWindowHwnd(unsigned long lProcessId)
+//{
+//	ProcessWindowData wndData;
+//	wndData.hWnd = 0;
+//	wndData.lProcessId = lProcessId;
+//	::EnumWindows(EnumWindowsProc, (LPARAM)&wndData);
+//	return wndData.hWnd;
+//}
 
-struct ProcessWindowData
-{
-	HWND hWnd;
-	unsigned long lProcessId;
-};
 
-BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
+HANDLE mProcHandle;
+HANDLE mForegroundHandle;
+
+BOOL IsMainWindow(HWND handle)
 {
-	ProcessWindowData& wndData = *(ProcessWindowData*)lParam;
-	unsigned long lProcessId = 0;
-	::GetWindowThreadProcessId(hWnd, &lProcessId);
-	if ((wndData.lProcessId != lProcessId) || (::GetWindow(hWnd, GW_OWNER) != (HWND)0) || !::IsWindowVisible(hWnd))
-	{
-		return TRUE;
-	}
-	wndData.hWnd = hWnd;
-	return FALSE;
+	// using only OWNER condition allows getting titles of hidden "main windows"
+	return !GetWindow(handle, GW_OWNER) && IsWindowVisible(handle);
 }
 
-HWND GetMainWindowHwnd(unsigned long lProcessId)
+BOOL CALLBACK chkWindowPidCallback(HWND hWnd, LPARAM lParam)
 {
-	ProcessWindowData wndData;
-	wndData.hWnd = 0;
-	wndData.lProcessId = lProcessId;
-	::EnumWindows(EnumWindowsProc, (LPARAM)&wndData);
-	return wndData.hWnd;
+	DWORD procId = (DWORD)lParam;
+	DWORD hwndPid = 0;
+	GetWindowThreadProcessId(hWnd, &hwndPid);
+	if (hwndPid == procId)
+	{
+		if (!mForegroundHandle)  // get the foreground if no owner visible
+			mForegroundHandle = hWnd;
+
+		if (IsMainWindow(hWnd))
+		{
+			mProcHandle = hWnd;
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL GetWinText(DWORD dwProcessId, CString* pcsWinText, DWORD dwStrBufLen)
+{
+	mProcHandle = NULL;
+	mForegroundHandle = NULL;
+
+	EnumWindows(chkWindowPidCallback, dwProcessId);
+	if (!mProcHandle && !mForegroundHandle)
+		return false;
+
+	if (mProcHandle)  // get info from the "main window" (GW_OWNER + visible)
+	{
+		if (!GetWindowTextW((HWND)mProcHandle, pcsWinText->GetBuffer(), dwStrBufLen))
+			GetClassNameW((HWND)mProcHandle, pcsWinText->GetBuffer(), dwStrBufLen); // go for the class name if none of the above
+	}
+	else if (mForegroundHandle)  // get info from the foreground window
+	{
+		if (!GetWindowTextW((HWND)mForegroundHandle, pcsWinText->GetBuffer(), dwStrBufLen))
+			GetClassNameW((HWND)mForegroundHandle, pcsWinText->GetBuffer(), dwStrBufLen); // go for the class name if none of the above
+	}
+
+	return true;
 }
 
 
@@ -222,14 +275,21 @@ BOOL CChooseProcess::ListProcess() {
 		CString csPID;
 		csPID.Format(L"%.8X", dwPID);
 
-		// 获取进程主窗口标题，如果没有标题则获取其class name
+		//// 获取进程主窗口标题，如果没有标题则获取其class name
+		//CString csProcMainWinTitle = CString(_T(""));
+		//csProcMainWinTitle.GetBufferSetLength(512);
+		//HWND hwnd = GetMainWindowHwnd(dwPID);
+		//if (hwnd != NULL) {
+		//	if (!::GetWindowText(hwnd, csProcMainWinTitle.GetBuffer(), 512)) {
+		//		::GetClassNameW((HWND)hwnd, csProcMainWinTitle.GetBuffer(), 512);
+		//	}
+		//}
+
 		CString csProcMainWinTitle = CString(_T(""));
 		csProcMainWinTitle.GetBufferSetLength(512);
-		HWND hwnd = GetMainWindowHwnd(dwPID);
-		if (hwnd != NULL) {
-			if (!::GetWindowText(hwnd, csProcMainWinTitle.GetBuffer(), 512)) {
-				::GetClassNameW((HWND)hwnd, csProcMainWinTitle.GetBuffer(), 512);
-			}
+		BOOL bRet = GetWinText(dwPID, &csProcMainWinTitle, 512);
+		if (!bRet) {
+			csProcMainWinTitle = CString(_T(""));
 		}
 
 		m_List.SetItemText(dwInsertIndex, 0, csPID);
