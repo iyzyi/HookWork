@@ -41,4 +41,7 @@ public:
 
 public:
 	DWORD m_CurrentChooseProcId = NULL;
+
+	HANDLE	m_hCommandPipe = NULL;
+	HANDLE	m_hDataPipe = NULL;
 };

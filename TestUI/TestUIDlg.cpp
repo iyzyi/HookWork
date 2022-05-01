@@ -189,11 +189,7 @@ HCURSOR CTestUIDlg::OnQueryDragIcon()
 #define DATA_PIPE_BUF_SIZE			0xffffff
 #define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
 
-HANDLE	hCommandPipe = NULL;
-HANDLE	hDataPipe = NULL;
 
-
-DWORD dwRecvDataNum = 0;
 BOOL bInjectSuccess = FALSE;
 
 
@@ -202,14 +198,11 @@ DWORD WINAPI ThreadFunc_DataPipeRecv() {
 	PBYTE pBuffer = new BYTE[DATA_PIPE_BUF_SIZE];
 	DWORD dwReturn = 0;
 
+	HANDLE hDataPipe = ((CTestUIDlg*)(theApp.m_pMainWnd))->m_hDataPipe;
 	while (ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		pBuffer[dwReturn] = '\0';
 		
 		ParsePacket(pBuffer, dwReturn);
-
-		//printf("%.8d 接收: \n", dwRecvDataNum);
-		//PrintData((LPBYTE)szBuffer, dwReturn);
-		dwRecvDataNum++;
 	}
 	return 0;
 }
@@ -265,10 +258,10 @@ void CTestUIDlg::OnBnClickedButton1()
 	// 创建两个命令管道。
 	// CommandPipe命令管道：本程序写，DLL读
 	// DataPipe数据管道：DLL写，本程序读
-	hCommandPipe = CreatePipeAndWaitConnect(COMMAND_PIPE, COMMAND_PIPE_BUF_SIZE);
-	hDataPipe = CreatePipeAndWaitConnect(DATA_PIPE, DATA_PIPE_BUF_SIZE);
+	m_hCommandPipe = CreatePipeAndWaitConnect(COMMAND_PIPE, COMMAND_PIPE_BUF_SIZE);
+	m_hDataPipe = CreatePipeAndWaitConnect(DATA_PIPE, DATA_PIPE_BUF_SIZE);
 
-	if (hCommandPipe == NULL || hDataPipe == NULL)
+	if (m_hCommandPipe == NULL || m_hDataPipe == NULL)
 		return ;
 
 	// 接收数据的线程
@@ -288,7 +281,7 @@ void CTestUIDlg::OnBnClickedButton2()
 	}
 
 	// 向客户端发送数据
-	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
 		printf("向CommandPipe管道写入数据失败\n");
 	}
@@ -307,7 +300,7 @@ void CTestUIDlg::OnBnClickedButton3()
 	}
 
 	// 向客户端发送数据
-	if (!WriteFile(hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
 		printf("向CommandPipe管道写入数据失败\n");
 	}
