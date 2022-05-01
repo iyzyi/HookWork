@@ -81,6 +81,7 @@ BEGIN_MESSAGE_MAP(CChooseProcess, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT1, &CChooseProcess::OnEnChangeEdit1)
 	ON_BN_CLICKED(IDC_BUTTON1, &CChooseProcess::OnBnClickedButton1)
 	ON_NOTIFY(LVN_COLUMNCLICK, IDC_LIST2, &CChooseProcess::OnLvnColumnclickList)
+	ON_BN_CLICKED(IDC_BUTTON2, &CChooseProcess::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -182,14 +183,11 @@ BOOL CChooseProcess::ListProcess() {
 
 		m_List.InsertItem(&lvitemData);
 
-		CHAR szPID[12] = { 0 };
 		DWORD dwPID = pe.th32ProcessID;
-		sprintf_s(szPID, "%.8X", dwPID);
+		CString csPID;
+		csPID.Format(L"%.8X", dwPID);
 
-
-		USES_CONVERSION;
-
-		m_List.SetItemText(dwInsertIndex, 0, A2W(szPID));
+		m_List.SetItemText(dwInsertIndex, 0, csPID);
 		m_List.SetItemText(dwInsertIndex, 1, pe.szExeFile);
 		m_List.SetItemText(dwInsertIndex, 3, GetProcessExePath(dwPID));
 	}
@@ -307,4 +305,22 @@ void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
 	SortDataByCol(dwCol);
 
 	*pResult = 0;
+}
+
+
+// 确定选择某个进程
+void CChooseProcess::OnBnClickedButton2()
+{
+	int nIndex = m_List.GetSelectionMark();				//获取选中行的行号
+	CString csPID = m_List.GetItemText(nIndex, 0);		//获取PID
+	CString csProcName = m_List.GetItemText(nIndex, 1);	//获取进程名
+
+	PWCHAR wszPID = (LPWSTR)(LPCTSTR)csPID;
+	DWORD dwPID = wcstol(wszPID, NULL, 16);				// 16表示16进制
+
+	CString* pcsProcName = new CString(csProcName);
+	
+	::PostMessage(AfxGetMainWnd()->m_hWnd, WM_GET_CHOOSE_PROCESS_ID, dwPID, (LPARAM)pcsProcName);		// 第一个参数为主窗口句柄
+
+	EndDialog(0);
 }

@@ -88,6 +88,11 @@ BEGIN_MESSAGE_MAP(CTestUIDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CTestUIDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON3, &CTestUIDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CTestUIDlg::OnBnClickedButton4)
+
+	// 关联消息处理函数
+
+	// 选择了进程ID之后，CChooseProcess窗口发送消息WM_GET_CHOOSE_PROCESS_ID，收到此消息后，执行OnGetChooseProcessId
+	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, OnGetChooseProcessId)			
 END_MESSAGE_MAP()
 
 
@@ -323,4 +328,21 @@ void CTestUIDlg::OnBnClickedButton4()
 {
 	CChooseProcess dlgChooseProcess;
 	dlgChooseProcess.DoModal();
+}
+
+
+// 自定义消息处理函数，在CChooseProcess窗口中选择了某个进程之后自动执行
+LRESULT CTestUIDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
+{
+	DWORD dwPID = (DWORD)w;
+	CString* pcsProcName = (CString*)l;
+
+	CString csText;
+	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
+
+	SetDlgItemText(IDC_STATIC, csText);
+	UpdateData(false);
+
+	delete pcsProcName;
+	return 0;
 }

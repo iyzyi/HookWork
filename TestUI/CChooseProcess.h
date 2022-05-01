@@ -36,6 +36,7 @@ public:
 	virtual BOOL OnInitDialog();
 
 	void SortDataByCol(DWORD dwCol);
+	afx_msg void OnBnClickedButton2();
 };
 
 
