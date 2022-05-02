@@ -351,7 +351,24 @@ void CChooseProcess::OnBnClickedButton1()
 {
 	m_List.DeleteAllItems();
 	ListProcess();
-	//SortDataByCol(1);		// 默认按第二列排序
+
+	// 如果某列的表头有▲or▼，则按此列排序
+	CString csColName(_T(""));
+	csColName.GetBufferSetLength(32);
+
+	LVCOLUMN lvColumn;
+	lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM;
+	lvColumn.pszText = csColName.GetBuffer();
+	lvColumn.cchTextMax = 32;
+
+	for (int i = 0; i < 5; i++) {		// 5列
+		m_List.GetColumn(i, &lvColumn);
+		csColName.ReleaseBuffer();
+		if (csColName.Right(1) == _T("▲") || csColName.Right(1) == _T("▼")) {
+			SortDataByCol(i);
+			break;
+		}
+	}
 }
 
 
@@ -400,10 +417,6 @@ void CChooseProcess::SortDataByCol(DWORD dwCol) {
 	for (int i = 0; i < m_List.GetItemCount(); i++) {
 		m_List.SetItemData(i, i);
 	}
-
-	//// 设置▲or▼
-	//CHeaderCtrl* pHead = m_List.GetHeaderCtrl();
-
 
 	_SortData SortData;
 	SortData.m_lpList = &m_List;
