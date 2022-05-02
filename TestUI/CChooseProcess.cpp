@@ -55,7 +55,9 @@ BOOL CChooseProcess::OnInitDialog()
 	bIs64BitsOperateSystem = Is64BitsOperateSystem();
 
 	// 以下是List Control
+	
 	//标题所需字段
+	// ▲表示默认按《名称》一列升序排序。
 	CString head[] = { TEXT("PID"), TEXT("名称▲"), TEXT("标题"), TEXT("路径"), TEXT("命令行参数") };
 
 	//插入列标题
@@ -73,7 +75,6 @@ BOOL CChooseProcess::OnInitDialog()
 	// 以上是List Control
 
 	ListProcess();
-	SortDataByCol(1);		// 默认按《名称》一列升序排序。记得上面表头字段也需要带上▲符号，不然会混乱的。
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
@@ -308,8 +309,17 @@ BOOL CChooseProcess::ListProcess() {
 		m_pListData->AddRow(&csPID, &(CString(pe.szExeFile)), &csProcMainWinTitle, &GetProcessExePath(dwPID), &csProcCmdLine);
 	}
 
-	// 在ListCtrl中绘制所有行的数据
-	m_pListData->DisplayData();
+	CString csKeyword;
+	m_EditTextBox.GetWindowTextW(csKeyword);
+	if (csKeyword == _T("")) {
+		// 在ListCtrl中绘制所有行的数据
+		m_pListData->DisplayData();
+	}
+	else {
+		// 在ListCtrl中过滤后的行的数据
+		m_pListData->DisplayFilterData(csKeyword);
+	}
+
 
 	CloseHandle(hSnapshot);
 	return TRUE;
@@ -322,60 +332,213 @@ void CChooseProcess::OnEnChangeEdit1()
 	CString csKeyword;
 	m_EditTextBox.GetWindowTextW(csKeyword);
 
-	m_pListData->DisplayFilterData(csKeyword);
-
-	//DWORD dwInsertIndex = m_List.GetItemCount();
-	//DWORD dwCurrentRow = 0;
-	//printf("dwInsertIndex = %d\n", dwInsertIndex);
-	//for (int row = 0; row < dwInsertIndex; row++) {
-	//	BOOL bRet = FALSE;
-	//	for (int col = 1; col <2; col++) {				// 5列，如果增删表头的列数的话，这里得改成对应多少列。
-	//		CString strText = m_List.GetItemText(dwCurrentRow, col);
-	//		if (wcsstr(strKeyword, strText)) {
-	//			bRet = TRUE;
-	//			break;
-	//		}
-	//	}
-	//	
-	//	if (!bRet) {
-	//		m_List.DeleteItem(dwCurrentRow);
-	//	}
-	//	else {
-	//		dwCurrentRow++;
-	//	}
-	//}
+	if (csKeyword == _T("")) {
+		m_pListData->DisplayData();
+	}
+	else {
+		m_pListData->DisplayFilterData(csKeyword);
+	}
 }
 
 
 // 刷新进程列表
 void CChooseProcess::OnBnClickedButton1()
 {
-	//m_List.DeleteAllItems();
 	ListProcess();
+}
 
-	// 如果某列的表头有▲or▼，则按此列排序
-	CString csColName(_T(""));
-	csColName.GetBufferSetLength(32);
 
-	LVCOLUMN lvColumn;
-	lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM;
-	lvColumn.pszText = csColName.GetBuffer();
-	lvColumn.cchTextMax = 32;
+// 单击表头的某一列自动触发，改变排序方式，并排序
+void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);	
 
-	for (int i = 0; i < 5; i++) {		// 5列
-		m_List.GetColumn(i, &lvColumn);
-		csColName.ReleaseBuffer();
-		if (csColName.Right(1) == _T("▲") || csColName.Right(1) == _T("▼")) {
-			SortDataByCol(i);
-			break;
+	// 获取点击的是第几列
+	int dwCol = pNMLV->iSubItem;
+
+	// 改变排序方式，并排序
+	m_pListData->ChangeSortType(dwCol);
+
+	*pResult = 0;
+}
+
+
+// 确定选择某个进程
+void CChooseProcess::OnBnClickedButton2()
+{
+	int nIndex = m_List.GetSelectionMark();				//获取选中行的行号
+	if (nIndex == -1) 
+		return;
+
+	CString csPID = m_List.GetItemText(nIndex, 0);		//获取PID
+	CString csProcName = m_List.GetItemText(nIndex, 1);	//获取进程名
+
+	PWCHAR wszPID = (LPWSTR)(LPCTSTR)csPID;
+	DWORD dwPID = wcstol(wszPID, NULL, 16);				// 16表示16进制
+
+	CString* pcsProcName = new CString(csProcName);
+	
+	::PostMessage(AfxGetMainWnd()->m_hWnd, WM_GET_CHOOSE_PROCESS_ID, dwPID, (LPARAM)pcsProcName);		// 第一个参数为主窗口句柄
+
+	EndDialog(0);
+}
+
+
+
+
+
+
+
+// 以下为CListData
+
+CListData::CListData(CListCtrl* pListCtrl) {
+	this->pListCtrl = pListCtrl;
+}
+
+CListData::~CListData() {
+	if (pListCtrl != NULL) {
+		_ListRowData* pData = pFirst;
+		_ListRowData* pTemp = NULL;
+		if (pFirst != NULL) {
+			while (true) {
+				pTemp = pData->pNext;
+				delete pData;
+				if (pTemp == NULL)
+					break;
+				else
+					pData = pTemp;
+			}
 		}
 	}
 }
 
 
+// 添加一行数据（不是向ListCtrl中添加，而是向我们自定义的CListData类中添加）
+void CListData::AddRow(CString* pcsPID, CString* pcsProcName, CString* pcsProcWinText, CString* pcsProcPath, CString* pcsProcCmdLine) {
+	_ListRowData* pListRowData = new _ListRowData(*pcsPID, *pcsProcName, *pcsProcWinText, *pcsProcPath, *pcsProcCmdLine);
+
+	if (pFirst == NULL) {
+		pFirst = pListRowData;
+		pLast = pFirst;
+	}
+	else {
+		pLast->pNext = pListRowData;
+		pLast = pListRowData;
+	}
+}
+
+
+// 向ListCtrl中绘制我们自定义的CListData类中的所有行的数据（本函数不负责排序）
+void CListData::DisplayData() {
+	//插入过程禁止刷新界面
+	pListCtrl->LockWindowUpdate();
+	pListCtrl->SetRedraw(FALSE);//插入时如果设置了被选中状态就会引发重绘
+
+	// 删除之前的ListCtrl中的数据
+	pListCtrl->DeleteAllItems();
+
+	if (pFirst != NULL) {
+		_ListRowData* pData = pFirst;
+		while (true) {
+
+			DWORD dwInsertIndex = pListCtrl->GetItemCount();
+
+			LV_ITEM   lvitemData = { 0 };
+			lvitemData.mask = LVIF_PARAM;
+			lvitemData.iItem = dwInsertIndex;
+			lvitemData.lParam = (LPARAM)(NULL);	// 这里的指针可以用于保存额外的信息
+
+			pListCtrl->InsertItem(&lvitemData);
+
+			pListCtrl->SetItemText(dwInsertIndex, 0, pData->csPID);
+			pListCtrl->SetItemText(dwInsertIndex, 1, pData->csProcName);
+			pListCtrl->SetItemText(dwInsertIndex, 2, pData->csProcWinText);
+			pListCtrl->SetItemText(dwInsertIndex, 3, pData->csProcPath);
+			pListCtrl->SetItemText(dwInsertIndex, 4, pData->csProcCmdLine);
+
+			if (pData->pNext == NULL)
+				break;
+			else
+				pData = pData->pNext;
+
+		}
+	}
+
+	// 如果此前设置过排序方式，则按照之前的设置进行排序
+	int iCol = CheckSortColNum();
+	if (iCol >= 0) {
+		SortDataByCol(iCol);
+	}
+
+	// 插入完所有数据后就可以刷新界面了
+	pListCtrl->SetRedraw(TRUE);
+	pListCtrl->UnlockWindowUpdate();
+}
+
+// 无视大小写判断字符串包含
+BOOL CListData::ContainsTextNoCase(CString csText, CString csKeyword) {
+	BOOL bRet = (csText.MakeUpper().Find(csKeyword.MakeUpper()) != -1);
+	return bRet;
+}
+
+// 向ListCtrl中绘制我们自定义的CListData类中的数据（经过了关键词的过滤）（本函数不负责排序）
+void CListData::DisplayFilterData(CString csFilterKeyword)
+{
+	//插入过程禁止刷新界面
+	pListCtrl->LockWindowUpdate();
+	pListCtrl->SetRedraw(FALSE);//插入时如果设置了被选中状态就会引发重绘
+
+	// 删除之前的ListCtrl中的数据
+	pListCtrl->DeleteAllItems();
+
+	if (pFirst != NULL) {
+		_ListRowData* pData = pFirst;
+
+		while (true) {
+			// 对于当前行，只要5列中有一列的数据符合关键字（均无视大小写），则绘制本行
+			if (ContainsTextNoCase(pData->csPID, csFilterKeyword) ||
+				ContainsTextNoCase(pData->csProcName, csFilterKeyword) ||
+				ContainsTextNoCase(pData->csProcWinText, csFilterKeyword) ||
+				ContainsTextNoCase(pData->csProcPath, csFilterKeyword) ||
+				ContainsTextNoCase(pData->csProcCmdLine, csFilterKeyword)
+				) {
+				DWORD dwInsertIndex = pListCtrl->GetItemCount();
+
+				LV_ITEM   lvitemData = { 0 };
+				lvitemData.mask = LVIF_PARAM;
+				lvitemData.iItem = dwInsertIndex;
+				lvitemData.lParam = (LPARAM)(NULL);				// 这里的指针可以用于保存额外的信息
+
+				pListCtrl->InsertItem(&lvitemData);
+
+				pListCtrl->SetItemText(dwInsertIndex, 0, pData->csPID);
+				pListCtrl->SetItemText(dwInsertIndex, 1, pData->csProcName);
+				pListCtrl->SetItemText(dwInsertIndex, 2, pData->csProcWinText);
+				pListCtrl->SetItemText(dwInsertIndex, 3, pData->csProcPath);
+				pListCtrl->SetItemText(dwInsertIndex, 4, pData->csProcCmdLine);
+			}
+
+			if (pData->pNext == NULL)
+				break;
+			else
+				pData = pData->pNext;
+		}
+	}
+
+	// 如果此前设置过排序方式，则按照之前的设置进行排序
+	int iCol = CheckSortColNum();
+	if (iCol >= 0) {
+		SortDataByCol(iCol);
+	}
+
+	// 插入完所有数据后就可以刷新界面了
+	pListCtrl->SetRedraw(TRUE);
+	pListCtrl->UnlockWindowUpdate();
+}
+
 
 struct _SortData {
-	CListCtrl*		m_lpList;
+	CListCtrl* m_lpList;
 	DWORD			dwCol;
 }SortData;
 
@@ -386,7 +549,7 @@ int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData)
 	DWORD dwCol = ((_SortData*)lpSortData)->dwCol;
 
 	// 按第dwCol列排序
-	CString strItem1 = pListCtrl->GetItemText(lParam1, dwCol);		
+	CString strItem1 = pListCtrl->GetItemText(lParam1, dwCol);
 	CString strItem2 = pListCtrl->GetItemText(lParam2, dwCol);
 
 	LVCOLUMN Vol;
@@ -412,31 +575,26 @@ int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData)
 	}
 }
 
+
 // 按列排序
-void CChooseProcess::SortDataByCol(DWORD dwCol) {
+void CListData::SortDataByCol(DWORD dwCol) {
 	// 设置索引，不然没法排序
-	for (int i = 0; i < m_List.GetItemCount(); i++) {
-		m_List.SetItemData(i, i);
+	for (int i = 0; i < pListCtrl->GetItemCount(); i++) {
+		pListCtrl->SetItemData(i, i);
 	}
 
 	_SortData SortData;
-	SortData.m_lpList = &m_List;
+	SortData.m_lpList = pListCtrl;
 	SortData.dwCol = dwCol;
 
 	// 排序
-	m_List.SortItems(ListCompare, (LPARAM)&SortData);
+	pListCtrl->SortItems(ListCompare, (LPARAM)&SortData);
 }
 
 
-// 单击表头的某一列自动触发
-void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);	
-
-	// 获取点击的是第几列
-	int dwCol = pNMLV->iSubItem;
-
-
+// 检查是哪一列需要排序
+int CListData::CheckSortColNum() {
+	// 如果某列的表头有▲or▼，则按此列排序
 	CString csColName(_T(""));
 	csColName.GetBufferSetLength(32);
 
@@ -444,10 +602,32 @@ void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
 	lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM;
 	lvColumn.pszText = csColName.GetBuffer();
 	lvColumn.cchTextMax = 32;
-	m_List.GetColumn(dwCol, &lvColumn);
+
+	for (int i = 0; i < 5; i++) {		// 5列
+		pListCtrl->GetColumn(i, &lvColumn);
+		csColName.ReleaseBuffer();
+		if (csColName.Right(1) == _T("▲") || csColName.Right(1) == _T("▼")) {
+			return i;
+			break;
+		}
+	}
+	return -1;
+}
+
+
+// 点击表头时，更改本列的排序方式
+void CListData::ChangeSortType(DWORD dwCol) {
+	CString csColName(_T(""));
+	csColName.GetBufferSetLength(32);
+
+	LVCOLUMN lvColumn;
+	lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM;
+	lvColumn.pszText = csColName.GetBuffer();
+	lvColumn.cchTextMax = 32;
+	pListCtrl->GetColumn(dwCol, &lvColumn);
 
 	// GetBuffer之后会把CString的缓冲区长度锁定，导致CString拼接失败。必须再次调用ReleaseBuffer
-	csColName.ReleaseBuffer();				
+	csColName.ReleaseBuffer();
 
 	if (csColName.Right(1) == _T("▲"))
 		csColName.SetAt(csColName.GetLength() - 1, _T('▼'));
@@ -457,7 +637,7 @@ void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
 	else
 		csColName += _T("▲");
 
-	m_List.SetColumn(dwCol, &lvColumn);
+	pListCtrl->SetColumn(dwCol, &lvColumn);
 
 
 	// 如果其他列有▲or▼则清除
@@ -465,39 +645,16 @@ void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
 		if (i == dwCol)
 			continue;
 
-		m_List.GetColumn(i, &lvColumn);
+		pListCtrl->GetColumn(i, &lvColumn);
 
 		csColName.ReleaseBuffer();
 
 		if (csColName.Right(1) == _T("▲") || csColName.Right(1) == _T("▼")) {
 			csColName.Delete(csColName.GetLength() - 1, 1);
-			m_List.SetColumn(i, &lvColumn);
+			pListCtrl->SetColumn(i, &lvColumn);
 		}
 	}
 
-	// 按列排序
+	// 按照新的设置排序
 	SortDataByCol(dwCol);
-
-	*pResult = 0;
-}
-
-
-// 确定选择某个进程
-void CChooseProcess::OnBnClickedButton2()
-{
-	int nIndex = m_List.GetSelectionMark();				//获取选中行的行号
-	if (nIndex == -1) 
-		return;
-
-	CString csPID = m_List.GetItemText(nIndex, 0);		//获取PID
-	CString csProcName = m_List.GetItemText(nIndex, 1);	//获取进程名
-
-	PWCHAR wszPID = (LPWSTR)(LPCTSTR)csPID;
-	DWORD dwPID = wcstol(wszPID, NULL, 16);				// 16表示16进制
-
-	CString* pcsProcName = new CString(csProcName);
-	
-	::PostMessage(AfxGetMainWnd()->m_hWnd, WM_GET_CHOOSE_PROCESS_ID, dwPID, (LPARAM)pcsProcName);		// 第一个参数为主窗口句柄
-
-	EndDialog(0);
 }
