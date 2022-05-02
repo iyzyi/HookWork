@@ -53,7 +53,7 @@ BOOL CChooseProcess::OnInitDialog()
 
 	// 以下是List Control
 	//标题所需字段
-	CString head[] = { TEXT("PID"), TEXT("名称"), TEXT("标题"), TEXT("路径"), TEXT("命令行参数") };
+	CString head[] = { TEXT("PID"), TEXT("名称▲"), TEXT("标题"), TEXT("路径"), TEXT("命令行参数") };
 
 	//插入列标题
 	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 62);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
@@ -70,6 +70,7 @@ BOOL CChooseProcess::OnInitDialog()
 	// 以上是List Control
 
 	ListProcess();
+	SortDataByCol(1);		// 默认按《名称》一列升序排序。记得上面表头字段也需要带上▲符号，不然会混乱的。
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
@@ -493,6 +494,9 @@ void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
 void CChooseProcess::OnBnClickedButton2()
 {
 	int nIndex = m_List.GetSelectionMark();				//获取选中行的行号
+	if (nIndex == -1) 
+		return;
+
 	CString csPID = m_List.GetItemText(nIndex, 0);		//获取PID
 	CString csProcName = m_List.GetItemText(nIndex, 1);	//获取进程名
 
