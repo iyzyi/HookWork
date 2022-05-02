@@ -11,6 +11,7 @@
 #include <tchar.h>
 #include <Psapi.h>
 #pragma comment(lib,"psapi.lib")
+#include <Winternl.h>
 
 
 // CChooseProcess 对话框
@@ -59,7 +60,7 @@ BOOL CChooseProcess::OnInitDialog()
 	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 180);
 	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 150);
 	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 300);
-	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 350);
+	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 600);
 
 	//设置风格样式
 	//LVS_EX_GRIDLINES 网格
@@ -137,37 +138,7 @@ int Is64BitsProcess(DWORD dwProcessId)
 }
 
 
-//******************
-//
-//struct ProcessWindowData
-//{
-//	HWND hWnd;
-//	unsigned long lProcessId;
-//};
-//
-//BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
-//{
-//	ProcessWindowData& wndData = *(ProcessWindowData*)lParam;
-//	unsigned long lProcessId = 0;
-//	::GetWindowThreadProcessId(hWnd, &lProcessId);
-//	if ((wndData.lProcessId != lProcessId) || (::GetWindow(hWnd, GW_OWNER) != (HWND)0) || !::IsWindowVisible(hWnd))
-//	{
-//		return TRUE;
-//	}
-//	wndData.hWnd = hWnd;
-//	return FALSE;
-//}
-//
-//HWND GetMainWindowHwnd(unsigned long lProcessId)
-//{
-//	ProcessWindowData wndData;
-//	wndData.hWnd = 0;
-//	wndData.lProcessId = lProcessId;
-//	::EnumWindows(EnumWindowsProc, (LPARAM)&wndData);
-//	return wndData.hWnd;
-//}
-
-
+// ***************************************************************************
 HANDLE mProcHandle;
 HANDLE mForegroundHandle;
 
@@ -197,6 +168,7 @@ BOOL CALLBACK chkWindowPidCallback(HWND hWnd, LPARAM lParam)
 	return TRUE;
 }
 
+// 获取进程对应程序的标题，如果获取失败，则获取其class name
 BOOL GetWinText(DWORD dwProcessId, CString* pcsWinText, DWORD dwStrBufLen)
 {
 	mProcHandle = NULL;
@@ -219,10 +191,7 @@ BOOL GetWinText(DWORD dwProcessId, CString* pcsWinText, DWORD dwStrBufLen)
 
 	return true;
 }
-
-
-
-//***************************
+// ***************************************************************************
 
 
 // 获取进程对应程序的所在路径
@@ -238,7 +207,58 @@ CString GetProcessExePath(DWORD dwPID) {
 	return CString(me.szExePath);
 }
 
+// ***************************************************************************
 
+typedef NTSTATUS(NTAPI* _NtQueryInformationProcess)(
+	HANDLE ProcessHandle,
+	DWORD ProcessInformationClass,
+	PVOID ProcessInformation,
+	DWORD ProcessInformationLength,
+	PDWORD ReturnLength
+	);
+
+// 获取某个进程的命令行参数
+PTCHAR GetProcessCommandLine(DWORD dwPID)
+{
+	HANDLE hProcess = OpenProcess(
+		PROCESS_QUERY_INFORMATION |		/* required for NtQueryInformationProcess */
+		PROCESS_VM_READ,				/* required for ReadProcessMemory */
+		FALSE, dwPID					/* ProcessID */);
+	if (hProcess == NULL)
+		return NULL;
+
+	UNICODE_STRING commandLine;
+	TCHAR* commandLineContents = NULL;
+	_NtQueryInformationProcess NtQuery = (_NtQueryInformationProcess)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+	if (NtQuery)
+	{
+		PROCESS_BASIC_INFORMATION pbi;
+		NTSTATUS isok = NtQuery(hProcess, ProcessBasicInformation, &pbi, sizeof(PROCESS_BASIC_INFORMATION), NULL);
+		if (NT_SUCCESS(isok))
+		{
+			PEB peb;
+			RTL_USER_PROCESS_PARAMETERS upps;
+			PVOID rtlUserProcParamsAddress;
+			if (ReadProcessMemory(hProcess, &(((_PEB*)pbi.PebBaseAddress)->ProcessParameters), &rtlUserProcParamsAddress, sizeof(PVOID), NULL))
+			{
+				if (ReadProcessMemory(hProcess,
+					&(((_RTL_USER_PROCESS_PARAMETERS*)rtlUserProcParamsAddress)->CommandLine),
+					&commandLine, sizeof(commandLine), NULL))
+				{
+					commandLineContents = (TCHAR*)malloc(commandLine.Length + sizeof(TCHAR));
+					memset(commandLineContents, 0, commandLine.Length + sizeof(TCHAR));
+					ReadProcessMemory(hProcess, commandLine.Buffer,
+						commandLineContents, commandLine.Length, NULL);
+				}
+			}
+		}
+	}
+	return commandLineContents;
+}
+
+
+
+// 在窗口中列出所有进程
 BOOL CChooseProcess::ListProcess() {
 
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -275,27 +295,20 @@ BOOL CChooseProcess::ListProcess() {
 		CString csPID;
 		csPID.Format(L"%.8X", dwPID);
 
-		//// 获取进程主窗口标题，如果没有标题则获取其class name
-		//CString csProcMainWinTitle = CString(_T(""));
-		//csProcMainWinTitle.GetBufferSetLength(512);
-		//HWND hwnd = GetMainWindowHwnd(dwPID);
-		//if (hwnd != NULL) {
-		//	if (!::GetWindowText(hwnd, csProcMainWinTitle.GetBuffer(), 512)) {
-		//		::GetClassNameW((HWND)hwnd, csProcMainWinTitle.GetBuffer(), 512);
-		//	}
-		//}
-
+		// 标题
 		CString csProcMainWinTitle = CString(_T(""));
 		csProcMainWinTitle.GetBufferSetLength(512);
 		BOOL bRet = GetWinText(dwPID, &csProcMainWinTitle, 512);
-		if (!bRet) {
-			csProcMainWinTitle = CString(_T(""));
-		}
 
+		// 命令行参数
+		PTCHAR tszCmdLine = GetProcessCommandLine(dwPID);
+		CString csProcCmdLine = (tszCmdLine == NULL) ? CString(_T("")) : CString(tszCmdLine);
+		
 		m_List.SetItemText(dwInsertIndex, 0, csPID);
 		m_List.SetItemText(dwInsertIndex, 1, pe.szExeFile);
 		m_List.SetItemText(dwInsertIndex, 2, csProcMainWinTitle);
 		m_List.SetItemText(dwInsertIndex, 3, GetProcessExePath(dwPID));
+		m_List.SetItemText(dwInsertIndex, 4, csProcCmdLine);
 	}
 	CloseHandle(hSnapshot);
 	return TRUE;
