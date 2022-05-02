@@ -14,6 +14,9 @@
 #include <Winternl.h>
 
 
+
+
+
 // CChooseProcess 对话框
 
 IMPLEMENT_DYNAMIC(CChooseProcess, CDialogEx)
@@ -260,6 +263,11 @@ PTCHAR GetProcessCommandLine(DWORD dwPID)
 
 // 在窗口中列出所有进程
 BOOL CChooseProcess::ListProcess() {
+	if (m_pListData != NULL) {
+		m_pListData->~CListData();
+	}	
+	m_pListData = new CListData(&m_List);
+
 
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (INVALID_HANDLE_VALUE == hSnapshot) {
@@ -268,10 +276,6 @@ BOOL CChooseProcess::ListProcess() {
 	
 	PROCESSENTRY32 pe;
 	pe.dwSize = sizeof(pe);
-
-	//插入过程禁止刷新界面
-	m_List.LockWindowUpdate();
-	m_List.SetRedraw(FALSE);//插入时如果设置了被选中状态就会引发重绘
 
 	for (BOOL ret = Process32First(hSnapshot, &pe); ret; ret = Process32Next(hSnapshot, &pe))
 	{
@@ -285,16 +289,8 @@ BOOL CChooseProcess::ListProcess() {
 		if (iRet == -1 || iRet == 1) 
 			continue;
 #endif
-
-		DWORD dwInsertIndex = m_List.GetItemCount();
-
-		LV_ITEM   lvitemData = { 0 };
-		lvitemData.mask = LVIF_PARAM;
-		lvitemData.iItem = dwInsertIndex;
-		lvitemData.lParam = (LPARAM)(NULL);	// 这里的指针可以用于保存额外的信息
-
-		m_List.InsertItem(&lvitemData);
-
+		
+		// PID
 		DWORD dwPID = pe.th32ProcessID;
 		CString csPID;
 		csPID.Format(L"%.8X", dwPID);
@@ -307,58 +303,54 @@ BOOL CChooseProcess::ListProcess() {
 		// 命令行参数
 		PTCHAR tszCmdLine = GetProcessCommandLine(dwPID);
 		CString csProcCmdLine = (tszCmdLine == NULL) ? CString(_T("")) : CString(tszCmdLine);
-		
-		m_List.SetItemText(dwInsertIndex, 0, csPID);
-		m_List.SetItemText(dwInsertIndex, 1, pe.szExeFile);
-		m_List.SetItemText(dwInsertIndex, 2, csProcMainWinTitle);
-		m_List.SetItemText(dwInsertIndex, 3, GetProcessExePath(dwPID));
-		m_List.SetItemText(dwInsertIndex, 4, csProcCmdLine);
+
+		// 向ListData类中添加一行数据
+		m_pListData->AddRow(&csPID, &(CString(pe.szExeFile)), &csProcMainWinTitle, &GetProcessExePath(dwPID), &csProcCmdLine);
 	}
 
-	// 插入完所有数据后就可以刷新界面了
-	m_List.SetRedraw(TRUE);
-	m_List.UnlockWindowUpdate();
+	// 在ListCtrl中绘制所有行的数据
+	m_pListData->DisplayData();
 
 	CloseHandle(hSnapshot);
 	return TRUE;
 }
 
+
+// 通过关键字筛选进程
 void CChooseProcess::OnEnChangeEdit1()
 {
-	//if (!bHaveListTemp) {
-	//	m_ListTemp =  CListCtrl(m_List);
+	CString csKeyword;
+	m_EditTextBox.GetWindowTextW(csKeyword);
+
+	m_pListData->DisplayFilterData(csKeyword);
+
+	//DWORD dwInsertIndex = m_List.GetItemCount();
+	//DWORD dwCurrentRow = 0;
+	//printf("dwInsertIndex = %d\n", dwInsertIndex);
+	//for (int row = 0; row < dwInsertIndex; row++) {
+	//	BOOL bRet = FALSE;
+	//	for (int col = 1; col <2; col++) {				// 5列，如果增删表头的列数的话，这里得改成对应多少列。
+	//		CString strText = m_List.GetItemText(dwCurrentRow, col);
+	//		if (wcsstr(strKeyword, strText)) {
+	//			bRet = TRUE;
+	//			break;
+	//		}
+	//	}
+	//	
+	//	if (!bRet) {
+	//		m_List.DeleteItem(dwCurrentRow);
+	//	}
+	//	else {
+	//		dwCurrentRow++;
+	//	}
 	//}
-
-	CString strKeyword;
-	m_EditTextBox.GetWindowTextW(strKeyword);
-
-	DWORD dwInsertIndex = m_List.GetItemCount();
-	DWORD dwCurrentRow = 0;
-	printf("dwInsertIndex = %d\n", dwInsertIndex);
-	for (int row = 0; row < dwInsertIndex; row++) {
-		BOOL bRet = FALSE;
-		for (int col = 1; col <2; col++) {				// 5列，如果增删表头的列数的话，这里得改成对应多少列。
-			CString strText = m_List.GetItemText(dwCurrentRow, col);
-			if (wcsstr(strKeyword, strText)) {
-				bRet = TRUE;
-				break;
-			}
-		}
-		
-		if (!bRet) {
-			m_List.DeleteItem(dwCurrentRow);
-		}
-		else {
-			dwCurrentRow++;
-		}
-	}
 }
 
 
 // 刷新进程列表
 void CChooseProcess::OnBnClickedButton1()
 {
-	m_List.DeleteAllItems();
+	//m_List.DeleteAllItems();
 	ListProcess();
 
 	// 如果某列的表头有▲or▼，则按此列排序
