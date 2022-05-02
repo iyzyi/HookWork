@@ -17,9 +17,9 @@ public:
 	enum { IDD = IDD_TESTUI_DIALOG };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
-
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 // 实现
 protected:

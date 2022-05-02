@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InjectDll", "InjectDll\Inje
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyMessagePack", "MyMessagePack\MyMessagePack.vcxproj", "{519544F8-3B89-4777-985B-EDB3A0146701}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkFrame", "NetworkFrame\NetworkFrame.vcxproj", "{F4FD0353-71C2-463C-BF80-A22A748DCAF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -85,6 +87,14 @@ Global
 		{519544F8-3B89-4777-985B-EDB3A0146701}.Release|Win32.Build.0 = Release|Win32
 		{519544F8-3B89-4777-985B-EDB3A0146701}.Release|x64.ActiveCfg = Release|x64
 		{519544F8-3B89-4777-985B-EDB3A0146701}.Release|x64.Build.0 = Release|x64
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Debug|Win32.Build.0 = Debug|Win32
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Debug|x64.ActiveCfg = Debug|x64
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Debug|x64.Build.0 = Debug|x64
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Release|Win32.ActiveCfg = Release|Win32
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Release|Win32.Build.0 = Release|Win32
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Release|x64.ActiveCfg = Release|x64
+		{F4FD0353-71C2-463C-BF80-A22A748DCAF9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

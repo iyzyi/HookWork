@@ -80,6 +80,16 @@ void CTestUIDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 }
 
+// 解决回车键 ESC 默认关闭窗口
+BOOL CTestUIDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)     return   TRUE;
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)   return   TRUE;
+	else
+		return   CDialog::PreTranslateMessage(pMsg);
+
+}
+
 BEGIN_MESSAGE_MAP(CTestUIDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
