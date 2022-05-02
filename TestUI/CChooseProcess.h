@@ -58,6 +58,9 @@ int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData);
 
 
 
+
+
+
 // CChooseProcess 对话框
 class CChooseProcess : public CDialogEx
 {
@@ -74,6 +77,8 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
 
 	DECLARE_MESSAGE_MAP()
 

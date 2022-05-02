@@ -93,6 +93,16 @@ END_MESSAGE_MAP()
 // CChooseProcess 消息处理程序
 
 
+// 解决回车键 ESC 默认关闭窗口
+BOOL CChooseProcess::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)     return   TRUE;
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)   return   TRUE;
+	else
+		return   CDialog::PreTranslateMessage(pMsg);
+
+}
+
 
 BOOL Is64BitsOperateSystem()
 {
@@ -395,6 +405,7 @@ CListData::CListData(CListCtrl* pListCtrl) {
 	this->pListCtrl = pListCtrl;
 }
 
+
 CListData::~CListData() {
 	if (pListCtrl != NULL) {
 		_ListRowData* pData = pFirst;
@@ -475,11 +486,13 @@ void CListData::DisplayData() {
 	pListCtrl->UnlockWindowUpdate();
 }
 
+
 // 无视大小写判断字符串包含
 BOOL CListData::ContainsTextNoCase(CString csText, CString csKeyword) {
 	BOOL bRet = (csText.MakeUpper().Find(csKeyword.MakeUpper()) != -1);
 	return bRet;
 }
+
 
 // 向ListCtrl中绘制我们自定义的CListData类中的数据（经过了关键词的过滤）（本函数不负责排序）
 void CListData::DisplayFilterData(CString csFilterKeyword)
