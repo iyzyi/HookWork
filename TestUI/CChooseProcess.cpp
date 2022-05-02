@@ -70,7 +70,6 @@ BOOL CChooseProcess::OnInitDialog()
 	// 以上是List Control
 
 	ListProcess();
-	//SortDataByCol(1);		// 默认按第二列排序
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
@@ -269,6 +268,10 @@ BOOL CChooseProcess::ListProcess() {
 	PROCESSENTRY32 pe;
 	pe.dwSize = sizeof(pe);
 
+	//插入过程禁止刷新界面
+	m_List.LockWindowUpdate();
+	m_List.SetRedraw(FALSE);//插入时如果设置了被选中状态就会引发重绘
+
 	for (BOOL ret = Process32First(hSnapshot, &pe); ret; ret = Process32Next(hSnapshot, &pe))
 	{
 		int iRet = Is64BitsProcess(pe.th32ProcessID);
@@ -310,6 +313,11 @@ BOOL CChooseProcess::ListProcess() {
 		m_List.SetItemText(dwInsertIndex, 3, GetProcessExePath(dwPID));
 		m_List.SetItemText(dwInsertIndex, 4, csProcCmdLine);
 	}
+
+	// 插入完所有数据后就可以刷新界面了
+	m_List.SetRedraw(TRUE);
+	m_List.UnlockWindowUpdate();
+
 	CloseHandle(hSnapshot);
 	return TRUE;
 }
