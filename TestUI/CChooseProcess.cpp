@@ -70,7 +70,7 @@ BOOL CChooseProcess::OnInitDialog()
 	// 以上是List Control
 
 	ListProcess();
-	SortDataByCol(1);		// 默认按第二列排序
+	//SortDataByCol(1);		// 默认按第二列排序
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
@@ -351,7 +351,7 @@ void CChooseProcess::OnBnClickedButton1()
 {
 	m_List.DeleteAllItems();
 	ListProcess();
-	SortDataByCol(1);		// 默认按第二列排序
+	//SortDataByCol(1);		// 默认按第二列排序
 }
 
 
@@ -377,7 +377,7 @@ int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData)
 	Vol.pszText = szCol;
 	Vol.mask = LVCF_TEXT;
 	Vol.cchTextMax = sizeof(szCol);
-	pListCtrl->GetColumn(0, &Vol);
+	pListCtrl->GetColumn(dwCol, &Vol);
 	csStr = CString(Vol.pszText);
 
 	if (csStr.Right(1) == CString("▼"))
@@ -422,6 +422,46 @@ void CChooseProcess::OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult)
 	// 获取点击的是第几列
 	int dwCol = pNMLV->iSubItem;
 
+
+	CString csColName(_T(""));
+	csColName.GetBufferSetLength(32);
+
+	LVCOLUMN lvColumn;
+	lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM;
+	lvColumn.pszText = csColName.GetBuffer();
+	lvColumn.cchTextMax = 32;
+	m_List.GetColumn(dwCol, &lvColumn);
+
+	// GetBuffer之后会把CString的缓冲区长度锁定，导致CString拼接失败。必须再次调用ReleaseBuffer
+	csColName.ReleaseBuffer();				
+
+	if (csColName.Right(1) == _T("▲"))
+		csColName.SetAt(csColName.GetLength() - 1, _T('▼'));
+	else if (csColName.Right(1) == _T("▼"))
+		//csColName.Delete(csColName.GetLength() - 1, 1);
+		csColName.SetAt(csColName.GetLength() - 1, _T('▲'));
+	else
+		csColName += _T("▲");
+
+	m_List.SetColumn(dwCol, &lvColumn);
+
+
+	// 如果其他列有▲or▼则清除
+	for (int i = 0; i < 5; i++) {		// 5列
+		if (i == dwCol)
+			continue;
+
+		m_List.GetColumn(i, &lvColumn);
+
+		csColName.ReleaseBuffer();
+
+		if (csColName.Right(1) == _T("▲") || csColName.Right(1) == _T("▼")) {
+			csColName.Delete(csColName.GetLength() - 1, 1);
+			m_List.SetColumn(i, &lvColumn);
+		}
+	}
+
+	// 按列排序
 	SortDataByCol(dwCol);
 
 	*pResult = 0;
