@@ -43,7 +43,7 @@ public:
 	CListNetworkData(CFrameNetworkDlg* pMainDlg);
 	~CListNetworkData();
 
-	// 添加一行数据（不是向ListCtrl中添加，而是向我们自定义的CListData类中添加）
+	// 添加一行数据（不是向ListCtrl中添加，而是向我们自定义的CListData类中添加）如果没有过滤条件，则同时绘制此行到ListCtrl中
 	void AddRow(DWORD dwIndex, CString csFuncName, SOCKET SocketId, DWORD dwIP, WORD wPort, DWORD dwLen, PBYTE pbData);
 
 	// 在ListCtrl中绘制一行数据

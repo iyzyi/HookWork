@@ -22,9 +22,16 @@ int WSAAPI My_send(SOCKET s, const char* buf, int len, int flags) {
 	data.sbuffer.ptr = (char*)buf;
 	data.sbuffer.size = len;
 
+	DWORD dwIP = 0;
+	WORD wPort = 0;
+	GetSocketIpPort(s, &dwIP, &wPort);
+	DllPrintf("send socket = 0x%p\n", s);
+	data.dwIP = dwIP;
+	data.wPort = wPort;
+
 	PBYTE pBuffer = NULL;
 	DWORD dwBufferSize = MsgPackWithFuncId<_Data_send>(data, pBuffer, ID_send);
-	DllPrintf("send socket = 0x%p\n", s);
+	DllPrintf("ip=%x\nport=%d\n", dwIP, wPort);
 	SendData(pBuffer, dwBufferSize);
 	delete[] pBuffer;
 
@@ -88,11 +95,11 @@ int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 		data.dwIP = dwIP;
 		data.wPort = wPort;
 		
-		DllPrintf("port = %d\n", wPort);
+		//DllPrintf("port = %d\n", wPort);
 
 		PBYTE pBuffer = NULL;
 		DWORD dwBufferSize = MsgPackWithFuncId<_Data_recv>(data, pBuffer, ID_recv);
-		DllPrintf("recv socket = 0x%p\n", s);
+		//DllPrintf("recv socket = 0x%p\n", s);
 		SendData(pBuffer, dwBufferSize);
 		delete[] pBuffer;
 	}

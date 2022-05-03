@@ -26,11 +26,10 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 	case ID_recv: 
 	{
 		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwMsgBufferSize);
-
 		pListData->AddRow(pMainDlg->m_dwIndex, _T("recv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
-
-		printf("recv socket = 0x%p:\n", data.socket);
-		printf("port = %d\nip = %x\n", data.wPort, data.dwIP);
+		pMainDlg->m_dwIndex++;
+		//printf("recv socket = 0x%p:\n", data.socket);
+		//printf("port = %d\nip = %x\n", data.wPort, data.dwIP);
 
 		//PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
 		break;
@@ -38,7 +37,9 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 	case ID_send:
 	{
 		_Data_send data = MsgUnpack<_Data_send>(pMsgBuffer, dwMsgBufferSize);
-		printf("send socketB = 0x%p:\n", data.socket);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("send"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		pMainDlg->m_dwIndex++;
+		//printf("send socketB = 0x%p:\n", data.socket);
 		//PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
 		break;
 	}
