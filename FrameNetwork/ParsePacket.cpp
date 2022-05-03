@@ -3,9 +3,14 @@
 #include "../MyMessagePack/MyMessagePack.h"
 #include "../InjectDll/EnumFunction.h"
 #include "Misc.h"
+#include "ListNetworkData.h"
+#include "FrameNetworkDlg.h"
 
 
-VOID ParsePacket(PBYTE pBuffer, DWORD dwBufferSize) {
+
+VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) {
+
+	CListNetworkData* pListData = pMainDlg->m_pListData;
 
 	if (dwBufferSize <= 4) {
 		printf("接收到长度为%d的无效数据\n", dwBufferSize);
@@ -21,21 +26,24 @@ VOID ParsePacket(PBYTE pBuffer, DWORD dwBufferSize) {
 	case ID_recv: 
 	{
 		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwMsgBufferSize);
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("recv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+
 		printf("recv socket = 0x%p:\n", data.socket);
-		PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
+		printf("port = %d\nip = %x\n", data.wPort, data.dwIP);
+
+		//PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
 		break;
 	}
 	case ID_send:
 	{
 		_Data_send data = MsgUnpack<_Data_send>(pMsgBuffer, dwMsgBufferSize);
 		printf("send socketB = 0x%p:\n", data.socket);
-		PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
+		//PrintData((LPBYTE)data.sbuffer.ptr, data.sbuffer.size);
 		break;
 	}
 
 	default:
 		break;
 	}
-
-	
 }

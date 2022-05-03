@@ -142,3 +142,14 @@ VOID WriteByteToBuffer(PBYTE pbData, BYTE byNum, DWORD dwPos) {
 	PBYTE pbData2 = pbData + dwPos;
 	pbData2[0] = byNum;
 }
+
+
+CString ByteArray2HexCString(PBYTE pbData, DWORD dwDataBufLen) {
+	CString csText = _T("");
+	CString csTemp = _T("");
+	for (int i = 0; i < dwDataBufLen; i++) {
+		csTemp.Format(_T("%.2X "), (BYTE)(pbData[i]));
+		csText += csTemp;
+	}
+	return csText;
+}

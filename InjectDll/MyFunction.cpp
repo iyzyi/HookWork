@@ -82,6 +82,14 @@ int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 		data.sbuffer.ptr = (char*)buf;
 		data.sbuffer.size = iRet;
 
+		DWORD dwIP = 0;
+		WORD wPort = 0;
+		GetSocketIpPort(s, &dwIP, &wPort);
+		data.dwIP = dwIP;
+		data.wPort = wPort;
+		
+		DllPrintf("port = %d\n", wPort);
+
 		PBYTE pBuffer = NULL;
 		DWORD dwBufferSize = MsgPackWithFuncId<_Data_recv>(data, pBuffer, ID_recv);
 		DllPrintf("recv socket = 0x%p\n", s);

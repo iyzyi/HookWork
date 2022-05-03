@@ -1,5 +1,6 @@
 #pragma once
 #include "../MyMessagePack/MyMessagePack.h"
+#include <string>
 
 enum {
 	ID_send,
@@ -18,8 +19,10 @@ enum {
 
 struct _Data_recv {
 	SOCKET						socket;
+	DWORD						dwIP;
+	WORD						wPort;
 	msgpack::type::raw_ref		sbuffer;
-	MSGPACK_DEFINE(socket, sbuffer)
+	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
 };
 
 

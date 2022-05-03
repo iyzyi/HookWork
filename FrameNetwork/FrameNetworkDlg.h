@@ -3,7 +3,9 @@
 //
 
 #pragma once
+#include "ListNetworkData.h"
 
+class CListNetworkData;				// 大坑点，CFrameNetworkDlg和CListNetworkData互相包含，必须提前声明
 
 // CFrameNetworkDlg 对话框
 class CFrameNetworkDlg : public CDialogEx
@@ -49,6 +51,14 @@ public:
 	HANDLE	m_hDataPipe = NULL;
 
 	BOOL m_bInjectSuccess = FALSE;
+
+	BOOL m_bFiltering = FALSE;
+
+	CListNetworkData* m_pListData = NULL;
+
+	DWORD m_dwIndex = 0;
+
+public:
 	afx_msg void OnBeginWorkCommand();
 
 	void ShowInfo(PCHAR fmt, ...);

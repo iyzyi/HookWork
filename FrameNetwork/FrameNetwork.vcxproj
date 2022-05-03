@@ -191,6 +191,7 @@
     <ClInclude Include="FrameNetwork.h" />
     <ClInclude Include="FrameNetworkDlg.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="ListNetworkData.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ParsePacket.h" />
     <ClInclude Include="pch.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="ChooseProcessDlg.cpp" />
     <ClCompile Include="FrameNetwork.cpp" />
     <ClCompile Include="FrameNetworkDlg.cpp" />
+    <ClCompile Include="ListNetworkData.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="ParsePacket.cpp" />
     <ClCompile Include="pch.cpp">

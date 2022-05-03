@@ -1,5 +1,7 @@
 #pragma once
+#include <WinSock2.h>
 #include <windows.h>
+
 
 
 int DllPrintf(PCHAR fmt, ...);
@@ -15,22 +17,10 @@ int DllPrintf(PCHAR fmt, ...);
 #endif
 
 
-VOID RandomBytes(LPBYTE pbData, DWORD dwDataLen);
-
-VOID PrintBytes(LPBYTE pbPrintData, DWORD dwDataLen);
-
-VOID PrintChars(CHAR* pbPrintData, DWORD dwDataLen);
-
 VOID PrintData(LPBYTE pbPrintData, DWORD dwDataLen);
 
-BOOL IsLittleEndding();
-
-QWORD GetQwordFromBuffer(PBYTE pbData, DWORD dwPos);
-DWORD GetDwordFromBuffer(PBYTE pbData, DWORD dwPos = 0);
-WORD GetWordFromBuffer(PBYTE pbData, DWORD dwPos = 0);
-BYTE GetByteFromBuffer(PBYTE pbData, DWORD dwPos = 0);
-
-VOID WriteQwordToBuffer(PBYTE pbData, QWORD qwNum, DWORD dwPos);
 VOID WriteDwordToBuffer(PBYTE pbData, DWORD dwNum, DWORD dwPos = 0);
-VOID WriteWordToBuffer(PBYTE pbData, WORD wNum, DWORD dwPos = 0);
-VOID WriteByteToBuffer(PBYTE pbData, BYTE byNum, DWORD dwPos = 0);
+
+
+// 获取socket连接的对端IP(即远程IP)
+BOOL GetSocketIpPort(SOCKET s, PDWORD pdwIP, PWORD pwPort);

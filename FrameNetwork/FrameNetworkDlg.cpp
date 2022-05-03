@@ -98,15 +98,9 @@ BOOL CFrameNetworkDlg::OnInitDialog()
 	// 以上是List Control
 
 
-	//// 调整初始化窗口时的控件相对位置
-	//CRect rt0;
-	//GetClientRect(rt0);
-	//ChangeWidget(rt0.right, rt0.bottom);
-
 	// 设置窗口大小。并居中显示
 	MoveWindow(0, 0, 1200, 800, FALSE);
 	CenterWindow(GetDesktopWindow());
-
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -222,19 +216,16 @@ LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 	m_hCommandPipe = NULL;
 	m_hDataPipe = NULL;
 
-	/*CString csText;
-	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);*/
 	ShowInfo(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
 
-	//SetDlgItemText(IDC_STATIC_TEXT_INFO, csText);
+	if (m_pListData != NULL) {
+		m_pListData->~CListNetworkData();
+	}
+	m_pListData = new CListNetworkData(((CFrameNetworkDlg*)(theApp.m_pMainWnd)));
 
 	delete pcsProcName;
 	return 0;
 }
-
-
-
-
 
 
 // 接收数据的线程函数
@@ -246,7 +237,7 @@ DWORD WINAPI ThreadFunc_DataPipeRecv() {
 	while (ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		pBuffer[dwReturn] = '\0';
 
-		ParsePacket(pBuffer, dwReturn);
+		ParsePacket(((CFrameNetworkDlg*)(theApp.m_pMainWnd)), pBuffer, dwReturn);
 	}
 	return 0;
 }
@@ -391,6 +382,7 @@ void CFrameNetworkDlg::ShowInfo(PCHAR fmt, ...)
 
 	return;
 }
+
 
 // 在消息栏显示信息
 void CFrameNetworkDlg::ShowInfo(PWCHAR fmt, ...)
