@@ -191,6 +191,8 @@
     <ClInclude Include="FrameNetwork.h" />
     <ClInclude Include="FrameNetworkDlg.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Misc.h" />
+    <ClInclude Include="ParsePacket.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -199,6 +201,8 @@
     <ClCompile Include="ChooseProcessDlg.cpp" />
     <ClCompile Include="FrameNetwork.cpp" />
     <ClCompile Include="FrameNetworkDlg.cpp" />
+    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="ParsePacket.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -214,6 +218,17 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\FrameNetwork.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyMessagePack\MyMessagePack.vcxproj">
+      <Project>{519544f8-3b89-4777-985b-edb3a0146701}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteInjectTool\RemoteInjectTool.vcxproj">
+      <Project>{0743d82f-c517-4a69-9c88-fe68831fde57}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleHookEngine\SimpleHookEngine.vcxproj">
+      <Project>{0e055caf-c68b-42cb-a302-f775ca5a917f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

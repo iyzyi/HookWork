@@ -49,7 +49,17 @@ public:
 	HANDLE	m_hDataPipe = NULL;
 
 	BOOL m_bInjectSuccess = FALSE;
-	afx_msg void OnBeginWork();
+	afx_msg void OnBeginWorkCommand();
+
+	void ShowInfo(PCHAR fmt, ...);
+	void ShowInfo(PWCHAR fmt, ...);
+
+	BOOL RemoteInject();
+	BOOL InstallHook();
+	BOOL UninstallHook();
+
+
+	afx_msg void OnEndWorkCommand();
 };
 
 

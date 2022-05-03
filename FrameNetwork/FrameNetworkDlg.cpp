@@ -8,11 +8,17 @@
 #include "FrameNetworkDlg.h"
 #include "afxdialogex.h"
 
+
+#include "../SimpleHookEngine/SimpleHookEngine.h"
+#include "../RemoteInjectTool/RemoteInjectTool.h"
+#include "ParsePacket.h"
 #include "ChooseProcessDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+#pragma warning(disable:4996)
 
 
 // CFrameNetworkDlg 对话框
@@ -54,7 +60,8 @@ BEGIN_MESSAGE_MAP(CFrameNetworkDlg, CDialogEx)
 
 	// 选择了进程ID之后，CChooseProcess窗口发送消息WM_GET_CHOOSE_PROCESS_ID，收到此消息后，执行OnGetChooseProcessId
 	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, &CFrameNetworkDlg::OnGetChooseProcessId)
-	ON_COMMAND(ID_32775, &CFrameNetworkDlg::OnBeginWork)
+	ON_COMMAND(ID_32775, &CFrameNetworkDlg::OnBeginWorkCommand)
+	ON_COMMAND(ID_32776, &CFrameNetworkDlg::OnEndWorkCommand)
 END_MESSAGE_MAP()
 
 
@@ -134,9 +141,9 @@ void CFrameNetworkDlg::OnPaint()
 }
 
 
+//设置对话框最小宽度与高度
 void CFrameNetworkDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
-	//设置对话框最小宽度与高度
 	lpMMI->ptMinTrackSize.x = 1200;
 	lpMMI->ptMinTrackSize.y = 800;
 	CDialogEx::OnGetMinMaxInfo(lpMMI);
@@ -196,6 +203,7 @@ void CFrameNetworkDlg::OnSize(UINT nType, int cx, int cy)
 }
 
 
+// 选择进程对话框
 void CFrameNetworkDlg::OnChooseProcessCommand()
 {
 	CChooseProcessDlg dlgChooseProcess;
@@ -214,18 +222,187 @@ LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 	m_hCommandPipe = NULL;
 	m_hDataPipe = NULL;
 
-	CString csText;
-	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
+	/*CString csText;
+	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);*/
+	ShowInfo(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
 
-	SetDlgItemText(IDC_STATIC_TEXT_INFO, csText);
+	//SetDlgItemText(IDC_STATIC_TEXT_INFO, csText);
 
 	delete pcsProcName;
 	return 0;
 }
 
 
-// 开始，即安装HOOK
-void CFrameNetworkDlg::OnBeginWork()
+
+
+
+
+// 接收数据的线程函数
+DWORD WINAPI ThreadFunc_DataPipeRecv() {
+	PBYTE pBuffer = new BYTE[DATA_PIPE_BUF_SIZE];
+	DWORD dwReturn = 0;
+
+	HANDLE hDataPipe = ((CFrameNetworkDlg*)(theApp.m_pMainWnd))->m_hDataPipe;
+	while (ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
+		pBuffer[dwReturn] = '\0';
+
+		ParsePacket(pBuffer, dwReturn);
+	}
+	return 0;
+}
+
+
+HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
+	// 创建命名管道
+	HANDLE hPipe = CreateNamedPipeA(
+		szPipeName,
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE |
+		PIPE_READMODE_MESSAGE |
+		PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		dwBufLen,
+		dwBufLen,
+		0,
+		NULL);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		printf("%s管道创建失败\n", szPipeName);
+		return NULL;
+	}
+
+	// 等待客户端的连接(是阻塞的)
+	if (!ConnectNamedPipe(hPipe, NULL))
+	{
+		printf("%s管道等待连接失败\n", szPipeName);
+		return NULL;
+	}
+
+	printf("%s管道等待连接成功\n", szPipeName);
+	return hPipe;
+}
+
+
+// 远程注入(需要保证InjectDll.dll和本程序在同一路径下)
+BOOL CFrameNetworkDlg::RemoteInject()
 {
-	// TODO: 在此添加命令处理程序代码
+	CHAR szDllPath[MAX_PATH + 1] = { 0 };
+	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
+	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
+	strcat_s(szDllPath, "InjectDll.dll");			    // 拼接上DLL的名称
+
+	m_bInjectSuccess = RemoteInjectByProcessId(m_CurrentChooseProcId, szDllPath);
+	if (!m_bInjectSuccess) {
+		ShowInfo("向进程[PID=%.8X]注入失败\n", m_CurrentChooseProcId);
+		return FALSE;
+	}
+
+	// 创建两个命令管道。
+	// CommandPipe命令管道：本程序写，DLL读
+	// DataPipe数据管道：DLL写，本程序读
+	m_hCommandPipe = CreatePipeAndWaitConnect(COMMAND_PIPE, COMMAND_PIPE_BUF_SIZE);
+	m_hDataPipe = CreatePipeAndWaitConnect(DATA_PIPE, DATA_PIPE_BUF_SIZE);
+
+	if (m_hCommandPipe == NULL || m_hDataPipe == NULL) {
+		ShowInfo("创建并等待管道连接失败");
+		return FALSE;
+	}	
+
+	// 接收数据的线程
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_DataPipeRecv, NULL, 0, NULL);
+	
+	return TRUE;
+}
+
+
+// 安装HOOK
+BOOL CFrameNetworkDlg::InstallHook()
+{
+	DWORD dwReturn = 0;
+	char szBuffer[] = "InstallHook";
+
+	if (!m_bInjectSuccess) {
+		ShowInfo("DLL未成功注入，无法安装HOOK\n");
+		return FALSE;
+	}
+
+	// 向客户端发送数据
+	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	{
+		ShowInfo("向CommandPipe管道写入数据失败\n");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+// 卸载HOOK
+BOOL CFrameNetworkDlg::UninstallHook()
+{
+	DWORD dwReturn = 0;
+	char szBuffer[] = "UninstallHook";
+
+	if (!m_bInjectSuccess) {
+		ShowInfo("DLL未成功注入，无需卸载HOOK\n");
+		return FALSE;
+	}
+
+	// 向客户端发送数据
+	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	{
+		ShowInfo("向CommandPipe管道写入数据失败\n");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+// 开始，即安装HOOK
+void CFrameNetworkDlg::OnBeginWorkCommand()
+{
+	if (RemoteInject()) {
+		InstallHook();
+	}
+}
+
+// 结束，即卸载HOOK
+void CFrameNetworkDlg::OnEndWorkCommand()
+{
+	UninstallHook();
+}
+
+
+
+
+
+// 在消息栏显示信息
+void CFrameNetworkDlg::ShowInfo(PCHAR fmt, ...)
+{
+	//不定参数格式化
+	va_list argptr;
+	va_start(argptr, fmt);
+	char buffer[4096] = { 0 };
+	int cnt = vsprintf(buffer, fmt, argptr);
+	va_end(argptr);
+
+	SetDlgItemTextA(theApp.m_pMainWnd->m_hWnd, IDC_STATIC_TEXT_INFO, buffer);
+
+	return;
+}
+
+// 在消息栏显示信息
+void CFrameNetworkDlg::ShowInfo(PWCHAR fmt, ...)
+{
+	//不定参数格式化
+	va_list argptr;
+	va_start(argptr, fmt);
+	WCHAR buffer[4096] = { 0 };
+	int cnt = vswprintf(buffer, fmt, argptr);
+	va_end(argptr);
+
+	SetDlgItemTextW(IDC_STATIC_TEXT_INFO, buffer);
+
+	return;
 }

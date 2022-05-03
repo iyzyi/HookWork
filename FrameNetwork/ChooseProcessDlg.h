@@ -97,7 +97,6 @@ public:
 	afx_msg void OnLvnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedButton2();
-	afx_msg void OnBeginWork();
 };
 
 

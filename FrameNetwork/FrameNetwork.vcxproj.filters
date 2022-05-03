@@ -36,6 +36,12 @@
     <ClInclude Include="ChooseProcessDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ParsePacket.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FrameNetwork.cpp">
@@ -48,6 +54,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ChooseProcessDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ParsePacket.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
