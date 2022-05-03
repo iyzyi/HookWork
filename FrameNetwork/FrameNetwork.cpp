@@ -1,27 +1,27 @@
 ﻿
-// NetworkFrame.cpp: 定义应用程序的类行为。
+// FrameNetwork.cpp: 定义应用程序的类行为。
 //
 
 #include "pch.h"
 #include "framework.h"
-#include "NetworkFrame.h"
-#include "NetworkFrameDlg.h"
+#include "FrameNetwork.h"
+#include "FrameNetworkDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// CNetworkFrameApp
+// CFrameNetworkApp
 
-BEGIN_MESSAGE_MAP(CNetworkFrameApp, CWinApp)
+BEGIN_MESSAGE_MAP(CFrameNetworkApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CNetworkFrameApp 构造
+// CFrameNetworkApp 构造
 
-CNetworkFrameApp::CNetworkFrameApp()
+CFrameNetworkApp::CFrameNetworkApp()
 {
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -31,14 +31,14 @@ CNetworkFrameApp::CNetworkFrameApp()
 }
 
 
-// 唯一的 CNetworkFrameApp 对象
+// 唯一的 CFrameNetworkApp 对象
 
-CNetworkFrameApp theApp;
+CFrameNetworkApp theApp;
 
 
-// CNetworkFrameApp 初始化
+// CFrameNetworkApp 初始化
 
-BOOL CNetworkFrameApp::InitInstance()
+BOOL CFrameNetworkApp::InitInstance()
 {
 	// 如果一个运行在 Windows XP 上的应用程序清单指定要
 	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
@@ -71,7 +71,7 @@ BOOL CNetworkFrameApp::InitInstance()
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-	CNetworkFrameDlg dlg;
+	CFrameNetworkDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

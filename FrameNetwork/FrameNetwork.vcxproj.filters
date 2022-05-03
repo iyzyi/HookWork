@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NetworkFrame.h">
+    <ClInclude Include="FrameNetwork.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkFrameDlg.h">
+    <ClInclude Include="FrameNetworkDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="framework.h">
@@ -35,10 +35,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetworkFrame.cpp">
+    <ClCompile Include="FrameNetwork.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkFrameDlg.cpp">
+    <ClCompile Include="FrameNetworkDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -46,17 +46,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="NetworkFrame.rc">
+    <ResourceCompile Include="FrameNetwork.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\NetworkFrame.rc2">
+    <None Include="res\FrameNetwork.rc2">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\NetworkFrame.ico">
+    <Image Include="res\FrameNetwork.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

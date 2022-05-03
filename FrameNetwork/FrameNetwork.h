@@ -1,5 +1,5 @@
 ﻿
-// NetworkFrame.h: PROJECT_NAME 应用程序的主头文件
+// FrameNetwork.h: PROJECT_NAME 应用程序的主头文件
 //
 
 #pragma once
@@ -11,14 +11,14 @@
 #include "resource.h"		// 主符号
 
 
-// CNetworkFrameApp:
-// 有关此类的实现，请参阅 NetworkFrame.cpp
+// CFrameNetworkApp:
+// 有关此类的实现，请参阅 FrameNetwork.cpp
 //
 
-class CNetworkFrameApp : public CWinApp
+class CFrameNetworkApp : public CWinApp
 {
 public:
-	CNetworkFrameApp();
+	CFrameNetworkApp();
 
 // 重写
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern CNetworkFrameApp theApp;
+extern CFrameNetworkApp theApp;

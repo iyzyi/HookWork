@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{F4FD0353-71C2-463C-BF80-A22A748DCAF9}</ProjectGuid>
+    <ProjectGuid>{D2E35FBB-A3D9-42A4-AD8D-6D824EA257FB}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
-    <RootNamespace>NetworkFrame</RootNamespace>
+    <RootNamespace>FrameNetwork</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -183,16 +183,16 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FrameNetwork.h" />
+    <ClInclude Include="FrameNetworkDlg.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="NetworkFrame.h" />
-    <ClInclude Include="NetworkFrameDlg.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetworkFrame.cpp" />
-    <ClCompile Include="NetworkFrameDlg.cpp" />
+    <ClCompile Include="FrameNetwork.cpp" />
+    <ClCompile Include="FrameNetworkDlg.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -201,24 +201,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="NetworkFrame.rc" />
+    <ResourceCompile Include="FrameNetwork.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\NetworkFrame.rc2" />
+    <None Include="res\FrameNetwork.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\NetworkFrame.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MyMessagePack\MyMessagePack.vcxproj">
-      <Project>{519544f8-3b89-4777-985b-edb3a0146701}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\RemoteInjectTool\RemoteInjectTool.vcxproj">
-      <Project>{0743d82f-c517-4a69-9c88-fe68831fde57}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleHookEngine\SimpleHookEngine.vcxproj">
-      <Project>{0e055caf-c68b-42cb-a302-f775ca5a917f}</Project>
-    </ProjectReference>
+    <Image Include="res\FrameNetwork.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
