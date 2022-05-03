@@ -12,7 +12,11 @@ _ListNetworkRowData::_ListNetworkRowData(DWORD dwIndex, CString csFuncName, SOCK
 
 	csIndex.Format(_T("%d"), dwIndex);
 	this->csFuncName = csFuncName;
+#ifdef _WIN64
 	csSocket.Format(_T("%lld"), SocketId);
+#else
+	csSocket.Format(_T("%d"), SocketId);
+#endif
 	csPort.Format(_T("%d"), wPort);
 	csLen.Format(_T("%d"), dwLen);
 

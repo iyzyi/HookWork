@@ -31,5 +31,5 @@ struct _Data_send {
 	DWORD						dwIP;
 	WORD						wPort;
 	msgpack::type::raw_ref		sbuffer;
-	MSGPACK_DEFINE(dwIP, wPort, sbuffer, socket)
+	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
 };
