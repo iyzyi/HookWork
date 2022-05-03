@@ -22,6 +22,11 @@
 CFrameNetworkDlg::CFrameNetworkDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_FRAMENETWORK_DIALOG, pParent)
 {
+	// 开启控制台窗口
+	AllocConsole();
+	FILE* stream = nullptr;
+	freopen_s(&stream, "CONOUT$", "w", stdout);
+
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -46,6 +51,10 @@ BEGIN_MESSAGE_MAP(CFrameNetworkDlg, CDialogEx)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
 	ON_COMMAND(ID_32773, &CFrameNetworkDlg::OnChooseProcessCommand)
+
+	// 选择了进程ID之后，CChooseProcess窗口发送消息WM_GET_CHOOSE_PROCESS_ID，收到此消息后，执行OnGetChooseProcessId
+	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, &CFrameNetworkDlg::OnGetChooseProcessId)
+	ON_COMMAND(ID_32775, &CFrameNetworkDlg::OnBeginWork)
 END_MESSAGE_MAP()
 
 
@@ -136,6 +145,7 @@ void CFrameNetworkDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 
 // 动态调整控件大小
 void CFrameNetworkDlg::ChangeWidget(int cx, int cy) {
+	// CListCtrl
 	CRect rt1;
 	CListCtrl* pListCtrl = (CListCtrl*)GetDlgItem(IDC_LIST1);
 	if (pListCtrl == NULL)
@@ -150,16 +160,30 @@ void CFrameNetworkDlg::ChangeWidget(int cx, int cy) {
 	pListCtrl->SetColumnWidth(6, rt1.right - 60 - 100 - 60 - 150 - 60 - 60 - 16);
 
 
+	// CEdit
 	CRect rt2;
-	CListCtrl* pEdit = (CListCtrl*)GetDlgItem(IDC_EDIT1);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT1);
 	if (pListCtrl == NULL)
 		return;
 	pEdit->GetWindowRect(rt2);
 	ScreenToClient(rt2);
 	rt2.right = cx - 10;
 	rt2.top = cy / 1.66667 + 5;
-	rt2.bottom = cy - 10;
+	rt2.bottom = cy - 30;
 	pEdit->MoveWindow(rt2);
+
+	// CStatic
+	CRect rt3;
+	CStatic* pStatic = (CStatic*)GetDlgItem(IDC_STATIC_TEXT_INFO);
+	if (pStatic == NULL)
+		return;
+	pStatic->GetWindowRect(rt2);
+	ScreenToClient(rt3);
+	rt3.left = 12;
+	rt3.right = cx - 10;
+	rt3.top = cy - 24;
+	rt3.bottom = cy - 10;
+	pStatic->MoveWindow(rt3);
 }
 
 
@@ -176,4 +200,32 @@ void CFrameNetworkDlg::OnChooseProcessCommand()
 {
 	CChooseProcessDlg dlgChooseProcess;
 	dlgChooseProcess.DoModal();
+}
+
+
+// 自定义消息处理函数，在CChooseProcess窗口中选择了某个进程之后自动执行
+LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
+{
+	DWORD dwPID = (DWORD)w;
+	CString* pcsProcName = (CString*)l;
+
+	m_CurrentChooseProcId = dwPID;
+	m_bInjectSuccess = FALSE;
+	m_hCommandPipe = NULL;
+	m_hDataPipe = NULL;
+
+	CString csText;
+	csText.Format(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
+
+	SetDlgItemText(IDC_STATIC_TEXT_INFO, csText);
+
+	delete pcsProcName;
+	return 0;
+}
+
+
+// 开始，即安装HOOK
+void CFrameNetworkDlg::OnBeginWork()
+{
+	// TODO: 在此添加命令处理程序代码
 }

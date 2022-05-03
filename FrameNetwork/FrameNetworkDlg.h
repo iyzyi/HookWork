@@ -40,4 +40,21 @@ public:
 
 	CListCtrl m_List;
 	afx_msg void OnChooseProcessCommand();
+	afx_msg LRESULT OnGetChooseProcessId(WPARAM w, LPARAM l);
+
+public:
+	DWORD m_CurrentChooseProcId = NULL;
+
+	HANDLE	m_hCommandPipe = NULL;
+	HANDLE	m_hDataPipe = NULL;
+
+	BOOL m_bInjectSuccess = FALSE;
+	afx_msg void OnBeginWork();
 };
+
+
+#define COMMAND_PIPE_BUF_SIZE		4096
+#define COMMAND_PIPE				"\\\\.\\pipe\\CommandPipe"
+
+#define DATA_PIPE_BUF_SIZE			0xffffff
+#define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
