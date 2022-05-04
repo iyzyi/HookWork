@@ -25,8 +25,25 @@ struct _Data_recv {
 	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
 };
 
+struct _Data_recvfrom {
+	SOCKET						socket;
+	DWORD						dwIP;
+	WORD						wPort;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
+};
+
 
 struct _Data_send {
+	SOCKET						socket;
+	DWORD						dwIP;
+	WORD						wPort;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
+};
+
+
+struct _Data_sendto {
 	SOCKET						socket;
 	DWORD						dwIP;
 	WORD						wPort;

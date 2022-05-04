@@ -162,11 +162,11 @@ CString ByteArray2HexAndInfoCString(PBYTE pbData, DWORD dwDataBufLen, DWORD dwCh
 
 	DWORD dwRow = 0, dwColumn = 0;
 	for (dwRow = 0; dwRow < dwDataBufLen / dwCharNumPerRow + 1; dwRow++) {
-		csTemp.Format(_T("0x%02x\t"), dwRow * dwCharNumPerRow);
+		csTemp.Format(_T("0x%04x\t"), dwRow * dwCharNumPerRow);
 		csText += csTemp;
 
 		for (dwColumn = 0; (dwRow * dwCharNumPerRow + dwColumn < dwDataBufLen) && (dwColumn < dwCharNumPerRow); dwColumn++) {
-			csTemp.Format(_T("%04x "), pbData[dwRow * dwCharNumPerRow + dwColumn]);
+			csTemp.Format(_T("%02x "), pbData[dwRow * dwCharNumPerRow + dwColumn]);
 			csText += csTemp;
 		}
 

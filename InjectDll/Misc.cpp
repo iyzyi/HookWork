@@ -84,6 +84,12 @@ VOID WriteDwordToBuffer(PBYTE pbData, DWORD dwNum, DWORD dwPos) {
 	pbData2[3] = (dwNum >> 24) & 0xff;
 }
 
+// 从buffer中偏移dwPos处取出一个DWORD，暂时默认小端存储，以后再完善吧。
+DWORD GetDwordFromBuffer(PBYTE pbData, DWORD dwPos) {
+	PBYTE pbData2 = pbData + dwPos;
+	return pbData2[0] + (pbData2[1] << 8) + (pbData2[2] << 16) + (pbData2[3] << 24);
+}
+
 
 // 获取socket连接的对端IP(即远程IP)
 BOOL GetSocketIpPort(SOCKET s, PDWORD pdwIP, PWORD pwPort) {

@@ -42,6 +42,9 @@
     <ClInclude Include="EnumFunction.h">
       <Filter>头文件\Hook函数</Filter>
     </ClInclude>
+    <ClInclude Include="InstallAndUninstallHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -64,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="EnumFunction.cpp">
       <Filter>源文件\Hook函数</Filter>
+    </ClCompile>
+    <ClCompile Include="InstallAndUninstallHook.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

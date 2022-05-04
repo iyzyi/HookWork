@@ -21,6 +21,7 @@ VOID PrintData(LPBYTE pbPrintData, DWORD dwDataLen);
 
 VOID WriteDwordToBuffer(PBYTE pbData, DWORD dwNum, DWORD dwPos = 0);
 
+DWORD GetDwordFromBuffer(PBYTE pbData, DWORD dwPos = 0);
 
 // 获取socket连接的对端IP(即远程IP)
 BOOL GetSocketIpPort(SOCKET s, PDWORD pdwIP, PWORD pwPort);

@@ -20,7 +20,4 @@ DWORD WINAPI ThreadFunc_Main(LPVOID lpParameter);
 DWORD SendData(PBYTE szBuffer, DWORD dwBufLen);
 DWORD SendData(PCHAR szBuffer);
 
-void AllInstallHook();
-void AllUninstallHook();
-
 void StopWork();

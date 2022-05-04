@@ -39,6 +39,20 @@ int WSAAPI My_send(SOCKET s, const char* buf, int len, int flags) {
 
 
 int WSAAPI My_sendto(SOCKET s, const char FAR* buf, int len, int flags, const struct sockaddr FAR* to, int tolen) {
+	_Data_sendto data;
+	data.socket = s;
+	data.sbuffer.ptr = (char*)buf;
+	data.sbuffer.size = len;
+
+	data.dwIP = ((sockaddr_in*)to)->sin_addr.S_un.S_addr;
+	data.wPort = (int)ntohs(((sockaddr_in*)to)->sin_port);
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_sendto>(data, pBuffer, ID_sendto);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
 	return True_sendto(s, buf, len, flags, to, tolen);
 }
 
@@ -85,7 +99,23 @@ int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 
 
 int WSAAPI My_recvfrom(SOCKET s, char FAR* buf, int len, int flags, struct sockaddr FAR* from, int FAR* fromlen) {
-	return True_recvfrom(s, buf, len, flags, from, fromlen);
+	int iRet = True_recvfrom(s, buf, len, flags, from, fromlen);
+	if (iRet > 0) {
+		_Data_recvfrom data;
+		data.socket = s;
+		data.sbuffer.ptr = (char*)buf;
+		data.sbuffer.size = iRet;
+
+		data.dwIP = ((sockaddr_in*)from)->sin_addr.S_un.S_addr;
+		data.wPort = (int)ntohs(((sockaddr_in*)from)->sin_port);
+
+		PBYTE pBuffer = NULL;
+		DWORD dwBufferSize = MsgPackWithFuncId<_Data_recvfrom>(data, pBuffer, ID_recvfrom);
+
+		SendData(pBuffer, dwBufferSize);
+		delete[] pBuffer;
+	}
+	return iRet;
 }
 
 

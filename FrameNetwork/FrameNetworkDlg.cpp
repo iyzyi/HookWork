@@ -11,6 +11,7 @@
 
 #include "../SimpleHookEngine/SimpleHookEngine.h"
 #include "../RemoteInjectTool/RemoteInjectTool.h"
+#include "../InjectDll/EnumFunction.h"
 #include "ParsePacket.h"
 #include "ChooseProcessDlg.h"
 
@@ -19,6 +20,15 @@
 #endif
 
 #pragma warning(disable:4996)
+
+
+
+// 只HOOK以下函数
+DWORD FuncList[] = { ID_send, ID_recv, ID_sendto, ID_recvfrom };
+
+DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
+
+
 
 
 // CFrameNetworkDlg 对话框
@@ -339,7 +349,7 @@ BOOL CFrameNetworkDlg::RemoteInject()
 	if (m_hCommandPipe == NULL || m_hDataPipe == NULL) {
 		ShowInfo("创建并等待管道连接失败");
 		return FALSE;
-	}	
+	}
 
 	// 接收数据的线程
 	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_DataPipeRecv, NULL, 0, NULL);
@@ -352,22 +362,30 @@ BOOL CFrameNetworkDlg::RemoteInject()
 BOOL CFrameNetworkDlg::InstallHook()
 {
 	DWORD dwReturn = 0;
-	char szBuffer[] = "InstallHook";
+	char szBuffer[32] = "InstallHook";
 
 	if (!m_bInjectSuccess) {
 		ShowInfo("DLL未成功注入，无法安装HOOK\n");
 		return FALSE;
 	}
 
-	// 向客户端发送数据
-	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
-	{
-		if (CheckProcessAlive(m_CurrentChooseProcId)) {
-			StopCurrentWork();
-			ShowInfo("目标进程已关闭，中断捕获数据");
+	// 发送数据的格式为：InstallHook + DWORD(函数ID)
+	for (int i = 0; i < dwFuncNum; i++) {
+		WriteDwordToBuffer((PBYTE)szBuffer, FuncList[i], 11);
+
+		// 向客户端发送数据
+		if (!WriteFile(m_hCommandPipe, szBuffer, 15, &dwReturn, NULL))
+		{
+			if (CheckProcessAlive(m_CurrentChooseProcId)) {
+				StopCurrentWork();
+				ShowInfo("目标进程已关闭，中断捕获数据");
+			}
+			return FALSE;
 		}
-		return FALSE;
+		Sleep(100);		// 实测，命名管道也是会有粘包的。
 	}
+
+	
 
 	return TRUE;
 }
@@ -377,7 +395,7 @@ BOOL CFrameNetworkDlg::InstallHook()
 BOOL CFrameNetworkDlg::UninstallHook()
 {
 	DWORD dwReturn = 0;
-	char szBuffer[] = "UninstallHook";
+	char szBuffer[] = "AllUninstallHook";
 
 	if (!m_bInjectSuccess) {
 		ShowInfo("DLL未成功注入，无需卸载HOOK\n");

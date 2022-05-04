@@ -25,6 +25,7 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 
 	switch (dwFuncId)
 	{
+
 	case ID_recv: 
 	{
 		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwMsgBufferSize);
@@ -32,10 +33,27 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 		pMainDlg->m_dwIndex++;
 		break;
 	}
+
 	case ID_send:
 	{
 		_Data_send data = MsgUnpack<_Data_send>(pMsgBuffer, dwMsgBufferSize);
 		pListData->AddRow(pMainDlg->m_dwIndex, _T("send"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_sendto:
+	{
+		_Data_sendto data = MsgUnpack<_Data_sendto>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("sendto"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_recvfrom:
+	{
+		_Data_recvfrom data = MsgUnpack<_Data_recvfrom>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("recvfrom"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
 		pMainDlg->m_dwIndex++;
 		break;
 	}

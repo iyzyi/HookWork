@@ -3,6 +3,7 @@
 #include "CommunicationPipe.h"
 #include "MyFunction.h"
 #include "Misc.h"
+#include "InstallAndUninstallHook.h"
 #include <stdio.h>
 
 
@@ -18,47 +19,21 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 	while (ReadFile(hCommandPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
 
-		if (strcmp(szBuffer, "InstallHook") == 0) {
+		DllPrintf("接收：\n");
+		PrintData((PBYTE)szBuffer, dwReturn);
+
+		if (strcmp(szBuffer, "AllInstallHook") == 0) {			// 准备用于API监测系统，HOOK全部函数
 			AllInstallHook();
 		}
-		else if (strcmp(szBuffer, "UninstallHook") == 0) {
+		else if (strcmp(szBuffer, "AllUninstallHook") == 0) {	// 这个都可以用。mhook应该是就算是没hook过的，调用uninstallhook也不会出错，因为有uninstall前有额外的判断
 			AllUninstallHook();
 			StopWork();
 		}
+		else if (dwReturn == 15 && 0 == strncmp(szBuffer, "InstallHook", 11)) {
+			InstallOneHook((PBYTE)szBuffer);
+		}
 	}
 	return 0;
-}
-
-
-void AllInstallHook() {
-	DllPrintf("InstallHook......\n");
-
-	InstallHook((void**)&True_send, My_send);
-	InstallHook((void**)&True_sendto, My_sendto);
-	InstallHook((void**)&True_WSASend, My_WSASend);
-	InstallHook((void**)&True_WSASendTo, My_WSASendTo);
-	InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
-
-	InstallHook((void**)&True_recv, My_recv);
-	InstallHook((void**)&True_recvfrom, My_recvfrom);
-	InstallHook((void**)&True_WSARecv, My_WSARecv);
-	InstallHook((void**)&True_WSARecvFrom, My_WSARecvFrom);
-}
-
-
-void AllUninstallHook() {
-	DllPrintf("UninstallHook......\n");
-
-	UninstallHook((void**)&True_send);
-	UninstallHook((void**)&True_sendto);
-	UninstallHook((void**)&True_WSASend);
-	UninstallHook((void**)&True_WSASendTo);
-	UninstallHook((void**)&True_WSASendMsg);
-
-	UninstallHook((void**)&True_recv);
-	UninstallHook((void**)&True_recvfrom);
-	UninstallHook((void**)&True_WSARecv);
-	UninstallHook((void**)&True_WSARecvFrom);
 }
 
 
@@ -116,7 +91,7 @@ DWORD SendData(PBYTE pBuffer, DWORD dwBufLen) {
 	{
 		DllPrintf("向DataPipe管道写入数据失败，即将卸载HOOK并销毁管道\n");
 		AllUninstallHook();
-
+		StopWork();
 	}
 	return dwReturn;
 }
