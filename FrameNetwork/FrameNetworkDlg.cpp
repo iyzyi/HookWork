@@ -82,6 +82,13 @@ BOOL CFrameNetworkDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	// 设置菜单栏
+	m_Menu.LoadMenu(IDR_MENU1);
+	SetMenu(&m_Menu);
+
+	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
+	InvalidMenuItem(ID_32775);
+	InvalidMenuItem(ID_32776);
 
 	// 修改CEdit CListCtrl的字体，使得等宽
 	static CFont font;
@@ -243,6 +250,9 @@ LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 	}
 	m_pListData = new CListNetworkData(((CFrameNetworkDlg*)(theApp.m_pMainWnd)));
 
+	// 菜单栏 开始这一项可用
+	ValidMenuItem(ID_32775);
+
 	delete pcsProcName;
 	return 0;
 }
@@ -252,12 +262,24 @@ LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 DWORD WINAPI ThreadFunc_DataPipeRecv() {
 	PBYTE pBuffer = new BYTE[DATA_PIPE_BUF_SIZE];
 	DWORD dwReturn = 0;
-
+	
+	CFrameNetworkDlg* pMainDlg = ((CFrameNetworkDlg*)(theApp.m_pMainWnd));
 	HANDLE hDataPipe = ((CFrameNetworkDlg*)(theApp.m_pMainWnd))->m_hDataPipe;
-	while (ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL)) {
-		pBuffer[dwReturn] = '\0';
 
-		ParsePacket(((CFrameNetworkDlg*)(theApp.m_pMainWnd)), pBuffer, dwReturn);
+	while (true) {
+
+		if (!CheckProcessAlive(pMainDlg->m_CurrentChooseProcId)) {
+			pMainDlg->StopCurrentWork();
+			pMainDlg->ShowInfo("目标进程已关闭，中断捕获数据");
+			return 0;
+		}
+		printf("1\n");
+
+		BOOL bRet = ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL);
+		if (bRet) {
+			pBuffer[dwReturn] = '\0';
+			ParsePacket(((CFrameNetworkDlg*)(theApp.m_pMainWnd)), pBuffer, dwReturn);
+		}
 	}
 	return 0;
 }
@@ -341,10 +363,9 @@ BOOL CFrameNetworkDlg::InstallHook()
 	// 向客户端发送数据
 	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
-		//ShowInfo("向CommandPipe管道写入数据失败，中断连接\n");
 		if (CheckProcessAlive(m_CurrentChooseProcId)) {
 			StopCurrentWork();
-			ShowInfo("目标进程已退出，中断捕获数据");
+			ShowInfo("目标进程已关闭，中断捕获数据");
 		}
 		return FALSE;
 	}
@@ -367,10 +388,9 @@ BOOL CFrameNetworkDlg::UninstallHook()
 	// 向客户端发送数据
 	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
-		//ShowInfo("向CommandPipe管道写入数据失败，中断连接\n");
 		if (CheckProcessAlive(m_CurrentChooseProcId)) {
 			StopCurrentWork();
-			ShowInfo("目标进程已退出，中断捕获数据");
+			ShowInfo("目标进程已关闭，中断捕获数据");
 		}
 		
 		return FALSE;
@@ -383,21 +403,40 @@ BOOL CFrameNetworkDlg::UninstallHook()
 void CFrameNetworkDlg::OnBeginWorkCommand()
 {
 	if (RemoteInject()) {
-		InstallHook();
+		if (InstallHook()) {
+			// 菜单栏 停止 这一项可用
+			ValidMenuItem(ID_32776);
+			// 选择进程 和 开始 这两项都不可用
+			InvalidMenuItem(ID_32773);
+			InvalidMenuItem(ID_32775);
+		}
 	}
 }
 
 // 结束，即卸载HOOK
 void CFrameNetworkDlg::OnEndWorkCommand()
 {
+	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
+	InvalidMenuItem(ID_32775);
+	InvalidMenuItem(ID_32776);
+
 	UninstallHook();
 }
 
 
+
 // 判断进程是否存活
 BOOL CheckProcessAlive(DWORD dwPID) {
+	// 僵尸进程具有PID，即使它们已终止。
+	// 使用超时为 0 的 WaitForSingleObject 查看进程是否已终止
+
 	HANDLE hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
-	return (hProcess != NULL);
+	if (hProcess == NULL)
+		return FALSE;
+
+	DWORD dwRet = WaitForSingleObject(hProcess, 0);
+	CloseHandle(hProcess);
+	return (dwRet == 0) ? 0 : 1;
 }
 
 
@@ -416,6 +455,10 @@ void CFrameNetworkDlg::StopCurrentWork() {
 	m_bInjectSuccess = FALSE;
 	m_CurrentChooseProcId = 0;
 	m_dwIndex = 0;
+
+	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
+	InvalidMenuItem(ID_32775);
+	InvalidMenuItem(ID_32776);
 }
 
 
@@ -471,4 +514,16 @@ void CFrameNetworkDlg::OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult)
 	m_Edit.SetWindowText(csHexAndInfo);
 
 	*pResult = 0;
+}
+
+
+// 使菜单栏的某一项可用
+void CFrameNetworkDlg::ValidMenuItem(UINT nIDEnableItem) {
+	m_Menu.EnableMenuItem(nIDEnableItem, MF_BYCOMMAND | MF_ENABLED);
+}
+
+
+// 使菜单栏的某一项变灰不可用
+void CFrameNetworkDlg::InvalidMenuItem(UINT nIDEnableItem) {
+	m_Menu.EnableMenuItem(nIDEnableItem, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 }
