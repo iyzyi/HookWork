@@ -29,8 +29,10 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 			AllUninstallHook();
 			StopWork();
 		}
-		else if (dwReturn == 15 && 0 == strncmp(szBuffer, "InstallHook", 11)) {
-			InstallOneHook((PBYTE)szBuffer);
+		else if (dwReturn % 15 == 0 && 0 == strncmp(szBuffer, "InstallHook", 11)) {	// 每条安装HOOK指令长15，InstallHook + DWORD(FuncID)。可能有粘包，故判断是否为15的倍数
+			for (int i = 0; i < dwReturn / 15; i++){
+				InstallOneHook((PBYTE)szBuffer + i * 15);
+			}
 		}
 	}
 	return 0;

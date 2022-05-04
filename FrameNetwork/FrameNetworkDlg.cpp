@@ -382,7 +382,8 @@ BOOL CFrameNetworkDlg::InstallHook()
 			}
 			return FALSE;
 		}
-		Sleep(100);		// 实测，命名管道也是会有粘包的。
+		//Sleep(100);		// 实测，命名管道也是会有粘包的。
+		// 算了，还是乖乖在另一端处理粘包吧
 	}
 
 	
