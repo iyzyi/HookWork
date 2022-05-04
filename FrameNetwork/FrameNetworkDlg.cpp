@@ -273,7 +273,6 @@ DWORD WINAPI ThreadFunc_DataPipeRecv() {
 			pMainDlg->ShowInfo("目标进程已关闭，中断捕获数据");
 			return 0;
 		}
-		printf("1\n");
 
 		BOOL bRet = ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL);
 		if (bRet) {
@@ -421,6 +420,9 @@ void CFrameNetworkDlg::OnEndWorkCommand()
 	InvalidMenuItem(ID_32776);
 
 	UninstallHook();
+
+	// 选择进程 菜单子项 可用
+	ValidMenuItem(ID_32773);
 }
 
 
@@ -458,7 +460,10 @@ void CFrameNetworkDlg::StopCurrentWork() {
 
 	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
 	InvalidMenuItem(ID_32775);
-	InvalidMenuItem(ID_32776);
+	InvalidMenuItem(ID_32776); 
+
+	// 选择进程 菜单子项
+	ValidMenuItem(ID_32773);
 }
 
 

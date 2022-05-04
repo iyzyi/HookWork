@@ -56,9 +56,10 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 HANDLE ConnectPipe(LPSTR szPipeName) {
 	// 判断是否有可以使用的命名管道实例，不成功就继续尝试 
 	while (!WaitNamedPipeA(szPipeName, NMPWAIT_USE_DEFAULT_WAIT)) {
-		DllPrintf("%s管道无可用实例\n", szPipeName);
+		DllPrintf("%s管道无可用实例，0.1s后再次尝试\n", szPipeName);
 		Sleep(100);
 	}
+	DllPrintf("%s管道存在可用实例\n", szPipeName);
 
 	// 打开可用的命名管道 , 并与服务器端进程进行通信  
 	HANDLE hPipe = CreateFileA(szPipeName, GENERIC_READ | GENERIC_WRITE,
@@ -70,6 +71,9 @@ HANDLE ConnectPipe(LPSTR szPipeName) {
 		DllPrintf("%s管道打开失败\n", szPipeName);
 		return NULL;
 	}
+	else 
+		DllPrintf("%s管道打开成功\n", szPipeName);
+
 	return hPipe;
 }
 
