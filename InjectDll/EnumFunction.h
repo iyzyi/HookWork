@@ -52,3 +52,19 @@ struct _Data_sendto {
 	msgpack::type::raw_ref		sbuffer;
 	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
 };
+
+struct _Data_WSASend {
+	SOCKET						socket;
+	DWORD						dwIP;
+	WORD						wPort;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
+};
+
+struct _Data_WSARecv {
+	SOCKET						socket;
+	DWORD						dwIP;
+	WORD						wPort;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(socket, dwIP, wPort, sbuffer)
+};

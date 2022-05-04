@@ -42,6 +42,7 @@ void InstallOneHook(PBYTE szBuffer) {
 	DWORD dwFuncId = GetDwordFromBuffer(szBuffer, 11);
 
 	switch (dwFuncId) {
+
 	case ID_send: {
 		DllPrintf("Install Hook send\n");
 		InstallHook((void**)&True_send, My_send);
@@ -63,6 +64,18 @@ void InstallOneHook(PBYTE szBuffer) {
 	case ID_recvfrom: {
 		DllPrintf("Install Hook recvfrom\n");
 		InstallHook((void**)&True_recvfrom, My_recvfrom);
+		break;
+	}
+
+	case ID_WSASend:{
+		DllPrintf("Install Hook WSASend\n");
+		InstallHook((void**)&True_WSASend, My_WSASend);
+		break;
+	}
+
+	case ID_WSARecv: {
+		DllPrintf("Install Hook WSARecv\n");
+		InstallHook((void**)&True_WSARecv, My_WSARecv);
 		break;
 	}
 

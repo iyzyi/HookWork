@@ -24,7 +24,17 @@
 
 
 // 只HOOK以下函数
-DWORD FuncList[] = { ID_send, ID_recv, ID_sendto, ID_recvfrom };
+DWORD FuncList[] = { 
+	ID_send,
+	ID_sendto,
+	ID_WSASend,
+	ID_WSASendTo,
+	ID_WSASendMsg,
+	ID_recv,
+	ID_recvfrom,
+	ID_WSARecv,
+	ID_WSARecvFrom
+};
 
 DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
 

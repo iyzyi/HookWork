@@ -58,6 +58,20 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 		break;
 	}
 
+	case ID_WSASend: {
+		_Data_WSASend data = MsgUnpack<_Data_WSASend>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("WSASend"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_WSARecv: {
+		_Data_WSARecv data = MsgUnpack<_Data_WSARecv>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("WSARecv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
 	default:
 		break;
 	}

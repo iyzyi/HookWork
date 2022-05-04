@@ -57,8 +57,28 @@ int WSAAPI My_sendto(SOCKET s, const char FAR* buf, int len, int flags, const st
 }
 
 
-
 int WSAAPI My_WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
+	// 一些相关内容：https://blog.csdn.net/windcsn/article/details/420958	
+
+	for (int i = 0; i < dwBufferCount; i++) {
+		_Data_WSASend data;
+		data.socket = s;
+		data.sbuffer.ptr = lpBuffers[i].buf;
+		data.sbuffer.size = lpBuffers[i].len;
+
+		DWORD dwIP = 0;
+		WORD wPort = 0;
+		GetSocketIpPort(s, &dwIP, &wPort);
+		data.dwIP = dwIP;
+		data.wPort = wPort;
+
+		PBYTE pBuffer = NULL;
+		DWORD dwBufferSize = MsgPackWithFuncId<_Data_WSASend>(data, pBuffer, ID_WSASend);
+
+		SendData(pBuffer, dwBufferSize);
+		delete[] pBuffer;
+	}
+
 	return True_WSASend(s, lpBuffers, dwBufferCount, lpNumberOfBytesSent, dwFlags, lpOverlapped, lpCompletionRoutine);
 }
 
@@ -120,7 +140,35 @@ int WSAAPI My_recvfrom(SOCKET s, char FAR* buf, int len, int flags, struct socka
 
 
 int WSAAPI My_WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
-	return True_WSARecv(s, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd, lpFlags, lpOverlapped, lpCompletionRoutine);
+	DWORD dwRet = True_WSARecv(s, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd, lpFlags, lpOverlapped, lpCompletionRoutine);
+
+	DllPrintf("dwBufferCount=%d\nlpNumberOfBytesRecvd=%d\nlpOverlapped=%p\n", dwBufferCount, *lpNumberOfBytesRecvd, lpOverlapped);
+
+	// TODO 此处未考虑重叠套接字，未考虑WSAGetOverlappedResult
+	// 
+	// 返回值为0表示未发生错误，并且接收操作已立即完成（即这肯定是非重叠套接字）
+	if (dwRet == 0) {										
+		for (int i = 0; i < dwBufferCount; i++) {
+			_Data_WSARecv data;
+			data.socket = s;
+			data.sbuffer.ptr = lpBuffers[i].buf;
+			data.sbuffer.size = *lpNumberOfBytesRecvd;		// lpNumberOfBytesRecvd： 如果接收操作立即完成，这里会返回函数调用所接收到的字节数
+
+			DWORD dwIP = 0;
+			WORD wPort = 0;
+			GetSocketIpPort(s, &dwIP, &wPort);
+			data.dwIP = dwIP;
+			data.wPort = wPort;
+
+			PBYTE pBuffer = NULL;
+			DWORD dwBufferSize = MsgPackWithFuncId<_Data_WSARecv>(data, pBuffer, ID_WSARecv);
+
+			SendData(pBuffer, dwBufferSize);
+			delete[] pBuffer;
+		}
+	}
+
+	return dwRet;
 }
 
 
