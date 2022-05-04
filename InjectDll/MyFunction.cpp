@@ -19,7 +19,6 @@
 int WSAAPI My_send(SOCKET s, const char* buf, int len, int flags) {
 	_Data_send data;
 	data.socket = s;
-	DllPrintf("socket=%x\n", s);
 	data.sbuffer.ptr = (char*)buf;
 	data.sbuffer.size = len;
 

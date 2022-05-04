@@ -28,10 +28,12 @@
 CFrameNetworkDlg::CFrameNetworkDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_FRAMENETWORK_DIALOG, pParent)
 {
+#ifdef _DEBUG
 	// 开启控制台窗口
 	AllocConsole();
 	FILE* stream = nullptr;
 	freopen_s(&stream, "CONOUT$", "w", stdout);
+#endif
 
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -81,7 +83,7 @@ BOOL CFrameNetworkDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 
-	// 修改CEdit的字体，使得等宽
+	// 修改CEdit CListCtrl的字体，使得等宽
 	static CFont font;
 	font.DeleteObject();
 	font.CreatePointFont(100, _T("新宋体"));
@@ -221,8 +223,9 @@ LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 {
 	StopCurrentWork();
 
-	// 选择新进程后，把之前ListCtrl中绘制的数据清空
+	// 选择新进程后，把之前UI中绘制的数据清空
 	m_List.DeleteAllItems();
+	m_Edit.SetWindowText(_T(""));
 
 	DWORD dwPID = (DWORD)w;
 	CString* pcsProcName = (CString*)l;

@@ -8,6 +8,7 @@
 
 int DllPrintf(PCHAR fmt, ...)
 {
+#ifdef _DEBUG
 	//不定参数格式化
 	va_list argptr;
 	va_start(argptr, fmt);
@@ -27,6 +28,9 @@ int DllPrintf(PCHAR fmt, ...)
 	WriteConsoleA(gHConsole, buffer, strlen(buffer), &dw, NULL);
 
 	return(cnt);
+#else
+	return 0;
+#endif
 }
 
 
