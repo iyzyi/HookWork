@@ -7,6 +7,8 @@
 #include "FrameNetworkDlg.h"
 
 
+// WSASendto, WSARecvfrom, WSASendMsg找不到可以进行验证的样本程序，写出来也没法验证正确性，就先不写了。
+
 
 VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) {
 	if (pMainDlg == NULL)
@@ -26,14 +28,6 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 	switch (dwFuncId)
 	{
 
-	case ID_recv: 
-	{
-		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("recv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
-		pMainDlg->m_dwIndex++;
-		break;
-	}
-
 	case ID_send:
 	{
 		_Data_send data = MsgUnpack<_Data_send>(pMsgBuffer, dwMsgBufferSize);
@@ -50,17 +44,25 @@ VOID ParsePacket(CFrameNetworkDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) 
 		break;
 	}
 
-	case ID_recvfrom:
-	{
-		_Data_recvfrom data = MsgUnpack<_Data_recvfrom>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("recvfrom"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+	case ID_WSASend: {
+		_Data_WSASend data = MsgUnpack<_Data_WSASend>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("WSASend"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
 		pMainDlg->m_dwIndex++;
 		break;
 	}
 
-	case ID_WSASend: {
-		_Data_WSASend data = MsgUnpack<_Data_WSASend>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("WSASend"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+	case ID_recv:
+	{
+		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("recv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_recvfrom:
+	{
+		_Data_recvfrom data = MsgUnpack<_Data_recvfrom>(pMsgBuffer, dwMsgBufferSize);
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("recvfrom"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
 		pMainDlg->m_dwIndex++;
 		break;
 	}
