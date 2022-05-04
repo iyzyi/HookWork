@@ -118,7 +118,7 @@ BOOL CFrameNetworkDlg::OnInitDialog()
 	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 150);
 	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 60);
 	m_List.InsertColumn(5, head[5], LVCFMT_LEFT, 60);
-	m_List.InsertColumn(6, head[6], LVCFMT_LEFT, 665);
+	m_List.InsertColumn(6, head[6], LVCFMT_LEFT, 651);
 
 	//设置风格样式
 	//LVS_EX_GRIDLINES 网格
