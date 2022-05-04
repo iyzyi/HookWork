@@ -29,4 +29,8 @@ VOID WriteDwordToBuffer(PBYTE pbData, DWORD dwNum, DWORD dwPos = 0);
 VOID WriteWordToBuffer(PBYTE pbData, WORD wNum, DWORD dwPos = 0);
 VOID WriteByteToBuffer(PBYTE pbData, BYTE byNum, DWORD dwPos = 0);
 
+
 CString ByteArray2HexCString(PBYTE pbData, DWORD dwDataBufLen);
+
+// 左侧是十六进制数据，右侧是左侧数据的对应字符
+CString ByteArray2HexAndInfoCString(PBYTE pbData, DWORD dwDataBufLen, DWORD dwCharNumPerRow);

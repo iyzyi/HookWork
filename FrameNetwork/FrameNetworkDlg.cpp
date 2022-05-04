@@ -40,6 +40,9 @@ void CFrameNetworkDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST1, m_List);
+	//  DDX_Control(pDX, IDC_STATIC_TEXT_INFO, m_Edit);
+	DDX_Control(pDX, IDC_STATIC_TEXT_INFO, m_StaticText);
+	DDX_Control(pDX, IDC_EDIT1, m_Edit);
 }
 
 // 解决回车键 ESC 默认关闭窗口
@@ -62,6 +65,7 @@ BEGIN_MESSAGE_MAP(CFrameNetworkDlg, CDialogEx)
 	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, &CFrameNetworkDlg::OnGetChooseProcessId)
 	ON_COMMAND(ID_32775, &CFrameNetworkDlg::OnBeginWorkCommand)
 	ON_COMMAND(ID_32776, &CFrameNetworkDlg::OnEndWorkCommand)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, &CFrameNetworkDlg::OnLvnItemchangedList)
 END_MESSAGE_MAP()
 
 
@@ -76,6 +80,13 @@ BOOL CFrameNetworkDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+
+	// 修改CEdit的字体，使得等宽
+	static CFont font;
+	font.DeleteObject();
+	font.CreatePointFont(100, _T("新宋体"));
+	m_Edit.SetFont(&font);
+	m_List.SetFont(&font);
 
 	// 以下是List Control
 	//标题所需字段
@@ -158,7 +169,7 @@ void CFrameNetworkDlg::ChangeWidget(int cx, int cy) {
 	pListCtrl->MoveWindow(rt1);
 
 	// 动态调整第7列（数据一列）的长度
-	pListCtrl->SetColumnWidth(6, rt1.right - 60 - 100 - 60 - 150 - 60 - 60 - 16);
+	pListCtrl->SetColumnWidth(6, rt1.right - 60 - 100 - 60 - 150 - 60 - 60 - 33);
 
 
 	// CEdit
@@ -397,4 +408,25 @@ void CFrameNetworkDlg::ShowInfo(PWCHAR fmt, ...)
 	SetDlgItemTextW(IDC_STATIC_TEXT_INFO, buffer);
 
 	return;
+}
+
+
+// 点击行时触发，获取此时行号，显示详细的数据信息
+// LVN_ITEMCHANGED 消息会响应三次，若函数中包含数据库操作，请添加条件判断排除其中的两次响应。
+void CFrameNetworkDlg::OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	
+	if (!(pNMLV->uChanged == LVIF_STATE && (pNMLV->uNewState & LVIS_SELECTED)))		// 只有行号改变了才会继续
+		return;
+
+	int iItem = pNMLV->iItem;	// 选择的行号
+
+	_ListNetworkRowData* pRowData = m_pListData->m_pRowDataIndexTable[iItem];
+
+	CString csHexAndInfo = ByteArray2HexAndInfoCString(pRowData->pbData, pRowData->dwLen, 16);
+
+	m_Edit.SetWindowText(csHexAndInfo);
+
+	*pResult = 0;
 }

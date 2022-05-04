@@ -41,6 +41,8 @@ _ListNetworkRowData::_ListNetworkRowData(DWORD dwIndex, CString csFuncName, SOCK
 CListNetworkData::CListNetworkData(CFrameNetworkDlg* pMainDlg) {
 	m_pMainDlg = pMainDlg;
 	m_pListCtrl = &(m_pMainDlg->m_List);
+
+	m_pRowDataIndexTable = new _ListNetworkRowData*[MAX_PACKET_NUM];
 }
 
 
@@ -65,6 +67,9 @@ CListNetworkData::~CListNetworkData() {
 			}
 		}
 	}
+
+	if (m_pRowDataIndexTable != NULL)
+		delete m_pRowDataIndexTable;
 }
 
 
@@ -79,6 +84,8 @@ void CListNetworkData::AddRow(DWORD dwIndex, CString csFuncName, SOCKET SocketId
 		pLast->pNext = pListNetworkRowData;
 		pLast = pListNetworkRowData;
 	}
+
+	m_pRowDataIndexTable[dwIndex] = pListNetworkRowData;		// 将pListNetworkRowData放入索引表，提高查找效率
 
 	// 如果没筛选关键字，则直接绘制此行数据
 	if (!m_pMainDlg->m_bFiltering) {

@@ -153,3 +153,41 @@ CString ByteArray2HexCString(PBYTE pbData, DWORD dwDataBufLen) {
 	}
 	return csText;
 }
+
+
+// 左侧是十六进制数据，右侧是左侧数据的对应字符
+CString ByteArray2HexAndInfoCString(PBYTE pbData, DWORD dwDataBufLen, DWORD dwCharNumPerRow) {
+	CString csText = _T("");
+	CString csTemp = _T("");
+
+	DWORD dwRow = 0, dwColumn = 0;
+	for (dwRow = 0; dwRow < dwDataBufLen / dwCharNumPerRow + 1; dwRow++) {
+		for (dwColumn = 0; (dwRow * dwCharNumPerRow + dwColumn < dwDataBufLen) && (dwColumn < dwCharNumPerRow); dwColumn++) {
+			csTemp.Format(_T("0x%02x "), pbData[dwRow * dwCharNumPerRow + dwColumn]);
+			csText += csTemp;
+		}
+
+		if (dwColumn != dwCharNumPerRow) {
+			while (dwColumn < dwCharNumPerRow) {
+				csText += _T("     ");
+				dwColumn++;
+			}
+		}
+		csText += _T("\t");
+
+		for (dwColumn = 0; (dwRow * dwCharNumPerRow + dwColumn < dwDataBufLen) && (dwColumn < dwCharNumPerRow); dwColumn++) {
+			DWORD dwIndex = dwRow * dwCharNumPerRow + dwColumn;
+			if (pbData[dwIndex] >= 32 && pbData[dwIndex] <= 126) {
+				csTemp.Format(_T("%c"), pbData[dwIndex]);
+				csText += csTemp;
+			}
+			else {
+				csText += _T(".");
+			}
+		}
+		csText += _T("\r\n");
+	}
+	//csText += _T("\r\n");
+
+	return csText;
+}

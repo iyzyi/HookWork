@@ -670,4 +670,3 @@ void CListProcessData::ChangeSortType(DWORD dwCol) {
 	// 按照新的设置排序
 	SortDataByCol(dwCol);
 }
-

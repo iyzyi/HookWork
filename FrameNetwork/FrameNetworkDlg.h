@@ -70,6 +70,10 @@ public:
 
 
 	afx_msg void OnEndWorkCommand();
+//	CStatic m_Edit;
+	CStatic m_StaticText;
+	afx_msg void OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult);
+	CEdit m_Edit;
 };
 
 

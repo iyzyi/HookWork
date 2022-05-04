@@ -3,7 +3,12 @@
 #include "FrameNetworkDlg.h"
 #pragma warning(disable:4996)
 
+
+#define MAX_PACKET_NUM		0xfffff			// 为了提高查找效率（自定义索引表），最大数据包数量受到固定的索引数组的大小的限制
+
+
 class CFrameNetworkDlg;		// 大坑点，CFrameNetworkDlg和CListNetworkData互相包含，必须提前声明
+
 
 struct _ListNetworkRowData {
 	CString					csIndex;
@@ -38,6 +43,8 @@ private:
 
 	_ListNetworkRowData* pFirst = NULL;
 	_ListNetworkRowData* pLast = NULL;
+public:
+	_ListNetworkRowData** m_pRowDataIndexTable = NULL;
 
 public:
 	CListNetworkData(CFrameNetworkDlg* pMainDlg);
