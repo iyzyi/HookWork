@@ -10,6 +10,8 @@
 #include <direct.h>
 #pragma warning(disable:4996) 
 
+#include "RemoteInjectTool.h"
+
 
 #define PROCESS_ID_LIST_NUMBER 256						// 通过进程名称来查找进程可能会找到多个PID
 
@@ -116,6 +118,19 @@ BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath) {
 		return FALSE;
 	}
 
+	// 从路径中提取DLL的名称
+	CHAR szDllName[MAX_PATH], * p;
+	strcpy(szDllName, (p = strrchr(szDllPath, '\\')) ? p + 1 : szDllPath);
+
+	// 注入之前先检查目标进程的内存内是否存在szDllName
+	// 若存在，说明之前注入过一次了，先远程卸载这个DLL
+	hModule = GetHModuleIDByName(dwPid, szDllName);
+	if (hModule != NULL)
+	{
+		printf("[PID=0x%.8x] %s早已存在于目标进程内，正在卸载该DLL\n", dwPid, szDllName);
+		RemoteUnInjectDllByProcessId(dwPid, L"InjectDll.dll");
+	}
+
 	// 打开句柄
 	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
 	if (hProcess == NULL) {
@@ -151,19 +166,15 @@ BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath) {
 	// 释放内存
 	VirtualFreeEx(hProcess, pDllPathRemote, sizeof(szDllPath), MEM_RELEASE);
 
-	// 从路径中提取DLL的名称
-	CHAR szDllName[MAX_PATH], * p;
-	strcpy(szDllName, (p = strrchr(szDllPath, '\\')) ? p + 1 : szDllPath);
-
 	// 在远程进程中查找注入的DLL Module，若找不到说明注入失败
 	hModule = GetHModuleIDByName(dwPid, szDllName);
 	if (hModule == NULL)
 	{
-		printf("[PID=0x%.8x] %s注入失败\n\n", dwPid, szDllName);
+		printf("[PID=0x%.8x] %s注入失败\n", dwPid, szDllName);
 		return FALSE;
 	}
 	else {
-		printf("[PID=0x%.8x] %s注入成功\n\n", dwPid, szDllName);
+		printf("[PID=0x%.8x] %s注入成功\n", dwPid, szDllName);
 		return TRUE;
 	}
 }
@@ -182,6 +193,93 @@ DWORD RemoteInjectByProcessName(PCHAR szProcessName, PCHAR szDllPath) {
 
 	return ((dwProcessIdNumbers & 0xffff) << 16) | (dwSuccessNumbers & 0xffff);
 }
+
+
+//// 远程卸载DLL
+//void RemoteUnInjectDllByProcessId(DWORD dwPid, char* szDllName)
+//{
+//	// 使目标进程调用GetModuleHandle，获得DLL在目标进程中的句柄  
+//	DWORD dwHandle;
+//	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+//	LPVOID pFunc = GetModuleHandleA;
+//	char lpBuf[MAXBYTE];
+//	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0,
+//		(LPTHREAD_START_ROUTINE)pFunc, lpBuf, 0, &dwPid);
+//
+//	// 等待GetModuleHandle运行完毕  
+//	WaitForSingleObject(hThread, INFINITE);
+//
+//	// 获得GetModuleHandle的返回值  
+//	GetExitCodeThread(hThread, &dwHandle);
+//
+//	// 释放目标进程中申请的空间  
+//	int dwSize = strlen(szDllName) + sizeof(char);
+//	VirtualFreeEx(hProcess, lpBuf, dwSize, MEM_DECOMMIT);
+//	CloseHandle(hThread);
+//
+//	// 使目标进程调用FreeLibrary，卸载DLL  
+//	pFunc = FreeLibrary;
+//	hThread = CreateRemoteThread(hProcess, NULL, 0,
+//		(LPTHREAD_START_ROUTINE)pFunc, (LPVOID)dwHandle, 0, &dwPid);
+//
+//	// 等待FreeLibrary卸载完毕  
+//	WaitForSingleObject(hThread, INFINITE);
+//	CloseHandle(hThread);
+//	CloseHandle(hProcess);
+//}
+
+BOOL RemoteUnInjectDllByProcessId(DWORD dwPID, LPCTSTR szDllName)
+{
+	BOOL bMore = FALSE, bFound = FALSE;
+	HANDLE hSnapshot, hProcess, hThread;
+	HMODULE hModule = NULL;
+	MODULEENTRY32 me = { sizeof(me) }; //定义一个用于储存模块快照的结构体
+	LPTHREAD_START_ROUTINE pThreadProc;
+
+	//1.
+	//dwPID=notepad进程ID
+	//使用TH32CS_SNAPMODULE参数
+	//获取加载到notepad进程的DLL名称
+	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
+
+	//此函数检索与进程相关联的第一个模块的信息
+	bMore = Module32First(hSnapshot, &me);
+
+	for (; bMore; bMore = Module32Next(hSnapshot, &me))   //bMore用于判断该进程的模块快照是否还有，bFound用于判断是否找到了我们想要卸载的dll模块
+	{
+		if (!_tcsicmp((LPCTSTR)me.szModule, szDllName) || !_tcsicmp((LPCTSTR)me.szExePath, szDllName))
+		{
+			bFound = TRUE;
+			break;
+		}
+	}
+
+	if (!bFound)
+	{
+		CloseHandle(hSnapshot);
+		return FALSE;
+	}
+	//2. 通过进程PID获取进程句柄
+	if (!(hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID)))
+	{
+		_tprintf(L"OpenProcess(%d) failed!!![%d]\n", dwPID, GetLastError);
+		return FALSE;
+	}
+	//3. 获取FreeLibrary函数的地址
+	hModule = GetModuleHandle(L"kernel32.dll");
+	pThreadProc = (LPTHREAD_START_ROUTINE)GetProcAddress(hModule, "FreeLibrary");
+	//4.创建线程来执行FreeLibrary(modBaseAddr要卸载的dll模块基址)
+	hThread = CreateRemoteThread(hProcess, NULL, 0, pThreadProc, me.modBaseAddr, 0, NULL);
+
+	WaitForSingleObject(hThread, INFINITE);
+
+	CloseHandle(hThread);
+	CloseHandle(hProcess);
+	CloseHandle(hSnapshot);
+
+	return TRUE;
+}
+
 
 
 

@@ -172,7 +172,7 @@ CString ByteArray2HexAndInfoCString(PBYTE pbData, DWORD dwDataBufLen, DWORD dwCh
 
 		if (dwColumn != dwCharNumPerRow) {
 			while (dwColumn < dwCharNumPerRow) {
-				csText += _T("   ");
+				csText += _T("     ");
 				dwColumn++;
 			}
 		}

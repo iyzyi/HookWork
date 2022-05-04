@@ -17,38 +17,48 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 
 	while (ReadFile(hCommandPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
-		//DllPrintf("接收: % s\n", szBuffer);
 
 		if (strcmp(szBuffer, "InstallHook") == 0) {
-			DllPrintf("InstallHook......\n");
-
-			InstallHook((void**)&True_send, My_send);
-			InstallHook((void**)&True_sendto, My_sendto);
-			InstallHook((void**)&True_WSASend, My_WSASend);
-			InstallHook((void**)&True_WSASendTo, My_WSASendTo);
-			InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
-
-			InstallHook((void**)&True_recv, My_recv);
-			InstallHook((void**)&True_recvfrom, My_recvfrom);
-			InstallHook((void**)&True_WSARecv, My_WSARecv);
-			InstallHook((void**)&True_WSARecvFrom, My_WSARecvFrom);
+			AllInstallHook();
 		}
 		else if (strcmp(szBuffer, "UninstallHook") == 0) {
-			DllPrintf("UninstallHook......\n");
-
-			UninstallHook((void**)&True_send);
-			UninstallHook((void**)&True_sendto);
-			UninstallHook((void**)&True_WSASend);
-			UninstallHook((void**)&True_WSASendTo);
-			UninstallHook((void**)&True_WSASendMsg);
-
-			UninstallHook((void**)&True_recv);
-			UninstallHook((void**)&True_recvfrom);
-			UninstallHook((void**)&True_WSARecv);
-			UninstallHook((void**)&True_WSARecvFrom);
+			AllUninstallHook();
+			StopWork();
 		}
 	}
 	return 0;
+}
+
+
+void AllInstallHook() {
+	DllPrintf("InstallHook......\n");
+
+	InstallHook((void**)&True_send, My_send);
+	InstallHook((void**)&True_sendto, My_sendto);
+	InstallHook((void**)&True_WSASend, My_WSASend);
+	InstallHook((void**)&True_WSASendTo, My_WSASendTo);
+	InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
+
+	InstallHook((void**)&True_recv, My_recv);
+	InstallHook((void**)&True_recvfrom, My_recvfrom);
+	InstallHook((void**)&True_WSARecv, My_WSARecv);
+	InstallHook((void**)&True_WSARecvFrom, My_WSARecvFrom);
+}
+
+
+void AllUninstallHook() {
+	DllPrintf("UninstallHook......\n");
+
+	UninstallHook((void**)&True_send);
+	UninstallHook((void**)&True_sendto);
+	UninstallHook((void**)&True_WSASend);
+	UninstallHook((void**)&True_WSASendTo);
+	UninstallHook((void**)&True_WSASendMsg);
+
+	UninstallHook((void**)&True_recv);
+	UninstallHook((void**)&True_recvfrom);
+	UninstallHook((void**)&True_WSARecv);
+	UninstallHook((void**)&True_WSARecvFrom);
 }
 
 
@@ -104,7 +114,9 @@ DWORD SendData(PBYTE pBuffer, DWORD dwBufLen) {
 
 	if (!WriteFile(hDataPipe, pBuffer, dwBufLen, &dwReturn, NULL))
 	{
-		DllPrintf("向DataPipe管道写入数据失败\n");
+		DllPrintf("向DataPipe管道写入数据失败，即将卸载HOOK并销毁管道\n");
+		AllUninstallHook();
+
 	}
 	return dwReturn;
 }
@@ -112,4 +124,18 @@ DWORD SendData(PBYTE pBuffer, DWORD dwBufLen) {
 
 DWORD SendData(PCHAR szBuffer) {
 	return SendData((PBYTE)szBuffer, strlen(szBuffer));
+}
+
+void StopWork() {
+	if (hCommandPipe != NULL) {
+		CloseHandle(hCommandPipe);
+		hCommandPipe = NULL;
+		DllPrintf("销毁hCommandPipe\n");
+	}
+
+	if (hDataPipe != NULL) {
+		CloseHandle(hDataPipe);
+		hDataPipe = NULL;
+		DllPrintf("销毁hDataPipe\n");
+	}
 }

@@ -391,9 +391,11 @@ BOOL CFrameNetworkDlg::UninstallHook()
 			StopCurrentWork();
 			ShowInfo("目标进程已关闭，中断捕获数据");
 		}
-		
 		return FALSE;
 	}
+
+	StopCurrentWork();
+	ShowInfo("中断捕获数据");
 	return TRUE;
 }
 

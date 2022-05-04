@@ -22,6 +22,13 @@ extern BOOL RemoteInjectByProcessId(DWORD dwPid, PCHAR szDllPath);
 extern DWORD RemoteInjectByProcessName(PCHAR szProcessName, PCHAR szDllPath);
 
 
+/// <summary>
+/// Ô¶³ÌÐ¶ÔØDLL
+/// </summary>
+/// <param name="dwPid"></param>
+/// <param name="szDllName"></param>
+extern BOOL RemoteUnInjectDllByProcessId(DWORD dwPID, LPCTSTR szDllName);
+
 
 
 DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList);

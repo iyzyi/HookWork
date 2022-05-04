@@ -14,7 +14,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        DllPrintf("远程注入DLL......\n");
+        DllPrintf("注入DLL......\n");
         CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_Main, NULL, 0, NULL);
         break;
 
