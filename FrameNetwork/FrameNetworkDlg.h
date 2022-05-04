@@ -38,14 +38,25 @@ public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 
-	void ChangeWidget(int cx, int cy);
+	afx_msg void OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult);
 
-	CListCtrl m_List;
 	afx_msg void OnChooseProcessCommand();
+	afx_msg void OnBeginWorkCommand();
+	afx_msg void OnEndWorkCommand();
+
 	afx_msg LRESULT OnGetChooseProcessId(WPARAM w, LPARAM l);
 
+	
 public:
+	CListCtrl m_List;
+	CStatic m_StaticText;
+	CEdit m_Edit;
+
+	CListNetworkData* m_pListData = NULL;
+
 	DWORD m_CurrentChooseProcId = NULL;
+
+	DWORD m_dwIndex = 0;
 
 	HANDLE	m_hCommandPipe = NULL;
 	HANDLE	m_hDataPipe = NULL;
@@ -54,26 +65,18 @@ public:
 
 	BOOL m_bFiltering = FALSE;
 
-	CListNetworkData* m_pListData = NULL;
-
-	DWORD m_dwIndex = 0;
 
 public:
-	afx_msg void OnBeginWorkCommand();
-
 	void ShowInfo(PCHAR fmt, ...);
 	void ShowInfo(PWCHAR fmt, ...);
+
+	void ChangeWidget(int cx, int cy);
 
 	BOOL RemoteInject();
 	BOOL InstallHook();
 	BOOL UninstallHook();
 
-
-	afx_msg void OnEndWorkCommand();
-//	CStatic m_Edit;
-	CStatic m_StaticText;
-	afx_msg void OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult);
-	CEdit m_Edit;
+	void StopCurrentWork();
 };
 
 
@@ -82,3 +85,7 @@ public:
 
 #define DATA_PIPE_BUF_SIZE			0xffffff
 #define DATA_PIPE					"\\\\.\\pipe\\DataPipe"
+
+
+
+BOOL CheckProcessAlive(DWORD dwPID);

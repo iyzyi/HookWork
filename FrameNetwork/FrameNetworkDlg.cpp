@@ -219,6 +219,11 @@ void CFrameNetworkDlg::OnChooseProcessCommand()
 // 自定义消息处理函数，在CChooseProcess窗口中选择了某个进程之后自动执行
 LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 {
+	StopCurrentWork();
+
+	// 选择新进程后，把之前ListCtrl中绘制的数据清空
+	m_List.DeleteAllItems();
+
 	DWORD dwPID = (DWORD)w;
 	CString* pcsProcName = (CString*)l;
 
@@ -229,6 +234,7 @@ LRESULT CFrameNetworkDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 
 	ShowInfo(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
 
+	// 选择了新进程后销毁之前的m_pListData，创建新的m_pListData
 	if (m_pListData != NULL) {
 		m_pListData->~CListNetworkData();
 	}
@@ -332,7 +338,11 @@ BOOL CFrameNetworkDlg::InstallHook()
 	// 向客户端发送数据
 	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
-		ShowInfo("向CommandPipe管道写入数据失败\n");
+		//ShowInfo("向CommandPipe管道写入数据失败，中断连接\n");
+		if (CheckProcessAlive(m_CurrentChooseProcId)) {
+			StopCurrentWork();
+			ShowInfo("目标进程已退出，中断捕获数据");
+		}
 		return FALSE;
 	}
 
@@ -354,7 +364,12 @@ BOOL CFrameNetworkDlg::UninstallHook()
 	// 向客户端发送数据
 	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
 	{
-		ShowInfo("向CommandPipe管道写入数据失败\n");
+		//ShowInfo("向CommandPipe管道写入数据失败，中断连接\n");
+		if (CheckProcessAlive(m_CurrentChooseProcId)) {
+			StopCurrentWork();
+			ShowInfo("目标进程已退出，中断捕获数据");
+		}
+		
 		return FALSE;
 	}
 	return TRUE;
@@ -375,6 +390,30 @@ void CFrameNetworkDlg::OnEndWorkCommand()
 	UninstallHook();
 }
 
+
+// 判断进程是否存活
+BOOL CheckProcessAlive(DWORD dwPID) {
+	HANDLE hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
+	return (hProcess != NULL);
+}
+
+
+// 中止对当前进程的后续跟踪
+void CFrameNetworkDlg::StopCurrentWork() {
+	if (m_hCommandPipe != NULL) {
+		CloseHandle(m_hCommandPipe);
+		m_hCommandPipe = NULL;
+	}
+		
+	if (m_hDataPipe != NULL) {
+		CloseHandle(m_hDataPipe);
+		m_hDataPipe = NULL;
+	}
+
+	m_bInjectSuccess = FALSE;
+	m_CurrentChooseProcId = 0;
+	m_dwIndex = 0;
+}
 
 
 
