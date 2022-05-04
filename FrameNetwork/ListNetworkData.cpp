@@ -17,7 +17,7 @@ _ListNetworkRowData::_ListNetworkRowData(DWORD dwIndex, CString csFuncName, SOCK
 #else
 	csSocket.Format(_T("%d"), SocketId);
 #endif
-	csPort.Format(_T("%d"), wPort);
+	csPort.Format(_T("%d"), (DWORD)wPort);
 	csLen.Format(_T("%d"), dwLen);
 
 	SOCKADDR_IN mys;
@@ -42,6 +42,7 @@ CListNetworkData::CListNetworkData(CFrameNetworkDlg* pMainDlg) {
 	m_pMainDlg = pMainDlg;
 	m_pListCtrl = &(m_pMainDlg->m_List);
 }
+
 
 CListNetworkData::~CListNetworkData() {
 	if (m_pMainDlg != NULL) {
@@ -79,6 +80,7 @@ void CListNetworkData::AddRow(DWORD dwIndex, CString csFuncName, SOCKET SocketId
 		pLast = pListNetworkRowData;
 	}
 
+	// 如果没筛选关键字，则直接绘制此行数据
 	if (!m_pMainDlg->m_bFiltering) {
 		DisplayRow(pListNetworkRowData);
 	}

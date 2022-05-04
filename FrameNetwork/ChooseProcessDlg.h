@@ -20,7 +20,7 @@ struct _ListRowData {
 
 // 数据都在本类里，ListCtrl只负责绘制。
 // 只有数据CListData和绘制CListCtrl分离，才能实现ListCtrl的筛选数据再绘制。
-class CListData {
+class CListProcessData {
 private:
 	CListCtrl* pListCtrl = NULL;
 
@@ -28,8 +28,8 @@ private:
 	_ListRowData* pLast = NULL;
 
 public:
-	CListData(CListCtrl* pListCtrl);
-	~CListData();
+	CListProcessData(CListCtrl* pListCtrl);
+	~CListProcessData();
 
 	// 添加一行数据（不是向ListCtrl中添加，而是向我们自定义的CListData类中添加）
 	void AddRow(CString* pcsPID, CString* pcsProcName, CString* pcsProcWinText, CString* pcsProcPath, CString* pcsProcCmdLine);
@@ -84,10 +84,10 @@ protected:
 
 
 public:
-	CListCtrl		m_List;
-	CEdit			m_EditTextBox;
+	CListCtrl			m_List;
+	CEdit				m_EditTextBox;
 
-	CListData*		m_pListData = NULL;
+	CListProcessData*	m_pListData = NULL;
 
 
 public:

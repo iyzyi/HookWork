@@ -274,9 +274,9 @@ PTCHAR GetProcessCommandLine(DWORD dwPID)
 // 在窗口中列出所有进程
 BOOL CChooseProcessDlg::ListProcess() {
 	if (m_pListData != NULL) {
-		m_pListData->~CListData();
+		m_pListData->~CListProcessData();
 	}	
-	m_pListData = new CListData(&m_List);
+	m_pListData = new CListProcessData(&m_List);
 
 
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -398,14 +398,14 @@ void CChooseProcessDlg::OnBnClickedButton2()
 
 
 
-// 以下为CListData
+// 以下为CListProcessData
 
-CListData::CListData(CListCtrl* pListCtrl) {
+CListProcessData::CListProcessData(CListCtrl* pListCtrl) {
 	this->pListCtrl = pListCtrl;
 }
 
 
-CListData::~CListData() {
+CListProcessData::~CListProcessData() {
 	if (pListCtrl != NULL) {
 		_ListRowData* pData = pFirst;
 		_ListRowData* pTemp = NULL;
@@ -424,7 +424,7 @@ CListData::~CListData() {
 
 
 // 添加一行数据（不是向ListCtrl中添加，而是向我们自定义的CListData类中添加）
-void CListData::AddRow(CString* pcsPID, CString* pcsProcName, CString* pcsProcWinText, CString* pcsProcPath, CString* pcsProcCmdLine) {
+void CListProcessData::AddRow(CString* pcsPID, CString* pcsProcName, CString* pcsProcWinText, CString* pcsProcPath, CString* pcsProcCmdLine) {
 	_ListRowData* pListRowData = new _ListRowData(*pcsPID, *pcsProcName, *pcsProcWinText, *pcsProcPath, *pcsProcCmdLine);
 
 	if (pFirst == NULL) {
@@ -439,7 +439,7 @@ void CListData::AddRow(CString* pcsPID, CString* pcsProcName, CString* pcsProcWi
 
 
 // 向ListCtrl中绘制我们自定义的CListData类中的所有行的数据（本函数不负责排序）
-void CListData::DisplayData() {
+void CListProcessData::DisplayData() {
 	//插入过程禁止刷新界面
 	pListCtrl->LockWindowUpdate();
 	pListCtrl->SetRedraw(FALSE);//插入时如果设置了被选中状态就会引发重绘
@@ -487,14 +487,14 @@ void CListData::DisplayData() {
 
 
 // 无视大小写判断字符串包含
-BOOL CListData::ContainsTextNoCase(CString csText, CString csKeyword) {
+BOOL CListProcessData::ContainsTextNoCase(CString csText, CString csKeyword) {
 	BOOL bRet = (csText.MakeUpper().Find(csKeyword.MakeUpper()) != -1);
 	return bRet;
 }
 
 
 // 向ListCtrl中绘制我们自定义的CListData类中的数据（经过了关键词的过滤）（本函数不负责排序）
-void CListData::DisplayFilterData(CString csFilterKeyword)
+void CListProcessData::DisplayFilterData(CString csFilterKeyword)
 {
 	//插入过程禁止刷新界面
 	pListCtrl->LockWindowUpdate();
@@ -589,7 +589,7 @@ int CALLBACK ListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lpSortData)
 
 
 // 按列排序
-void CListData::SortDataByCol(DWORD dwCol) {
+void CListProcessData::SortDataByCol(DWORD dwCol) {
 	// 设置索引，不然没法排序
 	for (int i = 0; i < pListCtrl->GetItemCount(); i++) {
 		pListCtrl->SetItemData(i, i);
@@ -605,7 +605,7 @@ void CListData::SortDataByCol(DWORD dwCol) {
 
 
 // 检查是哪一列需要排序
-int CListData::CheckSortColNum() {
+int CListProcessData::CheckSortColNum() {
 	// 如果某列的表头有▲or▼，则按此列排序
 	CString csColName(_T(""));
 	csColName.GetBufferSetLength(32);
@@ -628,7 +628,7 @@ int CListData::CheckSortColNum() {
 
 
 // 点击表头时，更改本列的排序方式
-void CListData::ChangeSortType(DWORD dwCol) {
+void CListProcessData::ChangeSortType(DWORD dwCol) {
 	CString csColName(_T(""));
 	csColName.GetBufferSetLength(32);
 
