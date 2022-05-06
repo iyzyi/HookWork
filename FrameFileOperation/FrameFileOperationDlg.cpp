@@ -83,6 +83,8 @@ BEGIN_MESSAGE_MAP(CFrameFileOperationDlg, CDialogEx)
 	ON_COMMAND(ID_32775, &CFrameFileOperationDlg::OnBeginWorkCommand)
 	ON_COMMAND(ID_32776, &CFrameFileOperationDlg::OnEndWorkCommand)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CFrameFileOperationDlg::OnNMDblclkList1)
+	ON_WM_SIZE()
+	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
 
@@ -117,9 +119,9 @@ BOOL CFrameFileOperationDlg::OnInitDialog()
 
 	//插入列标题
 	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 60);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
-	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 100);
+	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 140);
 	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 60);
-	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 200);
+	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 260);
 	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 600);
 
 	//设置风格样式
@@ -130,9 +132,9 @@ BOOL CFrameFileOperationDlg::OnInitDialog()
 	// 以上是List Control
 
 
-	//// 设置窗口大小。并居中显示
-	//MoveWindow(0, 0, 1200, 800, FALSE);
-	//CenterWindow(GetDesktopWindow());
+	// 设置窗口大小。并居中显示
+	MoveWindow(0, 0, 900, 600, FALSE);
+	CenterWindow(GetDesktopWindow());
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -171,6 +173,53 @@ void CFrameFileOperationDlg::OnPaint()
 HCURSOR CFrameFileOperationDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+
+
+//设置对话框最小宽度与高度
+void CFrameFileOperationDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	lpMMI->ptMinTrackSize.x = 900;
+	lpMMI->ptMinTrackSize.y = 600;
+	CDialogEx::OnGetMinMaxInfo(lpMMI);
+}
+
+
+// 动态调整控件大小
+void CFrameFileOperationDlg::ChangeWidget(int cx, int cy) {
+	// CListCtrl
+	CRect rt1;
+	CListCtrl* pListCtrl = (CListCtrl*)GetDlgItem(IDC_LIST1);
+	if (pListCtrl == NULL)
+		return;
+	pListCtrl->GetWindowRect(rt1);
+	ScreenToClient(rt1);
+	rt1.right = cx - 10;
+	rt1.bottom = cy - 30;
+	pListCtrl->MoveWindow(rt1);
+
+	// CStatic
+	CRect rt3;
+	CStatic* pStatic = (CStatic*)GetDlgItem(IDC_STATIC_TEXT_INFO);
+	if (pStatic == NULL)
+		return;
+	pStatic->GetWindowRect(rt3);
+	ScreenToClient(rt3);
+	rt3.left = 12;
+	rt3.right = cx - 10;
+	rt3.top = cy - 24;
+	rt3.bottom = cy - 10;
+	pStatic->MoveWindow(rt3);
+}
+
+
+// 调整窗口大小时触发
+void CFrameFileOperationDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	ChangeWidget(cx, cy);
 }
 
 
