@@ -187,16 +187,22 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ChooseProcessDlg.h" />
     <ClInclude Include="FrameFileOperation.h" />
     <ClInclude Include="FrameFileOperationDlg.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Misc.h" />
+    <ClInclude Include="ParsePacket.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChooseProcessDlg.cpp" />
     <ClCompile Include="FrameFileOperation.cpp" />
     <ClCompile Include="FrameFileOperationDlg.cpp" />
+    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="ParsePacket.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -212,6 +218,17 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\FrameFileOperation.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyMessagePack\MyMessagePack.vcxproj">
+      <Project>{519544f8-3b89-4777-985b-edb3a0146701}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteInjectTool\RemoteInjectTool.vcxproj">
+      <Project>{0743d82f-c517-4a69-9c88-fe68831fde57}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleHookEngine\SimpleHookEngine.vcxproj">
+      <Project>{0e055caf-c68b-42cb-a302-f775ca5a917f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

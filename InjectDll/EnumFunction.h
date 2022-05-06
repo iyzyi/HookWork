@@ -17,6 +17,7 @@ enum {
 
 // 文件系统相关函数
 	ID_CreateFileA,
+	ID_CreateFileW,
 };
 
 

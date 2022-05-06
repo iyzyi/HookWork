@@ -5,7 +5,6 @@
 #define IDD_FRAMENETWORK_DIALOG         102
 #define IDR_MAINFRAME                   128
 #define IDR_MENU1                       129
-#define IDD_CHOOSE_PROCESS              130
 #define IDD_CHOOSE_PROCESS_DIALOG       130
 #define IDC_LIST1                       1000
 #define IDC_BUTTON1                     1000

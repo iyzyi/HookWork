@@ -8,9 +8,28 @@
 #include "FrameFileOperationDlg.h"
 #include "afxdialogex.h"
 
+#include "../SimpleHookEngine/SimpleHookEngine.h"
+#include "../RemoteInjectTool/RemoteInjectTool.h"
+#include "../InjectDll/EnumFunction.h"
+#include "ParsePacket.h"
+#include "ChooseProcessDlg.h"
+#include "Misc.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+#pragma warning(disable:4996)
+
+
+
+// 只HOOK以下函数
+DWORD FuncList[] = {
+	ID_CreateFileA,
+	ID_CreateFileW,
+};
+
+DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
 
 
 // CFrameFileOperationDlg 对话框
@@ -26,11 +45,28 @@ CFrameFileOperationDlg::CFrameFileOperationDlg(CWnd* pParent /*=nullptr*/)
 void CFrameFileOperationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_STATIC_TEXT_INFO, m_StaticText);
+	DDX_Control(pDX, IDC_LIST1, m_List);
+}
+
+// 解决回车键 ESC 默认关闭窗口
+BOOL CFrameFileOperationDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)     return   TRUE;
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)   return   TRUE;
+	else
+		return   CDialog::PreTranslateMessage(pMsg);
+
 }
 
 BEGIN_MESSAGE_MAP(CFrameFileOperationDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+
+	// 选择了进程ID之后，CChooseProcess窗口发送消息WM_GET_CHOOSE_PROCESS_ID，收到此消息后，执行OnGetChooseProcessId
+	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, &CFrameFileOperationDlg::OnGetChooseProcessId)
+	ON_COMMAND(ID_32775, &CFrameFileOperationDlg::OnBeginWorkCommand)
+	ON_COMMAND(ID_32776, &CFrameFileOperationDlg::OnEndWorkCommand)
 END_MESSAGE_MAP()
 
 
@@ -86,3 +122,329 @@ HCURSOR CFrameFileOperationDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+// 选择进程对话框
+void CFrameFileOperationDlg::OnChooseProcessCommand()
+{
+	CChooseProcessDlg dlgChooseProcess;
+	dlgChooseProcess.DoModal();
+}
+
+
+// 自定义消息处理函数，在CChooseProcess窗口中选择了某个进程之后自动执行
+LRESULT CFrameFileOperationDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
+{
+	StopCurrentWork();
+
+	// 选择新进程后，把之前UI中绘制的数据清空
+	m_List.DeleteAllItems();
+
+	DWORD dwPID = (DWORD)w;
+	CString* pcsProcName = (CString*)l;
+
+	m_CurrentChooseProcId = dwPID;
+	m_bInjectSuccess = FALSE;
+	m_hCommandPipe = NULL;
+	m_hDataPipe = NULL;
+
+	ShowInfo(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
+
+	//// 选择了新进程后销毁之前的m_pListData，创建新的m_pListData
+	//if (m_pListData != NULL) {
+	//	m_pListData->~CListNetworkData();
+	//}
+	//m_pListData = new CListNetworkData(((CFrameNetworkDlg*)(theApp.m_pMainWnd)));
+
+	// 菜单栏 开始这一项可用
+	ValidMenuItem(ID_32775);
+
+	delete pcsProcName;
+	return 0;
+}
+
+
+// 接收数据的线程函数
+DWORD WINAPI ThreadFunc_DataPipeRecv() {
+	PBYTE pBuffer = new BYTE[DATA_PIPE_BUF_SIZE];
+	DWORD dwReturn = 0;
+	
+	CFrameFileOperationDlg* pMainDlg = ((CFrameFileOperationDlg*)(theApp.m_pMainWnd));
+	HANDLE hDataPipe = ((CFrameFileOperationDlg*)(theApp.m_pMainWnd))->m_hDataPipe;
+
+	while (true) {
+
+		if (!CheckProcessAlive(pMainDlg->m_CurrentChooseProcId)) {
+			pMainDlg->StopCurrentWork();
+			pMainDlg->ShowInfo("目标进程已关闭，中断捕获数据");
+			return 0;
+		}
+
+		BOOL bRet = ReadFile(hDataPipe, pBuffer, DATA_PIPE_BUF_SIZE, &dwReturn, NULL);
+		if (bRet) {
+			pBuffer[dwReturn] = '\0';
+			ParsePacket(((CFrameFileOperationDlg*)(theApp.m_pMainWnd)), pBuffer, dwReturn);
+		}
+	}
+	return 0;
+}
+
+
+HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
+	// 创建命名管道
+	HANDLE hPipe = CreateNamedPipeA(
+		szPipeName,
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE |
+		PIPE_READMODE_MESSAGE |
+		PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		dwBufLen,
+		dwBufLen,
+		0,
+		NULL);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		printf("%s管道创建失败\n", szPipeName);
+		return NULL;
+	}
+
+	// 等待客户端的连接(是阻塞的)
+	if (!ConnectNamedPipe(hPipe, NULL))
+	{
+		printf("%s管道等待连接失败\n", szPipeName);
+		return NULL;
+	}
+
+	printf("%s管道等待连接成功\n", szPipeName);
+	return hPipe;
+}
+
+
+// 远程注入(需要保证InjectDll.dll和本程序在同一路径下)
+BOOL CFrameFileOperationDlg::RemoteInject()
+{
+	CHAR szDllPath[MAX_PATH + 1] = { 0 };
+	GetModuleFileNameA(NULL, szDllPath, MAX_PATH);		// 获取本程序所在路径
+	(strrchr(szDllPath, '\\'))[1] = 0;					// 路径中去掉本程序名称
+	strcat_s(szDllPath, "InjectDll.dll");			    // 拼接上DLL的名称
+
+	m_bInjectSuccess = RemoteInjectByProcessId(m_CurrentChooseProcId, szDllPath);
+	if (!m_bInjectSuccess) {
+		ShowInfo("向进程[PID=%.8X]注入失败\n", m_CurrentChooseProcId);
+		return FALSE;
+	}
+
+	// 创建两个命令管道。
+	// CommandPipe命令管道：本程序写，DLL读
+	// DataPipe数据管道：DLL写，本程序读
+	m_hCommandPipe = CreatePipeAndWaitConnect(COMMAND_PIPE, COMMAND_PIPE_BUF_SIZE);
+	m_hDataPipe = CreatePipeAndWaitConnect(DATA_PIPE, DATA_PIPE_BUF_SIZE);
+
+	if (m_hCommandPipe == NULL || m_hDataPipe == NULL) {
+		ShowInfo("创建并等待管道连接失败");
+		return FALSE;
+	}
+
+	// 接收数据的线程
+	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadFunc_DataPipeRecv, NULL, 0, NULL);
+	
+	return TRUE;
+}
+
+
+// 安装HOOK
+BOOL CFrameFileOperationDlg::InstallHook()
+{
+	DWORD dwReturn = 0;
+	char szBuffer[32] = "InstallHook";
+
+	if (!m_bInjectSuccess) {
+		ShowInfo("DLL未成功注入，无法安装HOOK\n");
+		return FALSE;
+	}
+
+	// 发送数据的格式为：InstallHook + DWORD(函数ID)
+	for (int i = 0; i < dwFuncNum; i++) {
+		WriteDwordToBuffer((PBYTE)szBuffer, FuncList[i], 11);
+
+		// 向客户端发送数据
+		if (!WriteFile(m_hCommandPipe, szBuffer, 15, &dwReturn, NULL))
+		{
+			if (CheckProcessAlive(m_CurrentChooseProcId)) {
+				StopCurrentWork();
+				ShowInfo("目标进程已关闭，中断捕获数据");
+			}
+			return FALSE;
+		}
+		//Sleep(100);		// 实测，命名管道也是会有粘包的。
+		// 算了，还是乖乖在另一端处理粘包吧
+	}
+
+	
+
+	return TRUE;
+}
+
+
+// 卸载HOOK
+BOOL CFrameFileOperationDlg::UninstallHook()
+{
+	DWORD dwReturn = 0;
+	char szBuffer[] = "AllUninstallHook";
+
+	if (!m_bInjectSuccess) {
+		ShowInfo("DLL未成功注入，无需卸载HOOK\n");
+		return FALSE;
+	}
+
+	// 向客户端发送数据
+	if (!WriteFile(m_hCommandPipe, szBuffer, strlen(szBuffer), &dwReturn, NULL))
+	{
+		if (CheckProcessAlive(m_CurrentChooseProcId)) {
+			StopCurrentWork();
+			ShowInfo("目标进程已关闭，中断捕获数据");
+		}
+		return FALSE;
+	}
+
+	StopCurrentWork();
+	ShowInfo("中断捕获数据");
+	return TRUE;
+}
+
+
+// 开始，即安装HOOK
+void CFrameFileOperationDlg::OnBeginWorkCommand()
+{
+	if (RemoteInject()) {
+		if (InstallHook()) {
+			// 菜单栏 停止 这一项可用
+			ValidMenuItem(ID_32776);
+			// 选择进程 和 开始 这两项都不可用
+			InvalidMenuItem(ID_32773);
+			InvalidMenuItem(ID_32775);
+		}
+	}
+}
+
+// 结束，即卸载HOOK
+void CFrameFileOperationDlg::OnEndWorkCommand()
+{
+	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
+	InvalidMenuItem(ID_32775);
+	InvalidMenuItem(ID_32776);
+
+	UninstallHook();
+
+	// 选择进程 菜单子项 可用
+	ValidMenuItem(ID_32773);
+}
+
+
+
+// 判断进程是否存活
+BOOL CheckProcessAlive(DWORD dwPID) {
+	// 僵尸进程具有PID，即使它们已终止。
+	// 使用超时为 0 的 WaitForSingleObject 查看进程是否已终止
+
+	HANDLE hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
+	if (hProcess == NULL)
+		return FALSE;
+
+	DWORD dwRet = WaitForSingleObject(hProcess, 0);
+	CloseHandle(hProcess);
+	return (dwRet == 0) ? 0 : 1;
+}
+
+
+// 中止对当前进程的后续跟踪
+void CFrameFileOperationDlg::StopCurrentWork() {
+	if (m_hCommandPipe != NULL) {
+		CloseHandle(m_hCommandPipe);
+		m_hCommandPipe = NULL;
+	}
+		
+	if (m_hDataPipe != NULL) {
+		CloseHandle(m_hDataPipe);
+		m_hDataPipe = NULL;
+	}
+
+	m_bInjectSuccess = FALSE;
+	m_CurrentChooseProcId = 0;
+	m_dwIndex = 0;
+
+	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
+	InvalidMenuItem(ID_32775);
+	InvalidMenuItem(ID_32776); 
+
+	// 选择进程 菜单子项
+	ValidMenuItem(ID_32773);
+}
+
+
+
+
+// 在消息栏显示信息
+void CFrameFileOperationDlg::ShowInfo(PCHAR fmt, ...)
+{
+	//不定参数格式化
+	va_list argptr;
+	va_start(argptr, fmt);
+	char buffer[4096] = { 0 };
+	int cnt = vsprintf(buffer, fmt, argptr);
+	va_end(argptr);
+
+	SetDlgItemTextA(theApp.m_pMainWnd->m_hWnd, IDC_STATIC_TEXT_INFO, buffer);
+
+	return;
+}
+
+
+// 在消息栏显示信息
+void CFrameFileOperationDlg::ShowInfo(PWCHAR fmt, ...)
+{
+	//不定参数格式化
+	va_list argptr;
+	va_start(argptr, fmt);
+	WCHAR buffer[4096] = { 0 };
+	int cnt = vswprintf(buffer, fmt, argptr);
+	va_end(argptr);
+
+	SetDlgItemTextW(IDC_STATIC_TEXT_INFO, buffer);
+
+	return;
+}
+
+
+// 点击行时触发，获取此时行号，显示详细的数据信息
+// LVN_ITEMCHANGED 消息会响应三次，若函数中包含数据库操作，请添加条件判断排除其中的两次响应。
+void CFrameFileOperationDlg::OnLvnItemchangedList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	
+//	if (!(pNMLV->uChanged == LVIF_STATE && (pNMLV->uNewState & LVIS_SELECTED)))		// 只有行号改变了才会继续
+//		return;
+//
+//	int iItem = pNMLV->iItem;	// 选择的行号
+//
+//	//_ListNetworkRowData* pRowData = m_pListData->m_pRowDataIndexTable[iItem];
+////
+//	//CString csHexAndInfo = ByteArray2HexAndInfoCString(pRowData->pbData, pRowData->dwLen, 16);
+//
+//	//m_Edit.SetWindowText(csHexAndInfo);
+
+	*pResult = 0;
+}
+
+
+// 使菜单栏的某一项可用
+void CFrameFileOperationDlg::ValidMenuItem(UINT nIDEnableItem) {
+	m_Menu.EnableMenuItem(nIDEnableItem, MF_BYCOMMAND | MF_ENABLED);
+}
+
+
+// 使菜单栏的某一项变灰不可用
+void CFrameFileOperationDlg::InvalidMenuItem(UINT nIDEnableItem) {
+	m_Menu.EnableMenuItem(nIDEnableItem, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+}

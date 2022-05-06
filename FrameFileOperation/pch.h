@@ -11,3 +11,9 @@
 #include "framework.h"
 
 #endif //PCH_H
+
+
+
+
+// 选择了进程ID之后传递的消息
+#define WM_GET_CHOOSE_PROCESS_ID		(WM_USER + 200)
