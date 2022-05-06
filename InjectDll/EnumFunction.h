@@ -110,11 +110,35 @@ struct _Data_ReadFile {
 	MSGPACK_DEFINE(dwFileHandle, msgFilePath, sbuffer)
 };
 
+struct _Data_ReadFileEx {
+	DWORD						dwFileHandle;
+	msgpack::type::raw_ref		msgFilePath;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(dwFileHandle, msgFilePath, sbuffer)
+};
+
 struct _Data_WriteFile {
 	DWORD						dwFileHandle;
 	msgpack::type::raw_ref		msgFilePath;
 	msgpack::type::raw_ref		sbuffer;
 	MSGPACK_DEFINE(dwFileHandle, msgFilePath, sbuffer)
+};
+
+struct _Data_WriteFileEx {
+	DWORD						dwFileHandle;
+	msgpack::type::raw_ref		msgFilePath;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(dwFileHandle, msgFilePath, sbuffer)
+};
+
+struct _Data_CreateDirectoryA {
+	msgpack::type::raw_ref		msgPathName;
+	MSGPACK_DEFINE(msgPathName)
+};
+
+struct _Data_CreateDirectoryW {
+	msgpack::type::raw_ref		msgPathName;
+	MSGPACK_DEFINE(msgPathName)
 };
 
 #pragma endregion

@@ -250,7 +250,27 @@ BOOL WINAPI My_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRea
 }
 
 BOOL WINAPI My_ReadFileEx(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
-	return True_ReadFileEx(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine);
+	BOOL bRet = True_ReadFileEx(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine);
+
+	if (!bRet)			
+		return bRet;
+
+	CHAR szFilePath[MAX_PATH] = { 0 };
+	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);
+
+	_Data_ReadFileEx data;
+	data.dwFileHandle = (DWORD)hFile;
+
+	data.msgFilePath.ptr = szFilePath;
+	data.msgFilePath.size = strlen(szFilePath) + 1;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ReadFileEx>(data, pBuffer, ID_ReadFileEx);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return bRet;
 }
 
 BOOL WINAPI My_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped) {
@@ -278,13 +298,61 @@ BOOL WINAPI My_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToW
 }
 
 BOOL WINAPI My_WriteFileEx(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
-	return True_WriteFileEx(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped, lpCompletionRoutine);
+	BOOL bRet = True_WriteFileEx(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped, lpCompletionRoutine);
+
+	if (!bRet)		
+		return bRet;
+
+	CHAR szFilePath[MAX_PATH] = { 0 };
+	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);
+
+	_Data_WriteFileEx data;
+	data.dwFileHandle = (DWORD)hFile;
+
+	data.msgFilePath.ptr = szFilePath;
+	data.msgFilePath.size = strlen(szFilePath) + 1;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_WriteFileEx>(data, pBuffer, ID_WriteFileEx);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return bRet;
 }
 
 BOOL WINAPI My_CreateDirectoryA(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
-	return True_CreateDirectoryA(lpPathName, lpSecurityAttributes);
+	BOOL bRet = True_CreateDirectoryA(lpPathName, lpSecurityAttributes);
+	if (!bRet)
+		return bRet;
+
+	_Data_CreateDirectoryA data;
+	data.msgPathName.ptr = lpPathName;
+	data.msgPathName.size = strlen(lpPathName) + 1;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateDirectoryA>(data, pBuffer, ID_CreateDirectoryA);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return bRet;
 }
 
 BOOL WINAPI My_CreateDirectoryW(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
-	return True_CreateDirectoryW(lpPathName, lpSecurityAttributes);
+	BOOL bRet = True_CreateDirectoryW(lpPathName, lpSecurityAttributes);
+	if (!bRet)
+		return bRet;
+
+	_Data_CreateDirectoryW data;
+	data.msgPathName.ptr = (char*)lpPathName;
+	data.msgPathName.size = wcslen(lpPathName) * 2 + 2;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateDirectoryW>(data, pBuffer, ID_CreateDirectoryW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return bRet;
 }

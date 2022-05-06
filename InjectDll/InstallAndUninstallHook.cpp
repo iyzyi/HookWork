@@ -7,7 +7,7 @@
 
 
 void AllInstallHook() {
-	DllPrintf("AllInstallHook......\n");
+	DllPrintf("All Install Hook......\n");
 
 	InstallHook((void**)&True_send, My_send);
 	InstallHook((void**)&True_sendto, My_sendto);
@@ -22,7 +22,7 @@ void AllInstallHook() {
 
 
 void AllUninstallHook() {
-	DllPrintf("AllUninstallHook......\n");
+	DllPrintf("All Uninstall Hook......\n");
 
 	UninstallHook((void**)&True_send);
 	UninstallHook((void**)&True_sendto);
@@ -37,8 +37,12 @@ void AllUninstallHook() {
 
 	UninstallHook((void**)&True_CreateFileA);
 	UninstallHook((void**)&True_CreateFileW);
-
 	UninstallHook((void**)&True_ReadFile);
+	UninstallHook((void**)&True_ReadFileEx);
+	UninstallHook((void**)&True_WriteFile);
+	UninstallHook((void**)&True_WriteFileEx);
+	UninstallHook((void**)&True_CreateDirectoryA);
+	UninstallHook((void**)&True_CreateDirectoryW);
 }
 
 

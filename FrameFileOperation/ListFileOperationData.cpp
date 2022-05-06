@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ListFileOperationData.h"
-#include <iostream>
+
 
 _ListFileOperationRowData::_ListFileOperationRowData(DWORD dwIndex, CString csFuncName, DWORD dwFileHandle, CString csPath) {
 	this->dwIndex = dwIndex;
@@ -9,10 +9,17 @@ _ListFileOperationRowData::_ListFileOperationRowData(DWORD dwIndex, CString csFu
 	this->csPath = csPath;
 
 	this->csIndex.Format(_T("%d"), dwIndex);
-	this->csFileHandle.Format(_T("%d"), dwFileHandle);
+	
+	// 创建目录相关的函数，不显示句柄这一列
+	if (this->csFuncName == _T("CreateDirectoryW") || this->csFuncName == _T("CreateDirectoryA")) {
+		this->csFileHandle = _T("");
+	}
+	else {
+		this->csFileHandle.Format(_T("%d"), dwFileHandle);
+	}
 
-	if (this->csPath.GetLength() > 4 && this->csPath.Mid(0, 4).Compare(_T("\\\\?\\")) != -1) {		// 路径开头是\\?\的话就删去\\?\
-		std::cout << this->csPath;
+	// 路径开头是 \\?\的话就删去\\?\ 
+	if (this->csPath.GetLength() > 4 && this->csPath.Mid(0, 4).Compare(_T("\\\\?\\")) != -1) {		
 		this->csPath.Delete(0, 4);
 	}
 

@@ -7,6 +7,9 @@
 #include "FrameFileOperationDlg.h"
 
 
+// CreateFileA, ReadFileEx, WriteFileEx, CreateDirectoryAŒ¥æ≠≤‚ ‘
+
+
 VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) {
 	if (pMainDlg == NULL)
 		return;
@@ -59,7 +62,12 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 	
 	case ID_ReadFileEx: 
 	{
+		_Data_ReadFileEx data = MsgUnpack<_Data_ReadFileEx>(pMsgBuffer, dwMsgBufferSize);
+		DWORD dwFileHandle = data.dwFileHandle;
+		CString csFilePath = CString(data.msgFilePath.ptr);
 
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("ReadFileEx"), dwFileHandle, csFilePath);
+		pMainDlg->m_dwIndex++;
 		break;
 	}
 
@@ -77,16 +85,34 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 
 	case ID_WriteFileEx:
 	{
+		_Data_WriteFileEx data = MsgUnpack<_Data_WriteFileEx>(pMsgBuffer, dwMsgBufferSize);
+		DWORD dwFileHandle = data.dwFileHandle;
+		CString csFilePath = CString(data.msgFilePath.ptr);
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("WriteFileEx"), dwFileHandle, csFilePath);
+		pMainDlg->m_dwIndex++;
 		break;
 	}
 
 	case ID_CreateDirectoryA: 
 	{
+		_Data_CreateDirectoryA data = MsgUnpack<_Data_CreateDirectoryA>(pMsgBuffer, dwMsgBufferSize);
+
+		CString csPathName = CStringW((PWCHAR)(data.msgPathName.ptr));
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("CreateDirectoryA"), NULL, csPathName);
+		pMainDlg->m_dwIndex++;
 		break;
 	}
 
 	case ID_CreateDirectoryW:
 	{
+		_Data_CreateDirectoryW data = MsgUnpack<_Data_CreateDirectoryW>(pMsgBuffer, dwMsgBufferSize);
+
+		CString csPathName = CStringW((PWCHAR)(data.msgPathName.ptr));
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("CreateDirectoryW"), NULL, csPathName);
+		pMainDlg->m_dwIndex++;
 		break;
 	}
 
