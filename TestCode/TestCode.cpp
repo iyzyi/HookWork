@@ -120,7 +120,12 @@ BOOL test_pipe_thread_func() {
 
 
 int main() {
-    CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)test_pipe_thread_func, NULL, 0, NULL);
-    Sleep(4000);
-    test_remote_inject();
+    
+
+
+
+
+    //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)test_pipe_thread_func, NULL, 0, NULL);
+    //Sleep(4000);
+    //test_remote_inject();
 }

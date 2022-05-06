@@ -16,6 +16,10 @@
 // 这样会使得注入的程序崩溃。
 
 
+#pragma region 网络通信相关函数-自定义函数
+
+// ************************************************ 网络通信相关函数-自定义函数 ************************************************
+
 int WSAAPI My_send(SOCKET s, const char* buf, int len, int flags) {
 	_Data_send data;
 	data.socket = s;
@@ -93,7 +97,6 @@ int WSAAPI My_WSASendMsg(SOCKET Handle, LPWSAMSG lpMsg, DWORD dwFlags, LPDWORD l
 }
 
 
-
 int WSAAPI My_recv(SOCKET s, char* buf, int len, int flags) {
 	int iRet = True_recv(s, buf, len, flags);
 	if (iRet > 0) {
@@ -142,10 +145,8 @@ int WSAAPI My_recvfrom(SOCKET s, char FAR* buf, int len, int flags, struct socka
 int WSAAPI My_WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
 	DWORD dwRet = True_WSARecv(s, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd, lpFlags, lpOverlapped, lpCompletionRoutine);
 
-	DllPrintf("dwBufferCount=%d\nlpNumberOfBytesRecvd=%d\nlpOverlapped=%p\n", dwBufferCount, *lpNumberOfBytesRecvd, lpOverlapped);
-
 	// TODO 此处未考虑重叠套接字，未考虑WSAGetOverlappedResult
-	// 
+
 	// 返回值为0表示未发生错误，并且接收操作已立即完成（即这肯定是非重叠套接字）
 	if (dwRet == 0) {										
 		for (int i = 0; i < dwBufferCount; i++) {
@@ -174,4 +175,20 @@ int WSAAPI My_WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD
 
 int WSAAPI My_WSARecvFrom(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, struct sockaddr FAR* lpFrom, LPINT lpFromlen, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
 	return True_WSARecvFrom(s, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd, lpFlags, lpFrom, lpFromlen, lpOverlapped, lpCompletionRoutine);
+}
+
+#pragma endregion
+
+
+
+
+HANDLE WINAPI My_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
+
+	return True_CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+}
+
+
+HANDLE WINAPI My_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
+	
+	return True_CreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 }
