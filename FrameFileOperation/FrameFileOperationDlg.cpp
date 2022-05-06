@@ -195,11 +195,11 @@ LRESULT CFrameFileOperationDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 
 	ShowInfo(_T("当前选择进程为[PID=%.8X] %s"), dwPID, *pcsProcName);
 
-	//// 选择了新进程后销毁之前的m_pListData，创建新的m_pListData
-	//if (m_pListData != NULL) {
-	//	m_pListData->~CListNetworkData();
-	//}
-	//m_pListData = new CListNetworkData(((CFrameNetworkDlg*)(theApp.m_pMainWnd)));
+	// 选择了新进程后销毁之前的m_pListData，创建新的m_pListData
+	if (m_pListData != NULL) {
+		m_pListData->~CListFileOperationData();
+	}
+	m_pListData = new CListFileOperationData(((CFrameFileOperationDlg*)(theApp.m_pMainWnd)));
 
 	// 菜单栏 开始这一项可用
 	ValidMenuItem(ID_32775);

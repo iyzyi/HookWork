@@ -3,6 +3,9 @@
 //
 
 #pragma once
+#include "ListFileOperationData.h"
+
+class CListFileOperationData;
 
 
 // CFrameFileOperationDlg 对话框
@@ -53,6 +56,10 @@ public:
 	HANDLE	m_hDataPipe = NULL;
 
 	BOOL m_bInjectSuccess = FALSE;
+
+	BOOL m_bFiltering = FALSE;
+
+	CListFileOperationData* m_pListData = NULL;
 
 public:
 	void ShowInfo(PCHAR fmt, ...);

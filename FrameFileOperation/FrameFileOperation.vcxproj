@@ -191,6 +191,7 @@
     <ClInclude Include="FrameFileOperation.h" />
     <ClInclude Include="FrameFileOperationDlg.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="ListFileOperationData.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ParsePacket.h" />
     <ClInclude Include="pch.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="ChooseProcessDlg.cpp" />
     <ClCompile Include="FrameFileOperation.cpp" />
     <ClCompile Include="FrameFileOperationDlg.cpp" />
+    <ClCompile Include="ListFileOperationData.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="ParsePacket.cpp" />
     <ClCompile Include="pch.cpp">
