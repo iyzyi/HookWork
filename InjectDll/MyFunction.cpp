@@ -8,6 +8,7 @@
 
 
 
+
 // 作为注入的DLL，编译时一定要把优化给关掉
 // 属性 -> 配置属性 -> C/C++ -> 优化：已禁用
 // 不然出大问题，我卡在这里2个小时
@@ -183,12 +184,47 @@ int WSAAPI My_WSARecvFrom(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPD
 
 
 HANDLE WINAPI My_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
+	DllPrintf("call My_CreateFileA\n");
 
 	return True_CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 }
 
 
 HANDLE WINAPI My_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
-	
+	DllPrintf("call My_CreateFileW\n");
+
+	_Data_CreateFileW data;
+	data.msgFilePath.ptr = (char*)lpFileName;
+	data.msgFilePath.size = wcslen(lpFileName) * 2 + 2;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateFileW>(data, pBuffer, ID_CreateFileW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
 	return True_CreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+}
+
+
+BOOL WINAPI My_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped) {
+
+	CHAR szFilePath[MAX_PATH] = { 0 };
+	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);
+	
+	_Data_ReadFile data;
+	data.dwFileHandle = (DWORD)hFile;
+
+	data.msgFilePath.ptr = szFilePath;
+	data.msgFilePath.size = strlen(szFilePath) + 1;
+
+	//DllPrintf("")
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ReadFile>(data, pBuffer, ID_ReadFile);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return True_ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 }

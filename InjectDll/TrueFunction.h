@@ -36,6 +36,12 @@ typedef HANDLE (WINAPI* PFN_CreateFileW)(LPCWSTR lpFileName, DWORD dwDesiredAcce
 
 
 
+typedef BOOL (WINAPI* PFN_ReadFile)(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
+
+
+
+
+
 
 
 
@@ -60,3 +66,4 @@ extern PFN_WSARecvFrom				True_WSARecvFrom;
 // 文件系统相关函数
 extern PFN_CreateFileA				True_CreateFileA;
 extern PFN_CreateFileW				True_CreateFileW;
+extern PFN_ReadFile					True_ReadFile;

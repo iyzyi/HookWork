@@ -27,6 +27,8 @@
 DWORD FuncList[] = {
 	ID_CreateFileA,
 	ID_CreateFileW,
+
+	ID_ReadFile,
 };
 
 DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
@@ -39,6 +41,14 @@ DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
 CFrameFileOperationDlg::CFrameFileOperationDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_FRAMEFILEOPERATION_DIALOG, pParent)
 {
+
+#ifdef _DEBUG
+	// 开启控制台窗口
+	AllocConsole();
+	FILE* stream = nullptr;
+	freopen_s(&stream, "CONOUT$", "w", stdout);
+#endif
+
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -65,6 +75,7 @@ BEGIN_MESSAGE_MAP(CFrameFileOperationDlg, CDialogEx)
 
 	// 选择了进程ID之后，CChooseProcess窗口发送消息WM_GET_CHOOSE_PROCESS_ID，收到此消息后，执行OnGetChooseProcessId
 	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, &CFrameFileOperationDlg::OnGetChooseProcessId)
+	ON_COMMAND(ID_32773, &CFrameFileOperationDlg::OnChooseProcessCommand)
 	ON_COMMAND(ID_32775, &CFrameFileOperationDlg::OnBeginWorkCommand)
 	ON_COMMAND(ID_32776, &CFrameFileOperationDlg::OnEndWorkCommand)
 END_MESSAGE_MAP()
@@ -81,7 +92,42 @@ BOOL CFrameFileOperationDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	// TODO: 在此添加额外的初始化代码
+	// 设置菜单栏
+	m_Menu.LoadMenu(IDR_MENU1);
+	SetMenu(&m_Menu);
+
+	// 菜单子项进行变灰操作(开始 和 结束 两个都变灰)
+	InvalidMenuItem(ID_32775);
+	InvalidMenuItem(ID_32776);
+
+	// 修改CEdit CListCtrl的字体，使得等宽
+	static CFont font;
+	font.DeleteObject();
+	font.CreatePointFont(100, _T("新宋体"));
+	m_List.SetFont(&font);
+
+	// 以下是List Control
+	//标题所需字段
+	CString head[] = { TEXT("序号"), TEXT("函数"), TEXT("句柄"), TEXT("文件/目录名称"), TEXT("路径")};
+
+	//插入列标题
+	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 60);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
+	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 100);
+	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 60);
+	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 200);
+	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 600);
+
+	//设置风格样式
+	//LVS_EX_GRIDLINES 网格
+	//LVS_EX_FULLROWSELECT 选中整行
+	m_List.SetExtendedStyle(m_List.GetExtendedStyle()
+		| LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
+	// 以上是List Control
+
+
+	//// 设置窗口大小。并居中显示
+	//MoveWindow(0, 0, 1200, 800, FALSE);
+	//CenterWindow(GetDesktopWindow());
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }

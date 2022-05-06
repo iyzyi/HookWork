@@ -19,7 +19,7 @@ DWORD WINAPI ThreadFunc_CommandPipeRecv() {
 	while (ReadFile(hCommandPipe, szBuffer, COMMAND_PIPE_BUF_SIZE, &dwReturn, NULL)) {
 		szBuffer[dwReturn] = '\0';
 
-		DllPrintf("接收：\n");
+		DllPrintf("接收：%d\n", dwReturn);
 		PrintData((PBYTE)szBuffer, dwReturn);
 
 		if (strcmp(szBuffer, "AllInstallHook") == 0) {			// 准备用于API监测系统，HOOK全部函数

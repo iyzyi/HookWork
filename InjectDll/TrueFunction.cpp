@@ -32,3 +32,5 @@ PFN_WSARecvFrom True_WSARecvFrom = (PFN_WSARecvFrom)GetProcAddress(GetModuleHand
 
 PFN_CreateFileA True_CreateFileA = (PFN_CreateFileA)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateFileA");
 PFN_CreateFileW True_CreateFileW = (PFN_CreateFileW)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateFileW");
+
+PFN_ReadFile True_ReadFile = (PFN_ReadFile)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "ReadFile");

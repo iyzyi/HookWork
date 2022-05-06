@@ -14,7 +14,6 @@ void AllInstallHook() {
 	InstallHook((void**)&True_WSASend, My_WSASend);
 	InstallHook((void**)&True_WSASendTo, My_WSASendTo);
 	InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
-
 	InstallHook((void**)&True_recv, My_recv);
 	InstallHook((void**)&True_recvfrom, My_recvfrom);
 	InstallHook((void**)&True_WSARecv, My_WSARecv);
@@ -30,11 +29,16 @@ void AllUninstallHook() {
 	UninstallHook((void**)&True_WSASend);
 	UninstallHook((void**)&True_WSASendTo);
 	UninstallHook((void**)&True_WSASendMsg);
-
 	UninstallHook((void**)&True_recv);
 	UninstallHook((void**)&True_recvfrom);
 	UninstallHook((void**)&True_WSARecv);
 	UninstallHook((void**)&True_WSARecvFrom);
+
+
+	UninstallHook((void**)&True_CreateFileA);
+	UninstallHook((void**)&True_CreateFileW);
+
+	UninstallHook((void**)&True_ReadFile);
 }
 
 
@@ -43,6 +47,7 @@ void InstallOneHook(PBYTE szBuffer) {
 
 	switch (dwFuncId) {
 
+#pragma region 网络通信相关函数
 	case ID_send: {
 		DllPrintf("Install Hook send\n");
 		InstallHook((void**)&True_send, My_send);
@@ -76,6 +81,25 @@ void InstallOneHook(PBYTE szBuffer) {
 	case ID_WSARecv: {
 		DllPrintf("Install Hook WSARecv\n");
 		InstallHook((void**)&True_WSARecv, My_WSARecv);
+		break;
+	}
+#pragma endregion
+
+	case ID_CreateFileA: {
+		DllPrintf("Install Hook CreateFileA\n");
+		InstallHook((void**)&True_CreateFileA, My_CreateFileA);
+		break;
+	}
+
+	case ID_CreateFileW: {
+		DllPrintf("Install Hook CreateFileW\n");
+		InstallHook((void**)&True_CreateFileW, My_CreateFileW);
+		break;
+	}
+	
+	case ID_ReadFile: {
+		DllPrintf("Install Hook ReadFile\n");
+		InstallHook((void**)&True_ReadFile, My_ReadFile);
 		break;
 	}
 

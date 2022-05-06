@@ -62,7 +62,6 @@ void CFrameNetworkDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST1, m_List);
-	//  DDX_Control(pDX, IDC_STATIC_TEXT_INFO, m_Edit);
 	DDX_Control(pDX, IDC_STATIC_TEXT_INFO, m_StaticText);
 	DDX_Control(pDX, IDC_EDIT1, m_Edit);
 }
@@ -81,10 +80,11 @@ BEGIN_MESSAGE_MAP(CFrameNetworkDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
-	ON_COMMAND(ID_32773, &CFrameNetworkDlg::OnChooseProcessCommand)
+	
 
 	// 选择了进程ID之后，CChooseProcess窗口发送消息WM_GET_CHOOSE_PROCESS_ID，收到此消息后，执行OnGetChooseProcessId
 	ON_MESSAGE(WM_GET_CHOOSE_PROCESS_ID, &CFrameNetworkDlg::OnGetChooseProcessId)
+	ON_COMMAND(ID_32773, &CFrameNetworkDlg::OnChooseProcessCommand)
 	ON_COMMAND(ID_32775, &CFrameNetworkDlg::OnBeginWorkCommand)
 	ON_COMMAND(ID_32776, &CFrameNetworkDlg::OnEndWorkCommand)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, &CFrameNetworkDlg::OnLvnItemchangedList)

@@ -7,14 +7,11 @@
 #include "FrameFileOperationDlg.h"
 
 
-// WSASendto, WSARecvfrom, WSASendMsg找不到可以进行验证的样本程序，写出来也没法验证正确性，就先不写了。
-
-
 VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferSize) {
 	if (pMainDlg == NULL)
 		return;
-	/*
-	CListNetworkData* pListData = pMainDlg->m_pListData;
+	
+	//CListNetworkData* pListData = pMainDlg->m_pListData;
 	
 	if (dwBufferSize <= 4) {
 		printf("接收到长度为%d的无效数据\n", dwBufferSize);
@@ -28,53 +25,35 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 	switch (dwFuncId)
 	{
 
-	case ID_send:
+	case ID_CreateFileW:
 	{
-		_Data_send data = MsgUnpack<_Data_send>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("send"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
+		_Data_CreateFileW data = MsgUnpack<_Data_CreateFileW>(pMsgBuffer, dwMsgBufferSize);
+		
+		WCHAR wszFileName[MAX_PATH] = { 0 };
+		wcscpy_s(wszFileName, (PWCHAR)data.msgFilePath.ptr);
+
+		//wprintf(L"CreateFile %s\n", wszFileName);
+
 		pMainDlg->m_dwIndex++;
 		break;
 	}
 
-	case ID_sendto:
+	case ID_ReadFile:
 	{
-		_Data_sendto data = MsgUnpack<_Data_sendto>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("sendto"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
-		pMainDlg->m_dwIndex++;
-		break;
-	}
+		_Data_ReadFile data = MsgUnpack<_Data_ReadFile>(pMsgBuffer, dwMsgBufferSize);
 
-	case ID_WSASend: {
-		_Data_WSASend data = MsgUnpack<_Data_WSASend>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("WSASend"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
-		pMainDlg->m_dwIndex++;
-		break;
-	}
+		DWORD dwFileHandle = data.dwFileHandle;
 
-	case ID_recv:
-	{
-		_Data_recv data = MsgUnpack<_Data_recv>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("recv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
-		pMainDlg->m_dwIndex++;
-		break;
-	}
+		CHAR szFileName[MAX_PATH] = { 0 };
+		strcpy_s(szFileName, MAX_PATH, (PCHAR)data.msgFilePath.ptr);
 
-	case ID_recvfrom:
-	{
-		_Data_recvfrom data = MsgUnpack<_Data_recvfrom>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("recvfrom"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
-		pMainDlg->m_dwIndex++;
-		break;
-	}
+		printf("ReadFile: %s\n", szFileName);
 
-	case ID_WSARecv: {
-		_Data_WSARecv data = MsgUnpack<_Data_WSARecv>(pMsgBuffer, dwMsgBufferSize);
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("WSARecv"), data.socket, data.dwIP, data.wPort, data.sbuffer.size, (PBYTE)data.sbuffer.ptr);
 		pMainDlg->m_dwIndex++;
 		break;
 	}
 
 	default:
 		break;
-	}*/
+	}
 }
