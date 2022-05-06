@@ -27,14 +27,11 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 
 	case ID_CreateFileW:
 	{
-		_Data_CreateFileW data = MsgUnpack<_Data_CreateFileW>(pMsgBuffer, dwMsgBufferSize);
-		
+		_Data_CreateFileW data = MsgUnpack<_Data_CreateFileW>(pMsgBuffer, dwMsgBufferSize);		
+		DWORD dwFileHandle = data.dwFileHandle;
 		CString csFilePath = CStringW((PWCHAR)(data.msgFilePath.ptr));
 
-		//wprintf(L"CreateFile %s\n", wszFileName);
-
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("CreateFileW"), 0, _T(""), csFilePath);
-
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("CreateFileW"), dwFileHandle, csFilePath);
 		pMainDlg->m_dwIndex++;
 		break;
 	}
@@ -42,17 +39,10 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 	case ID_ReadFile:
 	{
 		_Data_ReadFile data = MsgUnpack<_Data_ReadFile>(pMsgBuffer, dwMsgBufferSize);
-
 		DWORD dwFileHandle = data.dwFileHandle;
-
-		/*CHAR szFileName[MAX_PATH] = { 0 };
-		strcpy_s(szFileName, MAX_PATH, (PCHAR)data.msgFilePath.ptr);*/
 		CString csFilePath = CString(data.msgFilePath.ptr);
 
-
-
-		pListData->AddRow(pMainDlg->m_dwIndex, _T("ReadFile"), (HANDLE)dwFileHandle, _T(""), csFilePath);
-
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("ReadFile"), dwFileHandle, csFilePath);
 		pMainDlg->m_dwIndex++;
 		break;
 	}

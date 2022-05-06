@@ -191,9 +191,13 @@ HANDLE WINAPI My_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwS
 
 
 HANDLE WINAPI My_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
-	DllPrintf("call My_CreateFileW\n");
+	HANDLE hFile = True_CreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return hFile;
 
 	_Data_CreateFileW data;
+	data.dwFileHandle = (DWORD)hFile;
+
 	data.msgFilePath.ptr = (char*)lpFileName;
 	data.msgFilePath.size = wcslen(lpFileName) * 2 + 2;
 
@@ -203,11 +207,16 @@ HANDLE WINAPI My_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dw
 	SendData(pBuffer, dwBufferSize);
 	delete[] pBuffer;
 
-	return True_CreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+	return hFile;
 }
 
 
 BOOL WINAPI My_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped) {
+
+	BOOL bRet = True_ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+
+	if (!bRet)				// 如果函数失败或异步完成，则返回值为零 （FALSE） 
+		return bRet;		// TODO 这里我没考虑异步
 
 	CHAR szFilePath[MAX_PATH] = { 0 };
 	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);
@@ -218,13 +227,11 @@ BOOL WINAPI My_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRea
 	data.msgFilePath.ptr = szFilePath;
 	data.msgFilePath.size = strlen(szFilePath) + 1;
 
-	//DllPrintf("")
-
 	PBYTE pBuffer = NULL;
 	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ReadFile>(data, pBuffer, ID_ReadFile);
 
 	SendData(pBuffer, dwBufferSize);
 	delete[] pBuffer;
 
-	return True_ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+	return bRet;
 }

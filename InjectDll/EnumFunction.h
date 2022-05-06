@@ -89,8 +89,9 @@ struct _Data_CreateFileA {
 };
 
 struct _Data_CreateFileW {
+	DWORD						dwFileHandle;
 	msgpack::type::raw_ref		msgFilePath;
-	MSGPACK_DEFINE(msgFilePath)
+	MSGPACK_DEFINE(dwFileHandle, msgFilePath)
 };
 
 struct _Data_ReadFile {

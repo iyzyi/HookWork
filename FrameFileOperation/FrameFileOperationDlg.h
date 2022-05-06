@@ -77,6 +77,7 @@ public:
 	void ValidMenuItem(UINT nIDEnableItem);
 	// 使菜单栏的某一项变灰不可用
 	void InvalidMenuItem(UINT nIDEnableItem);
+	afx_msg void OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
 

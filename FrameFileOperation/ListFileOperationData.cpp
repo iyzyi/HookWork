@@ -1,16 +1,23 @@
 #include "pch.h"
 #include "ListFileOperationData.h"
+#include <iostream>
 
-
-_ListFileOperationRowData::_ListFileOperationRowData(DWORD dwIndex, CString csFuncName, HANDLE hFile, CString csName, CString csPath) {
+_ListFileOperationRowData::_ListFileOperationRowData(DWORD dwIndex, CString csFuncName, DWORD dwFileHandle, CString csPath) {
 	this->dwIndex = dwIndex;
 	this->csFuncName = csFuncName;
-	this->hFile = hFile;
-	this->csName = csName;
+	this->dwFileHandle = dwFileHandle;
 	this->csPath = csPath;
 
 	this->csIndex.Format(_T("%d"), dwIndex);
-	this->csFileHandle.Format(_T("%d"), hFile);
+	this->csFileHandle.Format(_T("%d"), dwFileHandle);
+
+	if (this->csPath.GetLength() > 4 && this->csPath.Mid(0, 4).Compare(_T("\\\\?\\")) != -1) {		// 路径开头是\\?\的话就删去\\?\
+		std::cout << this->csPath;
+		this->csPath.Delete(0, 4);
+	}
+
+	int nPos = csPath.ReverseFind('\\');
+	this->csName = csPath.Right(csPath.GetLength() - nPos - 1);
 
 	pNext = NULL;
 }
@@ -52,8 +59,8 @@ CListFileOperationData::~CListFileOperationData() {
 }
 
 
-void CListFileOperationData::AddRow(DWORD dwIndex, CString csFuncName, HANDLE hFile, CString csName, CString csPath) {
-	_ListFileOperationRowData* pListFileOperationRowData = new _ListFileOperationRowData(dwIndex, csFuncName, hFile, csName, csPath);
+void CListFileOperationData::AddRow(DWORD dwIndex, CString csFuncName, DWORD dwFileHandle, CString csPath) {
+	_ListFileOperationRowData* pListFileOperationRowData = new _ListFileOperationRowData(dwIndex, csFuncName, dwFileHandle, csPath);
 
 	if (pFirst == NULL) {
 		pFirst = pListFileOperationRowData;

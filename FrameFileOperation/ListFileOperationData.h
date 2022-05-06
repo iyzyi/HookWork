@@ -19,11 +19,11 @@ struct _ListFileOperationRowData {
 	CString			csPath;
 
 	DWORD			dwIndex;
-	HANDLE			hFile;
+	DWORD			dwFileHandle;
 
 	_ListFileOperationRowData* pNext = NULL;
 
-	_ListFileOperationRowData(DWORD dwIndex, CString csFuncName, HANDLE hFile, CString csName, CString csPath);
+	_ListFileOperationRowData(DWORD dwIndex, CString csFuncName, DWORD dwFileHandle, CString csPath);
 };
 
 
@@ -45,7 +45,7 @@ public:
 	~CListFileOperationData();
 
 	// 添加一行数据（不是向ListCtrl中添加，而是向我们自定义的CListData类中添加）如果没有过滤条件，则同时绘制此行到ListCtrl中
-	void AddRow(DWORD dwIndex, CString csFuncName, HANDLE hFile, CString csName, CString csPath);
+	void AddRow(DWORD dwIndex, CString csFuncName, DWORD dwFileHandle, CString csPath);
 
 	// 在ListCtrl中绘制一行数据
 	void DisplayRow(_ListFileOperationRowData* pListFileOperationRowData);

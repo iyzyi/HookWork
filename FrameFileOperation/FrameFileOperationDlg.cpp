@@ -78,6 +78,7 @@ BEGIN_MESSAGE_MAP(CFrameFileOperationDlg, CDialogEx)
 	ON_COMMAND(ID_32773, &CFrameFileOperationDlg::OnChooseProcessCommand)
 	ON_COMMAND(ID_32775, &CFrameFileOperationDlg::OnBeginWorkCommand)
 	ON_COMMAND(ID_32776, &CFrameFileOperationDlg::OnEndWorkCommand)
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CFrameFileOperationDlg::OnNMDblclkList1)
 END_MESSAGE_MAP()
 
 
@@ -493,4 +494,22 @@ void CFrameFileOperationDlg::ValidMenuItem(UINT nIDEnableItem) {
 // 使菜单栏的某一项变灰不可用
 void CFrameFileOperationDlg::InvalidMenuItem(UINT nIDEnableItem) {
 	m_Menu.EnableMenuItem(nIDEnableItem, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+}
+
+void CFrameFileOperationDlg::OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	
+	int iItem = pNMItemActivate->iItem;	// 选择的行号
+
+	CString csFuncName = m_List.GetItemText(iItem, 1);
+	CString csPathName = m_List.GetItemText(iItem, 4);
+	
+
+	ShellExecute(NULL, _T("open"), csPathName, NULL, NULL, SW_SHOWNORMAL);
+
+
+	//ShellExecute(NULL, _T("explore"), _T("D:\\C++"), NULL, NULL, SW_SHOWNORMAL); // 打开目录D:\C++ 
+
+	*pResult = 0;
 }
