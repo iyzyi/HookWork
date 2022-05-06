@@ -27,8 +27,12 @@
 DWORD FuncList[] = {
 	ID_CreateFileA,
 	ID_CreateFileW,
-
 	ID_ReadFile,
+	ID_ReadFileEx,
+	ID_WriteFile,
+	ID_WriteFileEx,
+	ID_CreateDirectoryA,
+	ID_CreateDirectoryW
 };
 
 DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);

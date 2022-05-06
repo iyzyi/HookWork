@@ -89,7 +89,7 @@ DWORD SendData(PBYTE pBuffer, DWORD dwBufLen) {
 		return 0;
 	}
 
-	if (!WriteFile(hDataPipe, pBuffer, dwBufLen, &dwReturn, NULL))
+	if (!True_WriteFile(hDataPipe, pBuffer, dwBufLen, &dwReturn, NULL))			// 这里坑死我了。。。如果Hook了WriteFile，这里必须要用True_WriteFile，不然会陷入循环HOOK.
 	{
 		DllPrintf("向DataPipe管道写入数据失败，即将卸载HOOK并销毁管道\n");
 		AllUninstallHook();

@@ -184,9 +184,23 @@ int WSAAPI My_WSARecvFrom(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPD
 
 
 HANDLE WINAPI My_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
-	DllPrintf("call My_CreateFileA\n");
+	HANDLE hFile = True_CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return hFile;
 
-	return True_CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+	_Data_CreateFileA data;
+	data.dwFileHandle = (DWORD)hFile;
+
+	data.msgFilePath.ptr = (char*)lpFileName;
+	data.msgFilePath.size = strlen(lpFileName) + 1;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateFileA>(data, pBuffer, ID_CreateFileA);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return hFile;
 }
 
 
@@ -212,14 +226,13 @@ HANDLE WINAPI My_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dw
 
 
 BOOL WINAPI My_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped) {
-
 	BOOL bRet = True_ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
 	if (!bRet)				// 如果函数失败或异步完成，则返回值为零 （FALSE） 
 		return bRet;		// TODO 这里我没考虑异步
 
 	CHAR szFilePath[MAX_PATH] = { 0 };
-	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);
+	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);		// TODO 该函数不适用于xp系统。
 	
 	_Data_ReadFile data;
 	data.dwFileHandle = (DWORD)hFile;
@@ -228,10 +241,50 @@ BOOL WINAPI My_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRea
 	data.msgFilePath.size = strlen(szFilePath) + 1;
 
 	PBYTE pBuffer = NULL;
-	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ReadFile>(data, pBuffer, ID_ReadFile);
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ReadFile>(data, pBuffer, ID_ReadFile);		// TODO 这里只传输了文件路径，没传输文件具体读写内容
 
 	SendData(pBuffer, dwBufferSize);
 	delete[] pBuffer;
 
 	return bRet;
+}
+
+BOOL WINAPI My_ReadFileEx(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
+	return True_ReadFileEx(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine);
+}
+
+BOOL WINAPI My_WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped) {
+	BOOL bRet = True_WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped);
+	
+	if (!bRet)				// 如果函数失败或异步完成，则返回值为零 （FALSE） 
+		return bRet;		// TODO 这里我没考虑异步
+
+	CHAR szFilePath[MAX_PATH] = { 0 };
+	GetFinalPathNameByHandleA(hFile, szFilePath, MAX_PATH, FILE_NAME_NORMALIZED);
+
+	_Data_WriteFile data;
+	data.dwFileHandle = (DWORD)hFile;
+
+	data.msgFilePath.ptr = szFilePath;
+	data.msgFilePath.size = strlen(szFilePath) + 1;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_WriteFile>(data, pBuffer, ID_WriteFile);
+
+	SendData(pBuffer, dwBufferSize);			// 此函数内部调用了WriteFile，必须改为True_WriteFile，否则会循环HOOK，导致程序崩溃。
+	delete[] pBuffer;
+
+	return bRet;
+}
+
+BOOL WINAPI My_WriteFileEx(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) {
+	return True_WriteFileEx(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped, lpCompletionRoutine);
+}
+
+BOOL WINAPI My_CreateDirectoryA(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
+	return True_CreateDirectoryA(lpPathName, lpSecurityAttributes);
+}
+
+BOOL WINAPI My_CreateDirectoryW(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
+	return True_CreateDirectoryW(lpPathName, lpSecurityAttributes);
 }

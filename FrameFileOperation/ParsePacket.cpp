@@ -24,6 +24,16 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 
 	switch (dwFuncId)
 	{
+	case ID_CreateFileA: 
+	{
+		_Data_CreateFileA data = MsgUnpack<_Data_CreateFileA>(pMsgBuffer, dwMsgBufferSize);
+		DWORD dwFileHandle = data.dwFileHandle;
+		CString csFilePath = CString(data.msgFilePath.ptr);
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("CreateFileA"), dwFileHandle, csFilePath);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
 
 	case ID_CreateFileW:
 	{
@@ -44,6 +54,39 @@ VOID ParsePacket(CFrameFileOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBuffer
 
 		pListData->AddRow(pMainDlg->m_dwIndex, _T("ReadFile"), dwFileHandle, csFilePath);
 		pMainDlg->m_dwIndex++;
+		break;
+	}
+	
+	case ID_ReadFileEx: 
+	{
+
+		break;
+	}
+
+
+	case ID_WriteFile: 
+	{
+		_Data_WriteFile data = MsgUnpack<_Data_WriteFile>(pMsgBuffer, dwMsgBufferSize);
+		DWORD dwFileHandle = data.dwFileHandle;
+		CString csFilePath = CString(data.msgFilePath.ptr);
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("WriteFile"), dwFileHandle, csFilePath);
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_WriteFileEx:
+	{
+		break;
+	}
+
+	case ID_CreateDirectoryA: 
+	{
+		break;
+	}
+
+	case ID_CreateDirectoryW:
+	{
 		break;
 	}
 

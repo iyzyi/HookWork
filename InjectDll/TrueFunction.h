@@ -34,21 +34,23 @@ typedef HANDLE (WINAPI* PFN_CreateFileA)(LPCSTR lpFileName, DWORD dwDesiredAcces
 
 typedef HANDLE (WINAPI* PFN_CreateFileW)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
 
-
-
 typedef BOOL (WINAPI* PFN_ReadFile)(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
 
+typedef BOOL (WINAPI* PFN_ReadFileEx)(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+
+typedef BOOL (WINAPI* PFN_WriteFile)(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped);
+
+typedef BOOL (WINAPI* PFN_WriteFileEx)(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPOVERLAPPED lpOverlapped, LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+
+typedef BOOL (WINAPI* PFN_CreateDirectoryA)(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+
+typedef BOOL (WINAPI* PFN_CreateDirectoryW)(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
 
 
 
 
-
-
-
-
-
-// *******************************************************************************************
+// **************************************************************************************************************************************************************************************
 
 
 // 网络通信相关函数
@@ -67,3 +69,11 @@ extern PFN_WSARecvFrom				True_WSARecvFrom;
 extern PFN_CreateFileA				True_CreateFileA;
 extern PFN_CreateFileW				True_CreateFileW;
 extern PFN_ReadFile					True_ReadFile;
+extern PFN_ReadFileEx				True_ReadFileEx;
+extern PFN_WriteFile				True_WriteFile;
+extern PFN_WriteFileEx				True_WriteFileEx;
+extern PFN_CreateDirectoryA			True_CreateDirectoryA;
+extern PFN_CreateDirectoryW			True_CreateDirectoryW;
+
+
+

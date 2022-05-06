@@ -18,8 +18,13 @@ enum {
 // 文件系统相关函数
 	ID_CreateFileA,
 	ID_CreateFileW,
-
 	ID_ReadFile,
+	ID_ReadFileEx,
+	ID_WriteFile,
+	ID_WriteFileEx,
+	ID_CreateDirectoryA,
+	ID_CreateDirectoryW,
+
 };
 
 
@@ -84,6 +89,7 @@ struct _Data_WSARecv {
 // **************** 文件系统相关函数-数据结构 ****************
 
 struct _Data_CreateFileA {
+	DWORD						dwFileHandle;
 	msgpack::type::raw_ref		msgFilePath;
 	MSGPACK_DEFINE(msgFilePath)
 };
@@ -98,6 +104,13 @@ struct _Data_ReadFile {
 	// HANDLE类型没法自适应MSGPACK_DEFINE，会报错。
 	// 我又不想按照下面的教程来自己做适配，就直接把句柄用DWORD来表示了
 	// https://github.com/msgpack/msgpack-c/wiki/v1_1_cpp_adaptor 
+	DWORD						dwFileHandle;
+	msgpack::type::raw_ref		msgFilePath;
+	msgpack::type::raw_ref		sbuffer;
+	MSGPACK_DEFINE(dwFileHandle, msgFilePath, sbuffer)
+};
+
+struct _Data_WriteFile {
 	DWORD						dwFileHandle;
 	msgpack::type::raw_ref		msgFilePath;
 	msgpack::type::raw_ref		sbuffer;

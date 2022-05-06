@@ -103,6 +103,43 @@ void InstallOneHook(PBYTE szBuffer) {
 		break;
 	}
 
+	case ID_ReadFileEx:
+	{
+		DllPrintf("Install Hook ReadFileEx\n");
+		InstallHook((void**)&True_ReadFileEx, My_ReadFileEx);
+		break;
+	}
+
+
+	case ID_WriteFile:
+	{
+		DllPrintf("Install Hook WriteFile\n");
+		InstallHook((void**)&True_WriteFile, My_WriteFile);
+		break;
+	}
+
+	case ID_WriteFileEx:
+	{
+		DllPrintf("Install Hook WriteFileEx\n");
+		InstallHook((void**)&True_WriteFileEx, My_WriteFileEx);
+		break;
+	}
+
+	case ID_CreateDirectoryA:
+	{
+		DllPrintf("Install Hook CreateDirectoryA\n");
+		InstallHook((void**)&True_CreateDirectoryA, My_CreateDirectoryA);
+		break;
+	}
+
+	case ID_CreateDirectoryW:
+	{
+		DllPrintf("Install Hook CreateDirectoryW\n");
+		InstallHook((void**)&True_CreateDirectoryW, My_CreateDirectoryW);
+		break;
+	}
+
+
 	default:
 		break;
 	}

@@ -75,7 +75,14 @@ void CListFileOperationData::AddRow(DWORD dwIndex, CString csFuncName, DWORD dwF
 
 	// 如果没筛选关键字，则直接绘制此行数据
 	if (!m_pMainDlg->m_bFiltering) {
-		DisplayRow(pListFileOperationRowData);
+
+		if (pListFileOperationRowData->csFuncName == _T("CreateFileW") && pListFileOperationRowData->csPath == _T("\\\\.\\MountPointManager")) {
+			return;			// CreateFileW \\.\MountPointManager 这个操作太频繁了，影响结果的查看，在这里屏蔽掉吧。
+		}
+		else {
+			DisplayRow(pListFileOperationRowData);
+		}
+		
 	}
 	else {
 		;
