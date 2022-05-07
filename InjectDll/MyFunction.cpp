@@ -388,14 +388,14 @@ LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved,
 		dwBufLen = dwStrLen + 16;
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
-		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
+		swprintf(pwszPath, dwBufLen, L"%s\\%s", wsRootPath.c_str(), lpSubKey);
 	}
 	else {
 		dwStrLen = wsRootPath.length() * 2 + 2;
 		dwBufLen = dwStrLen + 16;
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
-		memcpy(pwszPath, wsRootPath.c_str(), wsRootPath.length() * 2);
+		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
 	}
 	data.msgPath.ptr = (char*)pwszPath;
 	data.msgPath.size = dwStrLen;
@@ -422,25 +422,6 @@ LSTATUS APIENTRY My_RegOpenKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, R
 LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
 	_Data_RegOpenKeyExW data;
 
-	//std::wstring wsRootPath = GetWstrKeyPathFromHKEY(hKey);
-	//PBYTE pPath = NULL;
-	//DWORD dwLen = 0;
-	//if (lpSubKey != NULL) {								// 这里没判断是否为NULL，坑我近两个小时。。。。
-	//	dwLen = wsRootPath.length() * 2 + wcslen(lpSubKey) * 2 + 2;
-	//	pPath = new BYTE[dwLen + 16];
-	//	memset(pPath, 0, dwLen + 16);
-	//	memcpy(pPath, wsRootPath.c_str(), wsRootPath.length() * 2);
-	//	memcpy(pPath + wsRootPath.length() * 2, lpSubKey, wcslen(lpSubKey) * 2 + 2);
-	//}
-	//else {
-	//	dwLen = wsRootPath.length() * 2 + 2;
-	//	pPath = new BYTE[dwLen + 16];
-	//	memset(pPath, 0, dwLen + 16);
-	//	memcpy(pPath, wsRootPath.c_str(), wsRootPath.length() * 2);
-	//}
-	//data.msgPath.ptr = (char*)pPath;
-	//data.msgPath.size = dwLen;
-
 	std::wstring wsRootPath = GetWstrKeyPathFromHKEY(hKey);
 	PWCHAR pwszPath = NULL;
 	DWORD dwStrLen = 0, dwBufLen = 0;
@@ -456,7 +437,7 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 		dwBufLen = dwStrLen + 16;
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
-		memcpy(pwszPath, wsRootPath.c_str(), wsRootPath.length() * 2);
+		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
 	}
 	data.msgPath.ptr = (char*)pwszPath;
 	data.msgPath.size = dwStrLen;
