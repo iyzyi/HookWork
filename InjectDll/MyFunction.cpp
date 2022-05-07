@@ -375,7 +375,22 @@ LSTATUS APIENTRY My_RegCreateKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, 
 }
 
 LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved, LPWSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition) {
-	return True_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
+	LSTATUS dwRet = True_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
+
+	_Data_RegCreateKeyExW data;
+	data.upKeyHandle = (UINT_PTR)*phkResult;		// hKey不是创建后的hKey，而是打开的注册表项的句柄（或许是指新Key的上一级路径？
+	data.dwRet = dwRet;
+
+	data.msgPath.ptr = (char*)lpSubKey;
+	data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegCreateKeyExW>(data, pBuffer, ID_RegCreateKeyExW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return dwRet;
 }
 
 LSTATUS APIENTRY My_RegOpenKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
@@ -387,7 +402,7 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 	LSTATUS dwRet = True_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 
 	_Data_RegOpenKeyExW data;
-	data.upKeyHandle = (UINT_PTR)hKey;
+	data.upKeyHandle = (UINT_PTR)*phkResult;
 	data.dwRet = dwRet;
 
 	data.msgPath.ptr = (char*)lpSubKey;
@@ -407,7 +422,6 @@ LSTATUS APIENTRY My_RegDeleteKeyExA(HKEY hKey, LPCSTR lpSubKey, REGSAM samDesire
 }
 
 LSTATUS APIENTRY My_RegDeleteKeyExW(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesired, DWORD Reserved) {
-	DllPrintf("call deleteW\n");
 	LSTATUS dwRet = True_RegDeleteKeyExW(hKey, lpSubKey, samDesired, Reserved);
 
 	_Data_RegDeleteKeyExW data;
@@ -426,7 +440,7 @@ LSTATUS APIENTRY My_RegDeleteKeyExW(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesir
 	return dwRet;
 }
 
-#include <iostream>
+
 LSTATUS APIENTRY My_RegCloseKey(HKEY hKey){
 
 	std::string sKeyPath = GetKeyPathFromHKEY(hKey);

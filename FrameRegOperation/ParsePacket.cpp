@@ -24,16 +24,16 @@ VOID ParsePacket(CFrameRegOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferS
 
 	switch (dwFuncId)
 	{
-	//case ID_CreateFileA: 
-	//{
-	//	_Data_CreateFileA data = MsgUnpack<_Data_CreateFileA>(pMsgBuffer, dwMsgBufferSize);
-	//	DWORD dwFileHandle = data.dwFileHandle;
-	//	CString csFilePath = CString(data.msgFilePath.ptr);
+	case ID_RegCreateKeyExW: {
+		_Data_RegCreateKeyExW data = MsgUnpack<_Data_RegCreateKeyExW>(pMsgBuffer, dwMsgBufferSize);
+		HANDLE hFile = (HANDLE)data.upKeyHandle;
+		CString csPath = CStringW((PWCHAR)(data.msgPath.ptr));
+		DWORD dwResult = data.dwRet;
 
-	//	pListData->AddRow(pMainDlg->m_dwIndex, _T("CreateFileA"), dwFileHandle, csFilePath);
-	//	pMainDlg->m_dwIndex++;
-	//	break;
-	//}
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("RegCreateKeyExW"), hFile, csPath, dwResult, L"");
+		pMainDlg->m_dwIndex++;
+		break;
+	}
 
 	case ID_RegOpenKeyExW: {
 		_Data_RegOpenKeyExW data = MsgUnpack<_Data_RegOpenKeyExW>(pMsgBuffer, dwMsgBufferSize);

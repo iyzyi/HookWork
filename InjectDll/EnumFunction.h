@@ -165,8 +165,16 @@ struct _Data_CreateDirectoryW {
 #pragma region 文件系统相关函数-数据结构
 
 // **************** 文件系统相关函数-数据结构 ****************
-struct _Data_RegOpenKeyExW {
+
+struct _Data_RegCreateKeyExW {
 	UINT_PTR					upKeyHandle;		// x64下是64bit, x86下是32bit。由于MsgPack限制，不能用HANDLE，用的话得自己写convert()。我直接用UINT_PTR偷懒了。
+	msgpack::type::raw_ref		msgPath;
+	DWORD						dwRet;
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
+};
+
+struct _Data_RegOpenKeyExW {
+	UINT_PTR					upKeyHandle;	
 	msgpack::type::raw_ref		msgPath;
 	DWORD						dwRet;
 	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
