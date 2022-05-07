@@ -290,6 +290,17 @@ DWORD WINAPI ThreadFunc_DataPipeRecv() {
 
 
 HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
+	// 设置安全描述符为任意用户均可访问
+	// 不然，这个程序如果用管理员权限启动，目标程序是普通权限，
+	// 那么目标程序无法连接上由这个程序以管理员权限创建的管道
+	SECURITY_ATTRIBUTES sa = { 0 };
+	SECURITY_DESCRIPTOR sd = { 0 };
+	InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+	SetSecurityDescriptorDacl(&sd, TRUE, NULL, FALSE);
+	sa.bInheritHandle = false;
+	sa.lpSecurityDescriptor = &sd;
+	sa.nLength = sizeof(sa);
+
 	// 创建命名管道
 	HANDLE hPipe = CreateNamedPipeA(
 		szPipeName,
@@ -301,7 +312,7 @@ HANDLE CreatePipeAndWaitConnect(LPSTR szPipeName, DWORD dwBufLen) {
 		dwBufLen,
 		dwBufLen,
 		0,
-		NULL);
+		&sa);
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{

@@ -512,7 +512,34 @@ LSTATUS APIENTRY My_RegSetValueExA(HKEY hKey, LPCSTR lpValueName, DWORD Reserved
 }
 
 LSTATUS APIENTRY My_RegSetValueExW(HKEY hKey, LPCWSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData) {
-	return True_RegSetValueExW(hKey, lpValueName, Reserved, dwType, lpData, cbData);
+	_Data_RegSetValueExW data;
+
+	std::wstring wsKeyPath = GetWstrKeyPathFromHKEY(hKey);
+	data.msgPath.ptr = (char*)wsKeyPath.c_str();
+	data.msgPath.size = wsKeyPath.length() * 2 + 2;
+
+	if (lpValueName != NULL) {
+		data.msgValueName.ptr = (char*)lpValueName;
+		data.msgValueName.size = wcslen(lpValueName) * 2 + 2;
+	}
+	else {
+		WCHAR wszTemp[] = L"NULL";
+		data.msgValueName.ptr = (char*)wszTemp;
+		data.msgValueName.size = wcslen(wszTemp) * 2 + 2;
+	}
+
+	LSTATUS dwRet = True_RegSetValueExW(hKey, lpValueName, Reserved, dwType, lpData, cbData);
+
+	data.upKeyHandle = (UINT_PTR)hKey;
+	data.dwRet = dwRet;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegSetValueExW>(data, pBuffer, ID_RegSetValueExW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+	
+	return dwRet;
 }
 
 LSTATUS APIENTRY My_RegQueryValueA(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData) {

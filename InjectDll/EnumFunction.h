@@ -180,14 +180,12 @@ struct _Data_RegOpenKeyExW {
 	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
 };
 
-
 struct _Data_RegDeleteKeyExW {
 	UINT_PTR					upKeyHandle;
 	msgpack::type::raw_ref		msgPath;
 	DWORD						dwRet;
 	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
 };
-
 
 struct _Data_RegCloseKey {
 	UINT_PTR					upKeyHandle;
@@ -196,5 +194,13 @@ struct _Data_RegCloseKey {
 	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
 };
 
+struct _Data_RegSetValueExW {
+	UINT_PTR					upKeyHandle;
+	msgpack::type::raw_ref		msgPath;
+	DWORD						dwRet;
+	msgpack::type::raw_ref		msgValueName;
+	msgpack::type::raw_ref		msgData;
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet, msgValueName, msgData)
+};
 
 #pragma endregion
