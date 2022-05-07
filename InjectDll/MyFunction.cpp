@@ -389,7 +389,7 @@ LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved,
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
-		pwszPath[dwStrLen / 2 - 1] = 0;
+		pwszPath[dwStrLen / 2] = 0;
 	}
 	else {
 		dwStrLen = wsRootPath.length() * 2 + 2;
@@ -397,7 +397,7 @@ LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved,
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
-		pwszPath[dwStrLen / 2 - 1] = 0;
+		pwszPath[dwStrLen / 2] = 0;
 	}
 	data.msgPath.ptr = (char*)pwszPath;
 	data.msgPath.size = dwStrLen;
@@ -433,7 +433,7 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
-		pwszPath[dwStrLen / 2 - 1] = 0;
+		pwszPath[dwStrLen / 2] = 0;
 	}
 	else {
 		dwStrLen = wsRootPath.length() * 2 + 2;
@@ -441,7 +441,7 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
-		pwszPath[dwStrLen / 2 - 1] = 0;
+		pwszPath[dwStrLen / 2] = 0;
 	}
 	data.msgPath.ptr = (char*)pwszPath;
 	data.msgPath.size = dwStrLen;
@@ -516,6 +516,9 @@ LSTATUS APIENTRY My_RegSetValueExA(HKEY hKey, LPCSTR lpValueName, DWORD Reserved
 }
 
 LSTATUS APIENTRY My_RegSetValueExW(HKEY hKey, LPCWSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData) {
+
+	// TODO lpDataÃ»´«¸øserver
+
 	_Data_RegSetValueExW data;
 
 	std::wstring wsKeyPath = GetWstrKeyPathFromHKEY(hKey);
@@ -536,6 +539,7 @@ LSTATUS APIENTRY My_RegSetValueExW(HKEY hKey, LPCWSTR lpValueName, DWORD Reserve
 
 	data.upKeyHandle = (UINT_PTR)hKey;
 	data.dwRet = dwRet;
+	data.dwType = dwType;
 
 	PBYTE pBuffer = NULL;
 	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegSetValueExW>(data, pBuffer, ID_RegSetValueExW);

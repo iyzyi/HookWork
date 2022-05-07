@@ -199,8 +199,9 @@ struct _Data_RegSetValueExW {
 	msgpack::type::raw_ref		msgPath;
 	DWORD						dwRet;
 	msgpack::type::raw_ref		msgValueName;
+	DWORD						dwType;
 	msgpack::type::raw_ref		msgData;
-	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet, msgValueName, msgData)
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet, msgValueName, dwType, msgData)
 };
 
 #pragma endregion

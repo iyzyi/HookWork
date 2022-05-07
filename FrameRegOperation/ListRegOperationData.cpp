@@ -76,7 +76,9 @@ void CListRegOperationData::AddRow(DWORD dwIndex, CString csFuncName, HANDLE hFi
 
 	// 如果没筛选关键字，则直接绘制此行数据
 	if (!m_pMainDlg->m_bFiltering) {
-		DisplayRow(pListRegOperationRowData);
+		if (csFuncName == _T("RegSetValueExW"))
+
+			DisplayRow(pListRegOperationRowData);
 	}
 	else {
 		;
