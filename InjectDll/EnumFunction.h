@@ -4,7 +4,7 @@
 
 enum {
 
-// 网络通信相关函数ID
+// 网络通信相关函数
 	ID_send,
 	ID_sendto,
 	ID_WSASend,
@@ -15,7 +15,7 @@ enum {
 	ID_WSARecv,
 	ID_WSARecvFrom,
 
-// 文件系统相关函数ID
+// 文件系统相关函数
 	ID_CreateFileA,
 	ID_CreateFileW,
 	ID_ReadFile,
@@ -25,9 +25,6 @@ enum {
 	ID_CreateDirectoryA,
 	ID_CreateDirectoryW,
 
-// 注册表相关函数ID
-	ID_RegOpenKeyExW,
-	
 };
 
 
@@ -143,15 +140,5 @@ struct _Data_CreateDirectoryW {
 	msgpack::type::raw_ref		msgPathName;
 	MSGPACK_DEFINE(msgPathName)
 };
-
-#pragma endregion
-
-
-
-#pragma region 注册表相关函数-数据结构
-
-// **************** 注册表相关函数-数据结构 ****************
-
-
 
 #pragma endregion

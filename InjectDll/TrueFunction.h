@@ -48,8 +48,6 @@ typedef BOOL (WINAPI* PFN_CreateDirectoryW)(LPCWSTR lpPathName, LPSECURITY_ATTRI
 
 
 
-typedef LSTATUS (APIENTRY* PFN_RegOpenKeyExW)(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
-
 
 
 // **************************************************************************************************************************************************************************************
@@ -77,7 +75,5 @@ extern PFN_WriteFileEx				True_WriteFileEx;
 extern PFN_CreateDirectoryA			True_CreateDirectoryA;
 extern PFN_CreateDirectoryW			True_CreateDirectoryW;
 
-
-extern PFN_RegOpenKeyExW			True_RegOpenKeyExW;
 
 
