@@ -75,7 +75,6 @@ BEGIN_MESSAGE_MAP(CFrameRegOperationDlg, CDialogEx)
 	ON_COMMAND(ID_32773, &CFrameRegOperationDlg::OnChooseProcessCommand)
 	ON_COMMAND(ID_32775, &CFrameRegOperationDlg::OnBeginWorkCommand)
 	ON_COMMAND(ID_32776, &CFrameRegOperationDlg::OnEndWorkCommand)
-	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CFrameRegOperationDlg::OnNMDblclkList1)
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
@@ -113,9 +112,9 @@ BOOL CFrameRegOperationDlg::OnInitDialog()
 	//插入列标题
 	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 60);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
 	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 140);
-	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 60);
+	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 90);
 	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 400);
-	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 120);
+	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 200);
 	m_List.InsertColumn(5, head[5], LVCFMT_LEFT, 500);
 
 	//设置风格样式
@@ -127,7 +126,7 @@ BOOL CFrameRegOperationDlg::OnInitDialog()
 
 
 	// 设置窗口大小。并居中显示
-	MoveWindow(0, 0, 900, 600, FALSE);
+	MoveWindow(0, 0, 1200, 800, FALSE);
 	CenterWindow(GetDesktopWindow());
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -174,8 +173,8 @@ HCURSOR CFrameRegOperationDlg::OnQueryDragIcon()
 //设置对话框最小宽度与高度
 void CFrameRegOperationDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
-	lpMMI->ptMinTrackSize.x = 900;
-	lpMMI->ptMinTrackSize.y = 600;
+	lpMMI->ptMinTrackSize.x = 1200;
+	lpMMI->ptMinTrackSize.y = 800;
 	CDialogEx::OnGetMinMaxInfo(lpMMI);
 }
 
@@ -192,6 +191,12 @@ void CFrameRegOperationDlg::ChangeWidget(int cx, int cy) {
 	rt1.right = cx - 10;
 	rt1.bottom = cy - 30;
 	pListCtrl->MoveWindow(rt1);
+
+	// 动态调整最后一列的长度
+	DWORD dwLastCol = 5;
+	DWORD dwWannaWidth = rt1.right - 60 - 140 - 90 - 400 - 200 - 33;
+	if (pListCtrl->GetColumnWidth(dwLastCol) < dwWannaWidth)
+	pListCtrl->SetColumnWidth(dwLastCol, dwWannaWidth);
 
 	// CStatic
 	CRect rt3;
@@ -541,22 +546,4 @@ void CFrameRegOperationDlg::ValidMenuItem(UINT nIDEnableItem) {
 // 使菜单栏的某一项变灰不可用
 void CFrameRegOperationDlg::InvalidMenuItem(UINT nIDEnableItem) {
 	m_Menu.EnableMenuItem(nIDEnableItem, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-}
-
-void CFrameRegOperationDlg::OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
-	
-	int iItem = pNMItemActivate->iItem;	// 选择的行号
-
-	CString csFuncName = m_List.GetItemText(iItem, 1);
-	CString csPathName = m_List.GetItemText(iItem, 4);
-	
-
-	ShellExecute(NULL, _T("open"), csPathName, NULL, NULL, SW_SHOWNORMAL);
-
-
-	//ShellExecute(NULL, _T("explore"), _T("D:\\C++"), NULL, NULL, SW_SHOWNORMAL); // 打开目录D:\C++ 
-
-	*pResult = 0;
 }

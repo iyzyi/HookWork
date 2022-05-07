@@ -12,7 +12,7 @@ _ListRegOperationRowData::_ListRegOperationRowData(DWORD dwIndex, CString csFunc
 
 	this->csIndex.Format(_T("%d"), dwIndex);
 	if (dwResult == ERROR_SUCCESS)
-		this->csFileHandle.Format(_T("%x"), hFile);
+		this->csFileHandle.Format(_T("0x%.8X"), hFile);
 	else
 		this->csFileHandle = CString(_T(""));
 	
