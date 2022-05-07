@@ -7,17 +7,17 @@
 
 
 void AllInstallHook() {
-	DllPrintf("All Install Hook......\n");
+	//DllPrintf("All Install Hook......\n");
 
-	InstallHook((void**)&True_send, My_send);
-	InstallHook((void**)&True_sendto, My_sendto);
-	InstallHook((void**)&True_WSASend, My_WSASend);
-	InstallHook((void**)&True_WSASendTo, My_WSASendTo);
-	InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
-	InstallHook((void**)&True_recv, My_recv);
-	InstallHook((void**)&True_recvfrom, My_recvfrom);
-	InstallHook((void**)&True_WSARecv, My_WSARecv);
-	InstallHook((void**)&True_WSARecvFrom, My_WSARecvFrom);
+	//InstallHook((void**)&True_send, My_send);
+	//InstallHook((void**)&True_sendto, My_sendto);
+	//InstallHook((void**)&True_WSASend, My_WSASend);
+	//InstallHook((void**)&True_WSASendTo, My_WSASendTo);
+	//InstallHook((void**)&True_WSASendMsg, My_WSASendMsg);
+	//InstallHook((void**)&True_recv, My_recv);
+	//InstallHook((void**)&True_recvfrom, My_recvfrom);
+	//InstallHook((void**)&True_WSARecv, My_WSARecv);
+	//InstallHook((void**)&True_WSARecvFrom, My_WSARecvFrom);
 }
 
 
@@ -43,6 +43,8 @@ void AllUninstallHook() {
 	UninstallHook((void**)&True_WriteFileEx);
 	UninstallHook((void**)&True_CreateDirectoryA);
 	UninstallHook((void**)&True_CreateDirectoryW);
+
+	UninstallHook((void**)&True_RegOpenKeyExW);
 }
 
 
@@ -89,6 +91,7 @@ void InstallOneHook(PBYTE szBuffer) {
 	}
 #pragma endregion
 
+#pragma region 文件系统相关函数
 	case ID_CreateFileA: {
 		DllPrintf("Install Hook CreateFileA\n");
 		InstallHook((void**)&True_CreateFileA, My_CreateFileA);
@@ -142,7 +145,14 @@ void InstallOneHook(PBYTE szBuffer) {
 		InstallHook((void**)&True_CreateDirectoryW, My_CreateDirectoryW);
 		break;
 	}
+#pragma endregion
 
+	case ID_RegOpenKeyExW:
+	{
+		DllPrintf("Install Hook RegOpenKeyExW\n");
+		InstallHook((void**)&True_RegOpenKeyExW, My_RegOpenKeyExW);
+		break;
+	}
 
 	default:
 		break;

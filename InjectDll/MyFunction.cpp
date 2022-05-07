@@ -182,6 +182,9 @@ int WSAAPI My_WSARecvFrom(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPD
 
 
 
+#pragma region 文件系统相关函数-自定义函数
+
+// ************************************************ 文件系统相关函数-自定义函数 ************************************************
 
 HANDLE WINAPI My_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
 	HANDLE hFile = True_CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
@@ -355,4 +358,13 @@ BOOL WINAPI My_CreateDirectoryW(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecu
 	delete[] pBuffer;
 
 	return bRet;
+}
+
+#pragma endregion
+
+
+
+LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
+	DllPrintf("call regopenkeyexw\n");
+	return True_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 }
