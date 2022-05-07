@@ -388,7 +388,8 @@ LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved,
 		dwBufLen = dwStrLen + 16;
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
-		swprintf(pwszPath, dwBufLen, L"%s\\%s", wsRootPath.c_str(), lpSubKey);
+		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
+		pwszPath[dwStrLen / 2 - 1] = 0;
 	}
 	else {
 		dwStrLen = wsRootPath.length() * 2 + 2;
@@ -396,6 +397,7 @@ LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved,
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
+		pwszPath[dwStrLen / 2 - 1] = 0;
 	}
 	data.msgPath.ptr = (char*)pwszPath;
 	data.msgPath.size = dwStrLen;
@@ -431,6 +433,7 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
+		pwszPath[dwStrLen / 2 - 1] = 0;
 	}
 	else {
 		dwStrLen = wsRootPath.length() * 2 + 2;
@@ -438,6 +441,7 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 		pwszPath = new WCHAR[dwBufLen];
 		memset(pwszPath, 0, dwBufLen);
 		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
+		pwszPath[dwStrLen / 2 - 1] = 0;
 	}
 	data.msgPath.ptr = (char*)pwszPath;
 	data.msgPath.size = dwStrLen;
