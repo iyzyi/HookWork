@@ -28,4 +28,5 @@ BOOL GetSocketIpPort(SOCKET s, PDWORD pdwIP, PWORD pwPort);
 
 
 // 通过句柄获取对应注册表路径
-std::string GetKeyPathFromHKEY(HKEY key);
+std::wstring GetWstrKeyPathFromHKEY(HKEY key);
+std::string GetStrKeyPathFromHKEY(HKEY key);

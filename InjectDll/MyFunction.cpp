@@ -380,16 +380,26 @@ LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved,
 	
 	_Data_RegCreateKeyExW data;
 
-	if (lpSubKey != NULL) {						// 这里没判断是否为NULL，坑我近两个小时。。。。
-		data.msgPath.ptr = (char*)lpSubKey;
-		data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+	std::wstring wsRootPath = GetWstrKeyPathFromHKEY(hKey);
+	PWCHAR pwszPath = NULL;
+	DWORD dwStrLen = 0, dwBufLen = 0;
+	if (lpSubKey != NULL) {								// 这里没判断是否为NULL，坑我近两个小时。。。。
+		dwStrLen = wsRootPath.length() * 2 + wcslen(lpSubKey) * 2 + 2;
+		dwBufLen = dwStrLen + 16;
+		pwszPath = new WCHAR[dwBufLen];
+		memset(pwszPath, 0, dwBufLen);
+		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
 	}
 	else {
-		WCHAR wszTemp[] = L" ";					// 令size=0时，msgpack并不能编码空字符串。故这里打个空格。
-		data.msgPath.ptr = (char*)wszTemp;
-		data.msgPath.size = 2;
+		dwStrLen = wsRootPath.length() * 2 + 2;
+		dwBufLen = dwStrLen + 16;
+		pwszPath = new WCHAR[dwBufLen];
+		memset(pwszPath, 0, dwBufLen);
+		memcpy(pwszPath, wsRootPath.c_str(), wsRootPath.length() * 2);
 	}
-	
+	data.msgPath.ptr = (char*)pwszPath;
+	data.msgPath.size = dwStrLen;
+
 	LSTATUS dwRet = True_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
 
 	data.upKeyHandle = (UINT_PTR)*phkResult;		
@@ -412,15 +422,44 @@ LSTATUS APIENTRY My_RegOpenKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, R
 LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
 	_Data_RegOpenKeyExW data;
 
-	if (lpSubKey != NULL) {						// 这里没判断是否为NULL，坑我近两个小时。。。。
-		data.msgPath.ptr = (char*)lpSubKey;
-		data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+	//std::wstring wsRootPath = GetWstrKeyPathFromHKEY(hKey);
+	//PBYTE pPath = NULL;
+	//DWORD dwLen = 0;
+	//if (lpSubKey != NULL) {								// 这里没判断是否为NULL，坑我近两个小时。。。。
+	//	dwLen = wsRootPath.length() * 2 + wcslen(lpSubKey) * 2 + 2;
+	//	pPath = new BYTE[dwLen + 16];
+	//	memset(pPath, 0, dwLen + 16);
+	//	memcpy(pPath, wsRootPath.c_str(), wsRootPath.length() * 2);
+	//	memcpy(pPath + wsRootPath.length() * 2, lpSubKey, wcslen(lpSubKey) * 2 + 2);
+	//}
+	//else {
+	//	dwLen = wsRootPath.length() * 2 + 2;
+	//	pPath = new BYTE[dwLen + 16];
+	//	memset(pPath, 0, dwLen + 16);
+	//	memcpy(pPath, wsRootPath.c_str(), wsRootPath.length() * 2);
+	//}
+	//data.msgPath.ptr = (char*)pPath;
+	//data.msgPath.size = dwLen;
+
+	std::wstring wsRootPath = GetWstrKeyPathFromHKEY(hKey);
+	PWCHAR pwszPath = NULL;
+	DWORD dwStrLen = 0, dwBufLen = 0;
+	if (lpSubKey != NULL) {								// 这里没判断是否为NULL，坑我近两个小时。。。。
+		dwStrLen = wsRootPath.length() * 2 + wcslen(lpSubKey) * 2 + 2;
+		dwBufLen = dwStrLen + 16;
+		pwszPath = new WCHAR[dwBufLen];
+		memset(pwszPath, 0, dwBufLen);
+		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
 	}
 	else {
-		WCHAR wszTemp[] = L" ";					// 令size=0时，msgpack并不能编码空字符串。故这里打个空格。
-		data.msgPath.ptr = (char*)wszTemp;
-		data.msgPath.size = 2;
+		dwStrLen = wsRootPath.length() * 2 + 2;
+		dwBufLen = dwStrLen + 16;
+		pwszPath = new WCHAR[dwBufLen];
+		memset(pwszPath, 0, dwBufLen);
+		memcpy(pwszPath, wsRootPath.c_str(), wsRootPath.length() * 2);
 	}
+	data.msgPath.ptr = (char*)pwszPath;
+	data.msgPath.size = dwStrLen;
 
 	LSTATUS dwRet = True_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 
@@ -468,7 +507,7 @@ LSTATUS APIENTRY My_RegDeleteKeyExW(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesir
 
 LSTATUS APIENTRY My_RegCloseKey(HKEY hKey){
 
-	std::string sKeyPath = GetKeyPathFromHKEY(hKey);
+	std::string sKeyPath = GetStrKeyPathFromHKEY(hKey);
 		
 	LSTATUS dwRet = True_RegCloseKey(hKey);					// 一定要先获取Path，在CloseKey。若先CloseKey，则必然获取Path失败
 

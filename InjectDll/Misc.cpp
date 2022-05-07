@@ -126,7 +126,7 @@ typedef LONG NTSTATUS;
 #ifndef STATUS_BUFFER_TOO_SMALL
 #define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
 #endif
-std::string GetKeyPathFromHKEY(HKEY key)
+std::wstring GetWstrKeyPathFromHKEY(HKEY key)
 {
 	std::wstring keyPath;
 	if (key != NULL)
@@ -169,6 +169,12 @@ std::string GetKeyPathFromHKEY(HKEY key)
 		}
 	}
 
+	return keyPath;
+}
+
+
+std::string GetStrKeyPathFromHKEY(HKEY key) {
+	std::wstring keyPath = GetWstrKeyPathFromHKEY(key);
 	std::string str;
 	str.assign(keyPath.begin(), keyPath.end());
 	return str;
