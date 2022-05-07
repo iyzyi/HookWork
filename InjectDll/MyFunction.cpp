@@ -375,14 +375,25 @@ LSTATUS APIENTRY My_RegCreateKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, 
 }
 
 LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved, LPWSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition) {
+	// hKey不是创建后的hKey，而是打开的注册表项的句柄。lpSubKey是将要创建的 子 项的相对路径
+	// 创建成功后的新hKey存入phkResult
+	
+	_Data_RegCreateKeyExW data;
+
+	if (lpSubKey != NULL) {						// 这里没判断是否为NULL，坑我近两个小时。。。。
+		data.msgPath.ptr = (char*)lpSubKey;
+		data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+	}
+	else {
+		WCHAR wszTemp[] = L" ";					// 令size=0时，msgpack并不能编码空字符串。故这里打个空格。
+		data.msgPath.ptr = (char*)wszTemp;
+		data.msgPath.size = 2;
+	}
+	
 	LSTATUS dwRet = True_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
 
-	_Data_RegCreateKeyExW data;
-	data.upKeyHandle = (UINT_PTR)*phkResult;		// hKey不是创建后的hKey，而是打开的注册表项的句柄（或许是指新Key的上一级路径？
+	data.upKeyHandle = (UINT_PTR)*phkResult;		
 	data.dwRet = dwRet;
-
-	data.msgPath.ptr = (char*)lpSubKey;
-	data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
 
 	PBYTE pBuffer = NULL;
 	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegCreateKeyExW>(data, pBuffer, ID_RegCreateKeyExW);
@@ -399,14 +410,22 @@ LSTATUS APIENTRY My_RegOpenKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, R
 
 
 LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
+	_Data_RegOpenKeyExW data;
+
+	if (lpSubKey != NULL) {						// 这里没判断是否为NULL，坑我近两个小时。。。。
+		data.msgPath.ptr = (char*)lpSubKey;
+		data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+	}
+	else {
+		WCHAR wszTemp[] = L" ";					// 令size=0时，msgpack并不能编码空字符串。故这里打个空格。
+		data.msgPath.ptr = (char*)wszTemp;
+		data.msgPath.size = 2;
+	}
+
 	LSTATUS dwRet = True_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 
-	_Data_RegOpenKeyExW data;
 	data.upKeyHandle = (UINT_PTR)*phkResult;
 	data.dwRet = dwRet;
-
-	data.msgPath.ptr = (char*)lpSubKey;
-	data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
 
 	PBYTE pBuffer = NULL;
 	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegOpenKeyExW>(data, pBuffer, ID_RegOpenKeyExW);
@@ -422,14 +441,20 @@ LSTATUS APIENTRY My_RegDeleteKeyExA(HKEY hKey, LPCSTR lpSubKey, REGSAM samDesire
 }
 
 LSTATUS APIENTRY My_RegDeleteKeyExW(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesired, DWORD Reserved) {
+	_Data_RegDeleteKeyExW data;
+
+	if (lpSubKey != NULL) {
+		data.msgPath.ptr = (char*)lpSubKey;
+		data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+	}
+	else {
+		data.msgPath.size = 0;
+	}
+
 	LSTATUS dwRet = True_RegDeleteKeyExW(hKey, lpSubKey, samDesired, Reserved);
 
-	_Data_RegDeleteKeyExW data;
 	data.upKeyHandle = (UINT_PTR)hKey;
 	data.dwRet = dwRet;
-
-	data.msgPath.ptr = (char*)lpSubKey;
-	data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
 
 	PBYTE pBuffer = NULL;
 	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegDeleteKeyExW>(data, pBuffer, ID_RegDeleteKeyExW);
