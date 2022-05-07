@@ -43,6 +43,8 @@ void AllUninstallHook() {
 	UninstallHook((void**)&True_WriteFileEx);
 	UninstallHook((void**)&True_CreateDirectoryA);
 	UninstallHook((void**)&True_CreateDirectoryW);
+
+	UninstallHook((void**)&True_RegOpenKeyExW);
 }
 
 
@@ -89,6 +91,7 @@ void InstallOneHook(PBYTE szBuffer) {
 	}
 #pragma endregion
 
+#pragma region 文件系统相关函数
 	case ID_CreateFileA: {
 		DllPrintf("Install Hook CreateFileA\n");
 		InstallHook((void**)&True_CreateFileA, My_CreateFileA);
@@ -142,7 +145,13 @@ void InstallOneHook(PBYTE szBuffer) {
 		InstallHook((void**)&True_CreateDirectoryW, My_CreateDirectoryW);
 		break;
 	}
+#pragma endregion
 
+	case ID_RegOpenKeyExW: {
+		DllPrintf("Install Hook RegOpenKeyExW\n");
+		InstallHook((void**)&True_RegOpenKeyExW, My_RegOpenKeyExW);
+		break;
+	}
 
 	default:
 		break;

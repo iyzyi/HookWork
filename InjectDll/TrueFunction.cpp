@@ -50,3 +50,8 @@ PFN_CreateDirectoryA True_CreateDirectoryA = (PFN_CreateDirectoryA)GetProcAddres
 PFN_CreateDirectoryW True_CreateDirectoryW = (PFN_CreateDirectoryW)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateDirectoryW");
 
 #pragma endregion
+
+
+
+
+PFN_RegOpenKeyExW True_RegOpenKeyExW = (PFN_RegOpenKeyExW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegOpenKeyExW");

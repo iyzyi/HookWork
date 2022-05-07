@@ -27,6 +27,7 @@ typedef int (WSAAPI* PFN_WSARecvFrom)(SOCKET s, LPWSABUF lpBuffers, DWORD dwBuff
 #pragma endregion
 
 
+#pragma region 网络通信相关函数-函数指针宏定义
 
 // ************************************************ 文件系统相关函数-函数指针宏定义 ************************************************
 
@@ -45,6 +46,14 @@ typedef BOOL (WINAPI* PFN_WriteFileEx)(HANDLE hFile, LPCVOID lpBuffer, DWORD nNu
 typedef BOOL (WINAPI* PFN_CreateDirectoryA)(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
 typedef BOOL (WINAPI* PFN_CreateDirectoryW)(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+
+#pragma endregion
+
+
+
+
+typedef LSTATUS (APIENTRY* PFN_RegOpenKeyExW)(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
+
 
 
 
@@ -76,4 +85,4 @@ extern PFN_CreateDirectoryA			True_CreateDirectoryA;
 extern PFN_CreateDirectoryW			True_CreateDirectoryW;
 
 
-
+extern PFN_RegOpenKeyExW			True_RegOpenKeyExW;
