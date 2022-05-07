@@ -12,7 +12,7 @@ _ListRegOperationRowData::_ListRegOperationRowData(DWORD dwIndex, CString csFunc
 
 	this->csIndex.Format(_T("%d"), dwIndex);
 	if (dwResult == ERROR_SUCCESS)
-		this->csFileHandle.Format(_T("0x%.8X"), hFile);
+		this->csFileHandle.Format(_T("%d"), hFile);
 	else
 		this->csFileHandle = CString(_T(""));
 	
@@ -76,8 +76,7 @@ void CListRegOperationData::AddRow(DWORD dwIndex, CString csFuncName, HANDLE hFi
 
 	// 如果没筛选关键字，则直接绘制此行数据
 	if (!m_pMainDlg->m_bFiltering) {
-		if (csFuncName == _T("RegSetValueExW"))
-
+		//if (csFuncName == _T("RegGetValueW"))
 			DisplayRow(pListRegOperationRowData);
 	}
 	else {

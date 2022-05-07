@@ -54,14 +54,16 @@ void AllUninstallHook() {
 	UninstallHook((void**)&True_RegCloseKey);
 	UninstallHook((void**)&True_RegSetValueExA);
 	UninstallHook((void**)&True_RegSetValueExW);
-	UninstallHook((void**)&True_RegQueryValueA);
-	UninstallHook((void**)&True_RegQueryValueW);
+	//UninstallHook((void**)&True_RegQueryValueA);
+	//UninstallHook((void**)&True_RegQueryValueW);
+	UninstallHook((void**)&True_RegQueryValueExA);
+	UninstallHook((void**)&True_RegQueryValueExW);
 	UninstallHook((void**)&True_RegGetValueA);
 	UninstallHook((void**)&True_RegGetValueW);
 	UninstallHook((void**)&True_RegEnumKeyExA);
 	UninstallHook((void**)&True_RegEnumKeyExW);
-	UninstallHook((void**)&True_RegEnumValueA);
-	UninstallHook((void**)&True_RegEnumValueW);
+	//UninstallHook((void**)&True_RegEnumValueA);
+	//UninstallHook((void**)&True_RegEnumValueW);
 }
 
 
@@ -218,17 +220,17 @@ void InstallOneHook(PBYTE szBuffer) {
 		break;
 	}
 
-	case ID_RegQueryValueA: {
-		DllPrintf("Install Hook RegQueryValueA\n");
-		InstallHook((void**)&True_RegQueryValueA, My_RegQueryValueA);
-		break;
-	}
+	//case ID_RegQueryValueA: {
+	//	DllPrintf("Install Hook RegQueryValueA\n");
+	//	InstallHook((void**)&True_RegQueryValueA, My_RegQueryValueA);
+	//	break;
+	//}
 
-	case ID_RegQueryValueW: {
-		DllPrintf("Install Hook RegQueryValueW\n");
-		InstallHook((void**)&True_RegQueryValueW, My_RegQueryValueW);
-		break;
-	}
+	//case ID_RegQueryValueW: {
+	//	DllPrintf("Install Hook RegQueryValueW\n");
+	//	InstallHook((void**)&True_RegQueryValueW, My_RegQueryValueW);
+	//	break;
+	//}
 
 	case ID_RegGetValueA: {
 		DllPrintf("Install Hook RegGetValueA\n");
@@ -254,17 +256,17 @@ void InstallOneHook(PBYTE szBuffer) {
 		break;
 	}
 
-	case ID_RegEnumValueA: {
-		DllPrintf("Install Hook RegEnumValueA\n");
-		InstallHook((void**)&True_RegEnumValueA, My_RegEnumValueA);
-		break;
-	}
+	//case ID_RegEnumValueA: {
+	//	DllPrintf("Install Hook RegEnumValueA\n");
+	//	InstallHook((void**)&True_RegEnumValueA, My_RegEnumValueA);
+	//	break;
+	//}
 
-	case ID_RegEnumValueW: {
-		DllPrintf("Install Hook RegEnumValueW\n");
-		InstallHook((void**)&True_RegEnumValueW, My_RegEnumValueW);
-		break;
-	}
+	//case ID_RegEnumValueW: {
+	//	DllPrintf("Install Hook RegEnumValueW\n");
+	//	InstallHook((void**)&True_RegEnumValueW, My_RegEnumValueW);
+	//	break;
+	//}
 
 	default:
 		break;

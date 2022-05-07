@@ -550,12 +550,51 @@ LSTATUS APIENTRY My_RegSetValueExW(HKEY hKey, LPCWSTR lpValueName, DWORD Reserve
 	return dwRet;
 }
 
-LSTATUS APIENTRY My_RegQueryValueA(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData) {
-	return True_RegQueryValueA(hKey, lpSubKey, lpData, lpcbData);
+//LSTATUS APIENTRY My_RegQueryValueA(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData) {
+//	return True_RegQueryValueA(hKey, lpSubKey, lpData, lpcbData);
+//}
+//
+//LSTATUS APIENTRY My_RegQueryValueW(HKEY hKey, LPCWSTR lpSubKey, LPWSTR lpData, PLONG lpcbData) {
+//	return True_RegQueryValueW(hKey, lpSubKey, lpData, lpcbData);
+//}
+
+LSTATUS APIENTRY My_RegQueryValueExA(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
+	return True_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
 }
 
-LSTATUS APIENTRY My_RegQueryValueW(HKEY hKey, LPCWSTR lpSubKey, LPWSTR lpData, PLONG lpcbData) {
-	return True_RegQueryValueW(hKey, lpSubKey, lpData, lpcbData);
+LSTATUS APIENTRY My_RegQueryValueExW(HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE  lpData, LPDWORD lpcbData) {	// TODO未经测试
+	
+	// TODO lpData没传给server
+	
+	_Data_RegQueryValueExW data;
+
+	std::wstring wsKeyPath = GetWstrKeyPathFromHKEY(hKey);
+	data.msgPath.ptr = (char*)wsKeyPath.c_str();
+	data.msgPath.size = wsKeyPath.length() * 2 + 2;
+
+	if (lpValueName != NULL) {
+		data.msgValueName.ptr = (char*)lpValueName;
+		data.msgValueName.size = wcslen(lpValueName) * 2 + 2;
+	}
+	else {
+		WCHAR wszTemp[] = L"NULL";
+		data.msgValueName.ptr = (char*)wszTemp;
+		data.msgValueName.size = wcslen(wszTemp) * 2 + 2;
+	}
+
+	LSTATUS dwRet = True_RegQueryValueExW(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
+
+	data.upKeyHandle = (UINT_PTR)hKey;
+	data.dwRet = dwRet;
+	data.dwType = (lpType != NULL) ? (*lpType) : 0xffffffff;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegQueryValueExW>(data, pBuffer, ID_RegQueryValueExW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return dwRet;
 }
 
 LSTATUS APIENTRY My_RegGetValueA(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) {
@@ -563,7 +602,53 @@ LSTATUS APIENTRY My_RegGetValueA(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWO
 }
 
 LSTATUS APIENTRY My_RegGetValueW(HKEY hkey, LPCWSTR lpSubKey, LPCWSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) {
-	return True_RegGetValueW(hkey, lpSubKey, lpValue, dwFlags, pdwType, pvData, pcbData);
+	_Data_RegGetValueW data;
+
+	std::wstring wsRootPath = GetWstrKeyPathFromHKEY(hkey);
+	PWCHAR pwszPath = NULL;
+	DWORD dwStrLen = 0, dwBufLen = 0;
+	if (lpSubKey != NULL) {								// 这里没判断是否为NULL，坑我近两个小时。。。。
+		dwStrLen = wsRootPath.length() * 2 + wcslen(lpSubKey) * 2 + 2;
+		dwBufLen = dwStrLen + 16;
+		pwszPath = new WCHAR[dwBufLen];
+		memset(pwszPath, 0, dwBufLen);
+		swprintf(pwszPath, dwBufLen, L"%s\\%s", (LPCWSTR)wsRootPath.c_str(), lpSubKey);
+		pwszPath[dwStrLen / 2] = 0;
+	}
+	else {
+		dwStrLen = wsRootPath.length() * 2 + 2;
+		dwBufLen = dwStrLen + 16;
+		pwszPath = new WCHAR[dwBufLen];
+		memset(pwszPath, 0, dwBufLen);
+		wcscpy_s(pwszPath, dwBufLen, wsRootPath.c_str());
+		pwszPath[dwStrLen / 2] = 0;
+	}
+	data.msgPath.ptr = (char*)pwszPath;
+	data.msgPath.size = dwStrLen;
+
+	if (lpValue != NULL) {
+		data.msgValueName.ptr = (char*)lpValue;
+		data.msgValueName.size = wcslen(lpValue) * 2 + 2;
+	}
+	else {
+		WCHAR wszTemp[] = L"NULL";
+		data.msgValueName.ptr = (char*)wszTemp;
+		data.msgValueName.size = wcslen(wszTemp) * 2 + 2;
+	}
+
+	LSTATUS dwRet = True_RegGetValueW(hkey, lpSubKey, lpValue, dwFlags, pdwType, pvData, pcbData);
+
+	data.upKeyHandle = (UINT_PTR)hkey;
+	data.dwRet = dwRet;
+	data.dwType = (pdwType != NULL) ? (*pdwType) : 0xffffffff;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegGetValueW>(data, pBuffer, ID_RegGetValueW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return dwRet;
 }
 
 LSTATUS APIENTRY My_RegEnumKeyExA(HKEY hKey, DWORD dwIndex, LPSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime) {
@@ -574,10 +659,10 @@ LSTATUS APIENTRY My_RegEnumKeyExW(HKEY hKey, DWORD dwIndex, LPWSTR lpName, LPDWO
 	return True_RegEnumKeyExW(hKey, dwIndex, lpName, lpcchName, lpReserved, lpClass, lpcchClass, lpftLastWriteTime);
 }
 
-LSTATUS APIENTRY My_RegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
-	return True_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
-}
-
-LSTATUS APIENTRY My_RegEnumValueW(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
-	return True_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
-}
+//LSTATUS APIENTRY My_RegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
+//	return True_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
+//}
+//
+//LSTATUS APIENTRY My_RegEnumValueW(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
+//	return True_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
+//}

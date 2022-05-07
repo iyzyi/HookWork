@@ -72,9 +72,13 @@ typedef LSTATUS (APIENTRY* PFN_RegSetValueExA)(HKEY hKey, LPCSTR lpValueName, DW
 
 typedef LSTATUS (APIENTRY* PFN_RegSetValueExW)(HKEY hKey, LPCWSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData);
 
-typedef LSTATUS (APIENTRY* PFN_RegQueryValueA)(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData);
+//typedef LSTATUS (APIENTRY* PFN_RegQueryValueA)(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData);
+//
+//typedef LSTATUS (APIENTRY* PFN_RegQueryValueW)(HKEY hKey, LPCWSTR lpSubKey, LPWSTR lpData, PLONG lpcbData);
 
-typedef LSTATUS (APIENTRY* PFN_RegQueryValueW)(HKEY hKey, LPCWSTR lpSubKey, LPWSTR lpData, PLONG lpcbData);
+typedef LSTATUS (APIENTRY* PFN_RegQueryValueExA)(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegQueryValueExW)(HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE  lpData, LPDWORD lpcbData);
 
 typedef LSTATUS (APIENTRY* PFN_RegGetValueA)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
 
@@ -84,9 +88,9 @@ typedef LSTATUS (APIENTRY* PFN_RegEnumKeyExA)(HKEY hKey, DWORD dwIndex, LPSTR lp
 
 typedef LSTATUS (APIENTRY* PFN_RegEnumKeyExW)(HKEY hKey, DWORD dwIndex, LPWSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPWSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime);
 
-typedef LSTATUS (APIENTRY* PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
-
-typedef LSTATUS (APIENTRY* PFN_RegEnumValueW)(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+//typedef LSTATUS (APIENTRY* PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+//
+//typedef LSTATUS (APIENTRY* PFN_RegEnumValueW)(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 
 #pragma endregion
 
@@ -130,11 +134,13 @@ extern PFN_RegDeleteKeyExW			True_RegDeleteKeyExW;
 extern PFN_RegCloseKey				True_RegCloseKey;
 extern PFN_RegSetValueExA			True_RegSetValueExA;
 extern PFN_RegSetValueExW			True_RegSetValueExW;
-extern PFN_RegQueryValueA			True_RegQueryValueA;
-extern PFN_RegQueryValueW			True_RegQueryValueW;
+//extern PFN_RegQueryValueA			True_RegQueryValueA;
+//extern PFN_RegQueryValueW			True_RegQueryValueW;
+extern PFN_RegQueryValueExA			True_RegQueryValueExA;
+extern PFN_RegQueryValueExW			True_RegQueryValueExW;
 extern PFN_RegGetValueA				True_RegGetValueA;
 extern PFN_RegGetValueW				True_RegGetValueW;
 extern PFN_RegEnumKeyExA			True_RegEnumKeyExA;
 extern PFN_RegEnumKeyExW			True_RegEnumKeyExW;
-extern PFN_RegEnumValueA			True_RegEnumValueA;
-extern PFN_RegEnumValueW			True_RegEnumValueW;
+//extern PFN_RegEnumValueA			True_RegEnumValueA;
+//extern PFN_RegEnumValueW			True_RegEnumValueW;

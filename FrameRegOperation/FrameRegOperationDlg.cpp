@@ -34,14 +34,16 @@ DWORD FuncList[] = {
 	ID_RegCloseKey,
 	ID_RegSetValueExA,
 	ID_RegSetValueExW,
-	ID_RegQueryValueA,
-	ID_RegQueryValueW,
+	//ID_RegQueryValueA,
+	//ID_RegQueryValueW,
+	ID_RegQueryValueExA,
+	ID_RegQueryValueExW,
 	ID_RegGetValueA,
 	ID_RegGetValueW,
 	ID_RegEnumKeyExA,
 	ID_RegEnumKeyExW,
-	ID_RegEnumValueA,
-	ID_RegEnumValueW,
+	//ID_RegEnumValueA,
+	//ID_RegEnumValueW,
 };
 
 DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
@@ -128,7 +130,7 @@ BOOL CFrameRegOperationDlg::OnInitDialog()
 	//插入列标题
 	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 60);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
 	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 140);
-	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 90);
+	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 60);
 	m_List.InsertColumn(3, head[3], LVCFMT_LEFT, 400);
 	m_List.InsertColumn(4, head[4], LVCFMT_LEFT, 200);
 	m_List.InsertColumn(5, head[5], LVCFMT_LEFT, 500);
@@ -210,7 +212,7 @@ void CFrameRegOperationDlg::ChangeWidget(int cx, int cy) {
 
 	// 动态调整最后一列的长度
 	DWORD dwLastCol = 5;
-	DWORD dwWannaWidth = rt1.right - 60 - 140 - 90 - 400 - 200 - 33;
+	DWORD dwWannaWidth = rt1.right - 60 - 140 - 60 - 400 - 200 - 33;
 	if (pListCtrl->GetColumnWidth(dwLastCol) < dwWannaWidth)
 	pListCtrl->SetColumnWidth(dwLastCol, dwWannaWidth);
 

@@ -35,14 +35,16 @@ enum {
 	ID_RegCloseKey,
 	ID_RegSetValueExA,
 	ID_RegSetValueExW,
-	ID_RegQueryValueA,
-	ID_RegQueryValueW,
+	//ID_RegQueryValueA,
+	//ID_RegQueryValueW,
+	ID_RegQueryValueExA,
+	ID_RegQueryValueExW,
 	ID_RegGetValueA,
 	ID_RegGetValueW,
 	ID_RegEnumKeyExA,
 	ID_RegEnumKeyExW,
-	ID_RegEnumValueA,
-	ID_RegEnumValueW,
+	//ID_RegEnumValueA,
+	//ID_RegEnumValueW,
 };
 
 
@@ -195,6 +197,26 @@ struct _Data_RegCloseKey {
 };
 
 struct _Data_RegSetValueExW {
+	UINT_PTR					upKeyHandle;
+	msgpack::type::raw_ref		msgPath;
+	DWORD						dwRet;
+	msgpack::type::raw_ref		msgValueName;
+	DWORD						dwType;
+	msgpack::type::raw_ref		msgData;
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet, msgValueName, dwType, msgData)
+};
+
+struct _Data_RegQueryValueExW {
+	UINT_PTR					upKeyHandle;
+	msgpack::type::raw_ref		msgPath;
+	DWORD						dwRet;
+	msgpack::type::raw_ref		msgValueName;
+	DWORD						dwType;
+	msgpack::type::raw_ref		msgData;
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet, msgValueName, dwType, msgData)
+};
+
+struct _Data_RegGetValueW {
 	UINT_PTR					upKeyHandle;
 	msgpack::type::raw_ref		msgPath;
 	DWORD						dwRet;

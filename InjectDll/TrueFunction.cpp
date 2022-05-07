@@ -76,9 +76,13 @@ PFN_RegSetValueExA True_RegSetValueExA = (PFN_RegSetValueExA)GetProcAddress(GetM
 
 PFN_RegSetValueExW True_RegSetValueExW = (PFN_RegSetValueExW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegSetValueExW");
 
-PFN_RegQueryValueA True_RegQueryValueA = (PFN_RegQueryValueA)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegQueryValueA");
+//PFN_RegQueryValueA True_RegQueryValueA = (PFN_RegQueryValueA)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegQueryValueA");
+//
+//PFN_RegQueryValueW True_RegQueryValueW = (PFN_RegQueryValueW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegQueryValueW");
 
-PFN_RegQueryValueW True_RegQueryValueW = (PFN_RegQueryValueW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegQueryValueW");
+PFN_RegQueryValueExA True_RegQueryValueExA = (PFN_RegQueryValueExA)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegQueryValueExA");
+
+PFN_RegQueryValueExW True_RegQueryValueExW = (PFN_RegQueryValueExW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegQueryValueExW");
 
 PFN_RegGetValueA True_RegGetValueA = (PFN_RegGetValueA)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegGetValueA");
 
@@ -88,8 +92,8 @@ PFN_RegEnumKeyExA True_RegEnumKeyExA = (PFN_RegEnumKeyExA)GetProcAddress(GetModu
 
 PFN_RegEnumKeyExW True_RegEnumKeyExW = (PFN_RegEnumKeyExW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegEnumKeyExW");
 
-PFN_RegEnumValueA True_RegEnumValueA = (PFN_RegEnumValueA)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegEnumValueA");
-
-PFN_RegEnumValueW True_RegEnumValueW = (PFN_RegEnumValueW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegEnumValueW");
+//PFN_RegEnumValueA True_RegEnumValueA = (PFN_RegEnumValueA)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegEnumValueA");
+//
+//PFN_RegEnumValueW True_RegEnumValueW = (PFN_RegEnumValueW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegEnumValueW");
 
 #pragma endregion

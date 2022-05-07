@@ -194,3 +194,63 @@ CString ByteArray2HexAndInfoCString(PBYTE pbData, DWORD dwDataBufLen, DWORD dwCh
 
 	return csText;
 }
+
+
+CString GetRegValueType(DWORD dwType) {
+	CString csType;
+	switch (dwType) {
+
+	case 0xffffffff: {					// 这个值是我自己定义的，用于区分pdwType=NULL
+		csType = _T("TYPE_NO_USE");
+		break;
+	}
+	case REG_BINARY: {
+		csType = _T("REG_BINARY");
+		break;
+	}
+	case REG_DWORD: {
+		csType = _T("REG_DWORD");
+		break;
+	}
+	//case REG_DWORD_LITTLE_ENDIAN: {
+	//	csType = _T("REG_DWORD_LITTLE_ENDIAN");
+	//	break;
+	//}
+	case REG_DWORD_BIG_ENDIAN: {
+		csType = _T("REG_DWORD_BIG_ENDIAN");
+		break;
+	}
+	case REG_EXPAND_SZ: {
+		csType = _T("REG_EXPAND_SZ");
+		break;
+	}
+	case REG_LINK: {
+		csType = _T("REG_LINK");
+		break;
+	}
+	case REG_MULTI_SZ: {
+		csType = _T("REG_MULTI_SZ");
+		break;
+	}
+	case REG_NONE: {
+		csType = _T("REG_NONE");
+		break;
+	}
+	case REG_QWORD: {
+		csType = _T("REG_QWORD");
+		break;
+	}
+	//case REG_QWORD_LITTLE_ENDIAN: {
+	//	csType = _T("");
+	//	break;
+	//}
+	case REG_SZ: {
+		csType = _T("REG_SZ");
+		break;
+	}
+	default:
+		csType = _T("???");
+		break;
+	}
+	return csType;
+}

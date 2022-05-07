@@ -34,3 +34,5 @@ CString ByteArray2HexCString(PBYTE pbData, DWORD dwDataBufLen);
 
 // 左侧是十六进制数据，右侧是左侧数据的对应字符
 CString ByteArray2HexAndInfoCString(PBYTE pbData, DWORD dwDataBufLen, DWORD dwCharNumPerRow);
+
+CString GetRegValueType(DWORD dwType);
