@@ -26,8 +26,23 @@ enum {
 	ID_CreateDirectoryW,
 
 // 注册表相关函数
+	ID_RegCreateKeyExA,
+	ID_RegCreateKeyExW,
+	ID_RegOpenKeyExA,
 	ID_RegOpenKeyExW,
-
+	ID_RegDeleteKeyExA,
+	ID_RegDeleteKeyExW,
+	ID_RegCloseKey,
+	ID_RegSetValueExA,
+	ID_RegSetValueExW,
+	ID_RegQueryValueA,
+	ID_RegQueryValueW,
+	ID_RegGetValueA,
+	ID_RegGetValueW,
+	ID_RegEnumKeyExA,
+	ID_RegEnumKeyExW,
+	ID_RegEnumValueA,
+	ID_RegEnumValueW,
 };
 
 
@@ -151,10 +166,26 @@ struct _Data_CreateDirectoryW {
 
 // **************** 文件系统相关函数-数据结构 ****************
 struct _Data_RegOpenKeyExW {
-	UINT_PTR					upFileHandle;		// x64下是64bit, x86下是32bit。由于MsgPack限制，不能用HANDLE，用的话得自己写convert()。我直接用UINT_PTR偷懒了。
+	UINT_PTR					upKeyHandle;		// x64下是64bit, x86下是32bit。由于MsgPack限制，不能用HANDLE，用的话得自己写convert()。我直接用UINT_PTR偷懒了。
 	msgpack::type::raw_ref		msgPath;
 	DWORD						dwRet;
-	MSGPACK_DEFINE(upFileHandle, msgPath, dwRet)
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
+};
+
+
+struct _Data_RegDeleteKeyExW {
+	UINT_PTR					upKeyHandle;
+	msgpack::type::raw_ref		msgPath;
+	DWORD						dwRet;
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
+};
+
+
+struct _Data_RegCloseKey {
+	UINT_PTR					upKeyHandle;
+	msgpack::type::raw_ref		msgPath;
+	DWORD						dwRet;
+	MSGPACK_DEFINE(upKeyHandle, msgPath, dwRet)
 };
 
 

@@ -37,11 +37,33 @@ VOID ParsePacket(CFrameRegOperationDlg* pMainDlg, PBYTE pBuffer, DWORD dwBufferS
 
 	case ID_RegOpenKeyExW: {
 		_Data_RegOpenKeyExW data = MsgUnpack<_Data_RegOpenKeyExW>(pMsgBuffer, dwMsgBufferSize);
-		HANDLE hFile = (HANDLE)data.upFileHandle;
+		HANDLE hFile = (HANDLE)data.upKeyHandle;
 		CString csPath = CStringW((PWCHAR)(data.msgPath.ptr));
 		DWORD dwResult = data.dwRet;
 
 		pListData->AddRow(pMainDlg->m_dwIndex, _T("RegOpenKeyExW"), hFile, csPath, dwResult, L"");
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_RegDeleteKeyExW: {
+		_Data_RegDeleteKeyExW data = MsgUnpack<_Data_RegDeleteKeyExW>(pMsgBuffer, dwMsgBufferSize);
+		HANDLE hFile = (HANDLE)data.upKeyHandle;
+		CString csPath = CStringW((PWCHAR)(data.msgPath.ptr));
+		DWORD dwResult = data.dwRet;
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("RegDeleteKeyExW"), hFile, csPath, dwResult, L"");
+		pMainDlg->m_dwIndex++;
+		break;
+	}
+
+	case ID_RegCloseKey: {
+		_Data_RegCloseKey data = MsgUnpack<_Data_RegCloseKey>(pMsgBuffer, dwMsgBufferSize);
+		HANDLE hFile = (HANDLE)data.upKeyHandle;
+		CString csPath = CString(data.msgPath.ptr);
+		DWORD dwResult = data.dwRet;
+
+		pListData->AddRow(pMainDlg->m_dwIndex, _T("RegCloseKey"), hFile, csPath, dwResult, L"");
 		pMainDlg->m_dwIndex++;
 		break;
 	}

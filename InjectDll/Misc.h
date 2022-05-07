@@ -25,3 +25,7 @@ DWORD GetDwordFromBuffer(PBYTE pbData, DWORD dwPos = 0);
 
 // 获取socket连接的对端IP(即远程IP)
 BOOL GetSocketIpPort(SOCKET s, PDWORD pdwIP, PWORD pwPort);
+
+
+// 通过句柄获取对应注册表路径
+std::string GetKeyPathFromHKEY(HKEY key);

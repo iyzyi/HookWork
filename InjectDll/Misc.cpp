@@ -110,3 +110,66 @@ BOOL GetSocketIpPort(SOCKET s, PDWORD pdwIP, PWORD pwPort) {
 	}
 	return FALSE;
 }
+
+
+
+
+
+// 通过句柄获取对应注册表路径
+
+typedef LONG NTSTATUS;
+
+#ifndef STATUS_SUCCESS
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#endif
+
+#ifndef STATUS_BUFFER_TOO_SMALL
+#define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
+#endif
+std::string GetKeyPathFromHKEY(HKEY key)
+{
+	std::wstring keyPath;
+	if (key != NULL)
+	{
+		HMODULE dll = LoadLibrary(L"ntdll.dll");
+
+		if (dll != NULL) {
+			typedef DWORD(__stdcall* NtQueryKeyType)(
+				HANDLE  KeyHandle,
+				int KeyInformationClass,
+				PVOID  KeyInformation,
+				ULONG  Length,
+				PULONG  ResultLength);
+
+			NtQueryKeyType func = reinterpret_cast<NtQueryKeyType>(::GetProcAddress(dll, "NtQueryKey"));
+
+			if (func != NULL) {
+				DWORD size = 0;
+				DWORD result = 0;
+				result = func(key, 3, 0, 0, &size);					// 获取缓冲区所需大小
+
+				if (result == STATUS_BUFFER_TOO_SMALL)
+				{
+					size = size + 2;
+					wchar_t* buffer = new (std::nothrow) wchar_t[size / sizeof(wchar_t)]; // size is in bytes
+					if (buffer != NULL)
+					{
+						result = func(key, 3, buffer, size, &size);
+						if (result == STATUS_SUCCESS)
+						{
+							buffer[size / sizeof(wchar_t)] = L'\0';
+							keyPath = std::wstring(buffer + 2);
+						}
+
+						delete[] buffer;
+					}
+				}
+			}
+			//FreeLibrary(dll);
+		}
+	}
+
+	std::string str;
+	str.assign(keyPath.begin(), keyPath.end());
+	return str;
+}

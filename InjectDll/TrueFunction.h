@@ -27,7 +27,7 @@ typedef int (WSAAPI* PFN_WSARecvFrom)(SOCKET s, LPWSABUF lpBuffers, DWORD dwBuff
 #pragma endregion
 
 
-#pragma region 网络通信相关函数-函数指针宏定义
+#pragma region 文件系统相关函数-函数指针宏定义
 
 // ************************************************ 文件系统相关函数-函数指针宏定义 ************************************************
 
@@ -50,10 +50,45 @@ typedef BOOL (WINAPI* PFN_CreateDirectoryW)(LPCWSTR lpPathName, LPSECURITY_ATTRI
 #pragma endregion
 
 
+#pragma region 注册表相关函数-函数指针宏定义
 
+// ************************************************ 注册表相关函数-函数指针宏定义 ************************************************
+
+typedef LSTATUS (APIENTRY* PFN_RegCreateKeyExA)(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, LPSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition);
+
+typedef LSTATUS (APIENTRY* PFN_RegCreateKeyExW)(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved, LPWSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition);
+
+typedef LSTATUS (APIENTRY* PFN_RegOpenKeyExA)(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 
 typedef LSTATUS (APIENTRY* PFN_RegOpenKeyExW)(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 
+typedef LSTATUS (APIENTRY* PFN_RegDeleteKeyExA)(HKEY hKey, LPCSTR lpSubKey, REGSAM samDesired, DWORD Reserved);
+
+typedef LSTATUS (APIENTRY* PFN_RegDeleteKeyExW)(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesired, DWORD Reserved);
+
+typedef LSTATUS (APIENTRY* PFN_RegCloseKey)(HKEY hKey);
+
+typedef LSTATUS (APIENTRY* PFN_RegSetValueExA)(HKEY hKey, LPCSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegSetValueExW)(HKEY hKey, LPCWSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegQueryValueA)(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegQueryValueW)(HKEY hKey, LPCWSTR lpSubKey, LPWSTR lpData, PLONG lpcbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegGetValueA)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegGetValueW)(HKEY hkey, LPCWSTR lpSubKey, LPCWSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegEnumKeyExA)(HKEY hKey, DWORD dwIndex, LPSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime);
+
+typedef LSTATUS (APIENTRY* PFN_RegEnumKeyExW)(HKEY hKey, DWORD dwIndex, LPWSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPWSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime);
+
+typedef LSTATUS (APIENTRY* PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+
+typedef LSTATUS (APIENTRY* PFN_RegEnumValueW)(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+
+#pragma endregion
 
 
 
@@ -85,4 +120,21 @@ extern PFN_CreateDirectoryA			True_CreateDirectoryA;
 extern PFN_CreateDirectoryW			True_CreateDirectoryW;
 
 
+// 注册表相关函数
+extern PFN_RegCreateKeyExA			True_RegCreateKeyExA;
+extern PFN_RegCreateKeyExW			True_RegCreateKeyExW;
+extern PFN_RegOpenKeyExA			True_RegOpenKeyExA;
 extern PFN_RegOpenKeyExW			True_RegOpenKeyExW;
+extern PFN_RegDeleteKeyExA			True_RegDeleteKeyExA;
+extern PFN_RegDeleteKeyExW			True_RegDeleteKeyExW;
+extern PFN_RegCloseKey				True_RegCloseKey;
+extern PFN_RegSetValueExA			True_RegSetValueExA;
+extern PFN_RegSetValueExW			True_RegSetValueExW;
+extern PFN_RegQueryValueA			True_RegQueryValueA;
+extern PFN_RegQueryValueW			True_RegQueryValueW;
+extern PFN_RegGetValueA				True_RegGetValueA;
+extern PFN_RegGetValueW				True_RegGetValueW;
+extern PFN_RegEnumKeyExA			True_RegEnumKeyExA;
+extern PFN_RegEnumKeyExW			True_RegEnumKeyExW;
+extern PFN_RegEnumValueA			True_RegEnumValueA;
+extern PFN_RegEnumValueW			True_RegEnumValueW;

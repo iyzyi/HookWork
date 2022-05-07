@@ -365,11 +365,29 @@ BOOL WINAPI My_CreateDirectoryW(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecu
 
 
 
+
+
+
+
+
+LSTATUS APIENTRY My_RegCreateKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, LPSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition) {
+	return True_RegCreateKeyExA(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
+}
+
+LSTATUS APIENTRY My_RegCreateKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved, LPWSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition) {
+	return True_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
+}
+
+LSTATUS APIENTRY My_RegOpenKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
+	return True_RegOpenKeyExA(hKey, lpSubKey, ulOptions, samDesired, phkResult);
+}
+
+
 LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult) {
 	LSTATUS dwRet = True_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired, phkResult);
-	
+
 	_Data_RegOpenKeyExW data;
-	data.upFileHandle = (UINT_PTR)hKey;
+	data.upKeyHandle = (UINT_PTR)hKey;
 	data.dwRet = dwRet;
 
 	data.msgPath.ptr = (char*)lpSubKey;
@@ -382,4 +400,90 @@ LSTATUS APIENTRY My_RegOpenKeyExW(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, 
 	delete[] pBuffer;
 
 	return dwRet;
+}
+
+LSTATUS APIENTRY My_RegDeleteKeyExA(HKEY hKey, LPCSTR lpSubKey, REGSAM samDesired, DWORD Reserved) {
+	return True_RegDeleteKeyExA(hKey, lpSubKey, samDesired, Reserved);
+}
+
+LSTATUS APIENTRY My_RegDeleteKeyExW(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesired, DWORD Reserved) {
+	DllPrintf("call deleteW\n");
+	LSTATUS dwRet = True_RegDeleteKeyExW(hKey, lpSubKey, samDesired, Reserved);
+
+	_Data_RegDeleteKeyExW data;
+	data.upKeyHandle = (UINT_PTR)hKey;
+	data.dwRet = dwRet;
+
+	data.msgPath.ptr = (char*)lpSubKey;
+	data.msgPath.size = wcslen(lpSubKey) * 2 + 2;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegDeleteKeyExW>(data, pBuffer, ID_RegDeleteKeyExW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return dwRet;
+}
+
+#include <iostream>
+LSTATUS APIENTRY My_RegCloseKey(HKEY hKey){
+
+	std::string sKeyPath = GetKeyPathFromHKEY(hKey);
+		
+	LSTATUS dwRet = True_RegCloseKey(hKey);					// 一定要先获取Path，在CloseKey。若先CloseKey，则必然获取Path失败
+
+	_Data_RegCloseKey data;
+	data.upKeyHandle = (UINT_PTR)hKey;
+	data.msgPath.ptr = sKeyPath.c_str();
+	data.msgPath.size = sKeyPath.length() + 1;
+	data.dwRet = dwRet;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_RegCloseKey>(data, pBuffer, ID_RegCloseKey);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return dwRet;
+}
+
+LSTATUS APIENTRY My_RegSetValueExA(HKEY hKey, LPCSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData) {
+	return True_RegSetValueExA(hKey, lpValueName, Reserved, dwType, lpData, cbData);
+}
+
+LSTATUS APIENTRY My_RegSetValueExW(HKEY hKey, LPCWSTR lpValueName, DWORD Reserved, DWORD dwType, CONST BYTE* lpData, DWORD cbData) {
+	return True_RegSetValueExW(hKey, lpValueName, Reserved, dwType, lpData, cbData);
+}
+
+LSTATUS APIENTRY My_RegQueryValueA(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData) {
+	return True_RegQueryValueA(hKey, lpSubKey, lpData, lpcbData);
+}
+
+LSTATUS APIENTRY My_RegQueryValueW(HKEY hKey, LPCWSTR lpSubKey, LPWSTR lpData, PLONG lpcbData) {
+	return True_RegQueryValueW(hKey, lpSubKey, lpData, lpcbData);
+}
+
+LSTATUS APIENTRY My_RegGetValueA(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) {
+	return True_RegGetValueA(hkey, lpSubKey, lpValue, dwFlags, pdwType, pvData, pcbData);
+}
+
+LSTATUS APIENTRY My_RegGetValueW(HKEY hkey, LPCWSTR lpSubKey, LPCWSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) {
+	return True_RegGetValueW(hkey, lpSubKey, lpValue, dwFlags, pdwType, pvData, pcbData);
+}
+
+LSTATUS APIENTRY My_RegEnumKeyExA(HKEY hKey, DWORD dwIndex, LPSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime) {
+	return True_RegEnumKeyExA(hKey, dwIndex, lpName, lpcchName, lpReserved, lpClass, lpcchClass, lpftLastWriteTime);
+}
+
+LSTATUS APIENTRY My_RegEnumKeyExW(HKEY hKey, DWORD dwIndex, LPWSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPWSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime) {
+	return True_RegEnumKeyExW(hKey, dwIndex, lpName, lpcchName, lpReserved, lpClass, lpcchClass, lpftLastWriteTime);
+}
+
+LSTATUS APIENTRY My_RegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
+	return True_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
+}
+
+LSTATUS APIENTRY My_RegEnumValueW(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
+	return True_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
 }

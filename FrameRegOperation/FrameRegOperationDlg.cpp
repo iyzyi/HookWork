@@ -25,7 +25,23 @@
 
 // 只HOOK以下函数
 DWORD FuncList[] = {
-	ID_RegOpenKeyExW
+	ID_RegCreateKeyExA,
+	ID_RegCreateKeyExW,
+	ID_RegOpenKeyExA,
+	ID_RegOpenKeyExW,
+	ID_RegDeleteKeyExA,
+	ID_RegDeleteKeyExW,
+	ID_RegCloseKey,
+	ID_RegSetValueExA,
+	ID_RegSetValueExW,
+	ID_RegQueryValueA,
+	ID_RegQueryValueW,
+	ID_RegGetValueA,
+	ID_RegGetValueW,
+	ID_RegEnumKeyExA,
+	ID_RegEnumKeyExW,
+	ID_RegEnumValueA,
+	ID_RegEnumValueW,
 };
 
 DWORD dwFuncNum = sizeof(FuncList) / sizeof(FuncList[0]);
