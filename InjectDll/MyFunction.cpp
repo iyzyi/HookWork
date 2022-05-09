@@ -756,17 +756,70 @@ HANDLE WINAPI My_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T d
 
 
 HANDLE WINAPI My_CreateRemoteThread(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
-	return True_CreateRemoteThread(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+	HANDLE hThread = True_CreateRemoteThread(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+
+	_Data_CreateRemoteThread data;
+	data.upThreadHandle = (UINT_PTR)hThread;
+	data.upProcessHandle = (UINT_PTR)hProcess;
+	data.upStartAddress = (UINT_PTR)lpStartAddress;
+	data.upParameterAddress = (UINT_PTR)lpParameter;
+	data.upThreadId = (lpThreadId != NULL) ? (*lpThreadId) : 0;
+	data.dwErrorCode = (hThread == 0) ? GetLastError() : ERROR_SUCCESS;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateRemoteThread>(data, pBuffer, ID_CreateRemoteThread);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return hThread;
 }
+
 
 HANDLE WINAPI My_CreateRemoteThreadEx(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, LPDWORD lpThreadId) {
-	return True_CreateRemoteThreadEx(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpAttributeList, lpThreadId);
+	HANDLE hThread = True_CreateRemoteThreadEx(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpAttributeList, lpThreadId);
+
+	_Data_CreateRemoteThreadEx data;
+	data.upThreadHandle = (UINT_PTR)hThread;
+	data.upProcessHandle = (UINT_PTR)hProcess;
+	data.upStartAddress = (UINT_PTR)lpStartAddress;
+	data.upParameterAddress = (UINT_PTR)lpParameter;
+	data.upThreadId = (lpThreadId != NULL) ? (*lpThreadId) : 0;
+	data.dwErrorCode = (hThread == 0) ? GetLastError() : ERROR_SUCCESS;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateRemoteThreadEx>(data, pBuffer, ID_CreateRemoteThreadEx);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return hThread;
 }
+
 
 VOID WINAPI My_ExitProcess(UINT uExitCode) {
-	return True_ExitProcess(uExitCode);
+	_Data_ExitProcess data;
+	data.upExitCode = (UINT_PTR)uExitCode;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ExitProcess>(data, pBuffer, ID_ExitProcess);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	True_ExitProcess(uExitCode);
 }
 
+
 VOID WINAPI My_ExitThread(DWORD dwExitCode) {
-	return True_ExitThread(dwExitCode);
+	_Data_ExitThread data;
+	data.upExitCode = (UINT_PTR)dwExitCode;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_ExitThread>(data, pBuffer, ID_ExitThread);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	True_ExitThread(dwExitCode);
 }

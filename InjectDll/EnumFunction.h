@@ -262,3 +262,37 @@ struct _Data_CreateThread {
 	DWORD						dwErrorCode;
 	MSGPACK_DEFINE(upThreadHandle, upStartAddress, upParameterAddress, upThreadId, dwErrorCode)
 };
+
+
+struct _Data_CreateRemoteThread {
+	UINT_PTR					upThreadHandle;
+	UINT_PTR					upProcessHandle;
+	UINT_PTR					upStartAddress;
+	UINT_PTR					upParameterAddress;
+	UINT_PTR					upThreadId;
+	DWORD						dwErrorCode;
+	MSGPACK_DEFINE(upThreadHandle, upProcessHandle, upStartAddress, upParameterAddress, upThreadId, dwErrorCode)
+};
+
+
+struct _Data_CreateRemoteThreadEx {
+	UINT_PTR					upThreadHandle;
+	UINT_PTR					upProcessHandle;
+	UINT_PTR					upStartAddress;
+	UINT_PTR					upParameterAddress;
+	UINT_PTR					upThreadId;
+	DWORD						dwErrorCode;
+	MSGPACK_DEFINE(upThreadHandle, upProcessHandle, upStartAddress, upParameterAddress, upThreadId, dwErrorCode)
+};
+
+
+struct _Data_ExitProcess {
+	UINT_PTR					upExitCode;
+	MSGPACK_DEFINE(upExitCode)
+};
+
+
+struct _Data_ExitThread {
+	UINT_PTR					upExitCode;
+	MSGPACK_DEFINE(upExitCode)
+};

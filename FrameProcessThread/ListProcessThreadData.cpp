@@ -10,10 +10,15 @@ _ListProcessThreadRowData::_ListProcessThreadRowData(DWORD dwIndex, CString csFu
 
 	this->csIndex.Format(_T("%d"), dwIndex);
 	
-	_com_error error(dwErrorCode);
-	LPCTSTR errorText = error.ErrorMessage();
-	csResult = CString(errorText);
-	
+	if (csFuncName == _T("ExitProcess") || csFuncName == _T("ExitThread")) {
+		csResult = _T("");
+	}
+	else {
+		_com_error error(dwErrorCode);
+		LPCTSTR errorText = error.ErrorMessage();
+		csResult = CString(errorText);
+	}
+
 	pNext = NULL;
 }
 
