@@ -12,9 +12,11 @@
 // 作为注入的DLL，编译时一定要把优化给关掉
 // 属性 -> 配置属性 -> C/C++ -> 优化：已禁用
 // 不然出大问题，我卡在这里2个小时
-// 比如函数体内没写其他代码，直接return True_Func()时
-// 如果开了优化选项，会删去整个函数汇编，直接用一个jmp跳转到True_Func()
+// 经过逆向发现，函数体内没写其他代码，直接return True_Func()时
+// 如果开了优化选项，会删去整个函数汇编代码，直接用一个jmp跳转到True_Func()
 // 这样会使得注入的程序崩溃。
+
+
 
 
 #pragma region 网络通信相关函数-自定义函数
@@ -179,6 +181,8 @@ int WSAAPI My_WSARecvFrom(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPD
 }
 
 #pragma endregion
+
+
 
 
 #pragma region 文件系统相关函数-自定义函数
@@ -364,11 +368,9 @@ BOOL WINAPI My_CreateDirectoryW(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecu
 
 
 
+#pragma region 注册表相关函数-自定义函数
 
-
-
-
-
+// ************************************************ 注册表相关函数-自定义函数 ************************************************
 
 LSTATUS APIENTRY My_RegCreateKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, LPSTR lpClass, DWORD dwOptions, REGSAM samDesired, CONST LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition) {
 	return True_RegCreateKeyExA(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
@@ -666,3 +668,105 @@ LSTATUS APIENTRY My_RegEnumKeyExW(HKEY hKey, DWORD dwIndex, LPWSTR lpName, LPDWO
 //LSTATUS APIENTRY My_RegEnumValueW(HKEY hKey, DWORD dwIndex, LPWSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
 //	return True_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
 //}
+
+#pragma endregion
+
+
+
+
+BOOL WINAPI My_CreateProcessA(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation) {
+	return True_CreateProcessA(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
+}
+
+
+BOOL WINAPI My_CreateProcessW(LPCWSTR lpApplicationName, LPWSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation) {
+	_Data_CreateProcessW data;
+	
+	WCHAR wszTemp[] = L"NULL";
+	DWORD dwTempLen = wcslen(wszTemp) * 2 + 2;
+
+	if (lpApplicationName == NULL) {
+		data.msgAppName.ptr = (char*)wszTemp;
+		data.msgAppName.size = dwTempLen;
+	}
+	else {
+		data.msgAppName.ptr = (char*)lpApplicationName;
+		data.msgAppName.size = wcslen(lpApplicationName) * 2 + 2;
+	}
+
+	if (lpCommandLine == NULL) {
+		data.msgAppName.ptr = (char*)wszTemp;
+		data.msgAppName.size = dwTempLen;
+	}
+	else {
+		data.msgAppName.ptr = (char*)lpCommandLine;
+		data.msgAppName.size = wcslen(lpCommandLine) * 2 + 2;
+	}
+
+	if (lpCurrentDirectory == NULL) {
+		data.msgAppName.ptr = (char*)wszTemp;
+		data.msgAppName.size = dwTempLen;
+	}
+	else {
+		data.msgAppName.ptr = (char*)lpCurrentDirectory;
+		data.msgAppName.size = wcslen(lpCurrentDirectory) * 2 + 2;
+	}
+
+	BOOL bRet = True_CreateProcessW(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
+
+	data.dwErrorCode = (bRet) ? ERROR_SUCCESS : GetLastError();
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateProcessW>(data, pBuffer, ID_CreateProcessW);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return bRet;
+}
+
+
+BOOL WINAPI My_CreateProcessAsUserA(HANDLE hToken, LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation) {
+	return True_CreateProcessAsUserA(hToken, lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
+}
+
+BOOL WINAPI My_CreateProcessAsUserW(HANDLE hToken, LPCWSTR lpApplicationName, LPWSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation) {
+	return True_CreateProcessAsUserW(hToken, lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
+}
+
+
+HANDLE WINAPI My_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
+	HANDLE hThread = True_CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+
+	_Data_CreateThread data;
+	data.upThreadHandle = (UINT_PTR)hThread;
+	data.upStartAddress = (UINT_PTR)lpStartAddress;
+	data.upParameterAddress = (UINT_PTR)lpParameter;
+	data.upThreadId = (lpThreadId != NULL) ? (*lpThreadId) : 0;
+	data.dwErrorCode = (hThread == 0) ? GetLastError() : ERROR_SUCCESS;
+
+	PBYTE pBuffer = NULL;
+	DWORD dwBufferSize = MsgPackWithFuncId<_Data_CreateThread>(data, pBuffer, ID_CreateThread);
+
+	SendData(pBuffer, dwBufferSize);
+	delete[] pBuffer;
+
+	return hThread;
+}
+
+
+HANDLE WINAPI My_CreateRemoteThread(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
+	return True_CreateRemoteThread(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+}
+
+HANDLE WINAPI My_CreateRemoteThreadEx(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, LPDWORD lpThreadId) {
+	return True_CreateRemoteThreadEx(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpAttributeList, lpThreadId);
+}
+
+VOID WINAPI My_ExitProcess(UINT uExitCode) {
+	return True_ExitProcess(uExitCode);
+}
+
+VOID WINAPI My_ExitThread(DWORD dwExitCode) {
+	return True_ExitThread(dwExitCode);
+}

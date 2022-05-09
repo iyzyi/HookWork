@@ -64,6 +64,17 @@ void AllUninstallHook() {
 	UninstallHook((void**)&True_RegEnumKeyExW);
 	//UninstallHook((void**)&True_RegEnumValueA);
 	//UninstallHook((void**)&True_RegEnumValueW);
+
+
+	UninstallHook((void**)&True_CreateProcessA);
+	UninstallHook((void**)&True_CreateProcessW);
+	UninstallHook((void**)&True_CreateProcessAsUserA);
+	UninstallHook((void**)&True_CreateProcessAsUserW);
+	UninstallHook((void**)&True_CreateThread);
+	UninstallHook((void**)&True_CreateRemoteThread);
+	UninstallHook((void**)&True_CreateRemoteThreadEx);
+	UninstallHook((void**)&True_ExitProcess);
+	UninstallHook((void**)&True_ExitThread);
 }
 
 
@@ -109,6 +120,7 @@ void InstallOneHook(PBYTE szBuffer) {
 		break;
 	}
 #pragma endregion
+
 
 #pragma region 文件系统相关函数
 	case ID_CreateFileA: {
@@ -166,6 +178,8 @@ void InstallOneHook(PBYTE szBuffer) {
 	}
 #pragma endregion
 
+
+#pragma region 注册表相关函数
 	case ID_RegCreateKeyExA: {
 		DllPrintf("Install Hook RegCreateKeyExA\n");
 		InstallHook((void**)&True_RegCreateKeyExA, My_RegCreateKeyExA);
@@ -267,6 +281,74 @@ void InstallOneHook(PBYTE szBuffer) {
 	//	InstallHook((void**)&True_RegEnumValueW, My_RegEnumValueW);
 	//	break;
 	//}
+#pragma endregion
+	
+
+#pragma region 进程线程相关函数
+
+	case ID_CreateProcessA: {
+		DllPrintf("Install Hook CreateProcessA\n");
+		InstallHook((void**)&True_CreateProcessA, My_CreateProcessA);
+		break;
+	}
+
+
+	case ID_CreateProcessW: {
+		DllPrintf("Install Hook CreateProcessW\n");
+		InstallHook((void**)&True_CreateProcessW, My_CreateProcessW);
+		break;
+	}
+
+
+	case ID_CreateProcessAsUserA: {
+		DllPrintf("Install Hook CreateProcessAsUserA\n");
+		InstallHook((void**)&True_CreateProcessAsUserA, My_CreateProcessAsUserA);
+		break;
+	}
+
+
+	case ID_CreateProcessAsUserW: {
+		DllPrintf("Install Hook CreateProcessAsUserW\n");
+		InstallHook((void**)&True_CreateProcessAsUserW, My_CreateProcessAsUserW);
+		break;
+	}
+
+
+	case ID_CreateThread: {
+		DllPrintf("Install Hook CreateThread\n");
+		InstallHook((void**)&True_CreateThread, My_CreateThread);
+		break;
+	}
+
+
+	case ID_CreateRemoteThread: {
+		DllPrintf("Install Hook CreateRemoteThread\n");
+		InstallHook((void**)&True_CreateRemoteThread, My_CreateRemoteThread);
+		break;
+	}
+
+
+	case ID_CreateRemoteThreadEx: {
+		DllPrintf("Install Hook CreateRemoteThreadEx\n");
+		InstallHook((void**)&True_CreateRemoteThreadEx, My_CreateRemoteThreadEx);
+		break;
+	}
+
+
+	case ID_ExitProcess: {
+		DllPrintf("Install Hook ExitProcess\n");
+		InstallHook((void**)&True_ExitProcess, My_ExitProcess);
+		break;
+	}
+
+
+	case ID_ExitThread: {
+		DllPrintf("Install Hook ExitThread\n");
+		InstallHook((void**)&True_ExitThread, My_ExitThread);
+		break;
+	}
+
+#pragma endregion
 
 	default:
 		break;

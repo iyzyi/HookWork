@@ -45,7 +45,22 @@ enum {
 	ID_RegEnumKeyExW,
 	//ID_RegEnumValueA,
 	//ID_RegEnumValueW,
+
+// 进程线程相关函数
+	
+
+	ID_CreateProcessA,
+	ID_CreateProcessW,
+	ID_CreateProcessAsUserA,
+	ID_CreateProcessAsUserW,
+	ID_CreateThread,
+	ID_CreateRemoteThread,
+	ID_CreateRemoteThreadEx,
+	ID_ExitProcess,
+	ID_ExitThread,
 };
+
+
 
 
 #pragma region 网络通信相关函数-数据结构
@@ -164,9 +179,9 @@ struct _Data_CreateDirectoryW {
 #pragma endregion
 
 
-#pragma region 文件系统相关函数-数据结构
+#pragma region 注册表相关函数-数据结构
 
-// **************** 文件系统相关函数-数据结构 ****************
+// **************** 注册表相关函数-数据结构 ****************
 
 struct _Data_RegCreateKeyExW {
 	UINT_PTR					upKeyHandle;		// x64下是64bit, x86下是32bit。由于MsgPack限制，不能用HANDLE，用的话得自己写convert()。我直接用UINT_PTR偷懒了。
@@ -227,3 +242,23 @@ struct _Data_RegGetValueW {
 };
 
 #pragma endregion
+
+
+
+struct _Data_CreateProcessW {
+	msgpack::type::raw_ref		msgAppName;
+	msgpack::type::raw_ref		msgCmdLine;
+	msgpack::type::raw_ref		msgCurrentDir;
+	DWORD						dwErrorCode;
+	MSGPACK_DEFINE(msgAppName, msgCmdLine, msgCurrentDir, dwErrorCode)
+};
+
+
+struct _Data_CreateThread {
+	UINT_PTR					upThreadHandle;
+	UINT_PTR					upStartAddress;
+	UINT_PTR					upParameterAddress;
+	UINT_PTR					upThreadId;
+	DWORD						dwErrorCode;
+	MSGPACK_DEFINE(upThreadHandle, upStartAddress, upParameterAddress, upThreadId, dwErrorCode)
+};

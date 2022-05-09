@@ -98,6 +98,27 @@ typedef LSTATUS (APIENTRY* PFN_RegEnumKeyExW)(HKEY hKey, DWORD dwIndex, LPWSTR l
 
 
 
+typedef BOOL (WINAPI* PFN_CreateProcessA)(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);
+
+typedef BOOL (WINAPI* PFN_CreateProcessW)(LPCWSTR lpApplicationName, LPWSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);
+
+typedef BOOL (WINAPI* PFN_CreateProcessAsUserA)(HANDLE hToken, LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);
+
+typedef BOOL (WINAPI* PFN_CreateProcessAsUserW)(HANDLE hToken, LPCWSTR lpApplicationName, LPWSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);
+
+typedef HANDLE (WINAPI* PFN_CreateThread)(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
+
+typedef HANDLE (WINAPI* PFN_CreateRemoteThread)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
+
+typedef HANDLE (WINAPI* PFN_CreateRemoteThreadEx)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, LPDWORD lpThreadId);
+
+typedef VOID (WINAPI* PFN_ExitProcess)(UINT uExitCode);
+
+typedef VOID (WINAPI* PFN_ExitThread)(DWORD dwExitCode);
+
+
+
+
 // **************************************************************************************************************************************************************************************
 
 
@@ -144,3 +165,18 @@ extern PFN_RegEnumKeyExA			True_RegEnumKeyExA;
 extern PFN_RegEnumKeyExW			True_RegEnumKeyExW;
 //extern PFN_RegEnumValueA			True_RegEnumValueA;
 //extern PFN_RegEnumValueW			True_RegEnumValueW;
+
+
+
+
+
+
+extern PFN_CreateProcessA			True_CreateProcessA;
+extern PFN_CreateProcessW			True_CreateProcessW;
+extern PFN_CreateProcessAsUserA		True_CreateProcessAsUserA;
+extern PFN_CreateProcessAsUserW		True_CreateProcessAsUserW;
+extern PFN_CreateThread				True_CreateThread;
+extern PFN_CreateRemoteThread		True_CreateRemoteThread;
+extern PFN_CreateRemoteThreadEx		True_CreateRemoteThreadEx;
+extern PFN_ExitProcess				True_ExitProcess;
+extern PFN_ExitThread				True_ExitThread;

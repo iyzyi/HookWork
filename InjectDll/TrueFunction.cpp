@@ -97,3 +97,26 @@ PFN_RegEnumKeyExW True_RegEnumKeyExW = (PFN_RegEnumKeyExW)GetProcAddress(GetModu
 //PFN_RegEnumValueW True_RegEnumValueW = (PFN_RegEnumValueW)GetProcAddress(GetModuleHandleA("Advapi32.dll"), "RegEnumValueW");
 
 #pragma endregion
+
+
+
+
+
+
+PFN_CreateProcessA True_CreateProcessA = (PFN_CreateProcessA)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateProcessA");
+
+PFN_CreateProcessW True_CreateProcessW = (PFN_CreateProcessW)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateProcessW");
+
+PFN_CreateProcessAsUserA True_CreateProcessAsUserA = (PFN_CreateProcessAsUserA)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateProcessAsUserA");
+
+PFN_CreateProcessAsUserW True_CreateProcessAsUserW = (PFN_CreateProcessAsUserW)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateProcessAsUserW");
+
+PFN_CreateThread True_CreateThread = (PFN_CreateThread)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateThread");
+
+PFN_CreateRemoteThread True_CreateRemoteThread = (PFN_CreateRemoteThread)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateRemoteThread");
+
+PFN_CreateRemoteThreadEx True_CreateRemoteThreadEx = (PFN_CreateRemoteThreadEx)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateRemoteThreadEx");
+
+PFN_ExitProcess True_ExitProcess = (PFN_ExitProcess)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "ExitProcess");
+
+PFN_ExitThread True_ExitThread = (PFN_ExitThread)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "ExitThread");
