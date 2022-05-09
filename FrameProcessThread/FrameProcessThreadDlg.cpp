@@ -255,6 +255,7 @@ LRESULT CFrameProcessThreadDlg::OnGetChooseProcessId(WPARAM w, LPARAM l)
 
 	// 选择新进程后，把之前UI中绘制的数据清空
 	m_List.DeleteAllItems();
+	m_Edit.SetWindowText(_T(""));
 
 	DWORD dwPID = (DWORD)w;
 	CString* pcsProcName = (CString*)l;

@@ -695,21 +695,21 @@ BOOL WINAPI My_CreateProcessW(LPCWSTR lpApplicationName, LPWSTR lpCommandLine, L
 	}
 
 	if (lpCommandLine == NULL) {
-		data.msgAppName.ptr = (char*)wszTemp;
-		data.msgAppName.size = dwTempLen;
+		data.msgCmdLine.ptr = (char*)wszTemp;
+		data.msgCmdLine.size = dwTempLen;
 	}
 	else {
-		data.msgAppName.ptr = (char*)lpCommandLine;
-		data.msgAppName.size = wcslen(lpCommandLine) * 2 + 2;
+		data.msgCmdLine.ptr = (char*)lpCommandLine;
+		data.msgCmdLine.size = wcslen(lpCommandLine) * 2 + 2;
 	}
 
 	if (lpCurrentDirectory == NULL) {
-		data.msgAppName.ptr = (char*)wszTemp;
-		data.msgAppName.size = dwTempLen;
+		data.msgCurrentDir.ptr = (char*)wszTemp;
+		data.msgCurrentDir.size = dwTempLen;
 	}
 	else {
-		data.msgAppName.ptr = (char*)lpCurrentDirectory;
-		data.msgAppName.size = wcslen(lpCurrentDirectory) * 2 + 2;
+		data.msgCurrentDir.ptr = (char*)lpCurrentDirectory;
+		data.msgCurrentDir.size = wcslen(lpCurrentDirectory) * 2 + 2;
 	}
 
 	BOOL bRet = True_CreateProcessW(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
