@@ -122,7 +122,7 @@ BOOL CFrameProcessThreadDlg::OnInitDialog()
 
 	//插入列标题
 	m_List.InsertColumn(0, head[0], LVCFMT_LEFT, 60);			// 仅用于创建本行，长度设为0，不在图像界面的列表中显示
-	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 140);
+	m_List.InsertColumn(1, head[1], LVCFMT_LEFT, 180);
 	m_List.InsertColumn(2, head[2], LVCFMT_LEFT, 200);
 
 	//设置风格样式
