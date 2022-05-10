@@ -179,6 +179,8 @@ LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 			case VK_TAB: { Display("[TAB]"); break; }
 			case VK_RETURN: { Display("[ENTER]"); break; }
 			case VK_MENU: { Display("[ALT]"); break; }
+			case VK_LMENU: { Display("[ALT]"); break; }
+			case VK_RMENU: { Display("[ALT]"); break; }
 			case VK_ESCAPE: { Display("[ESC]"); break; }
 			case VK_PRIOR: { Display("[PG UP]"); break; }
 			case VK_NEXT: { Display("[PG DN]"); break; }
