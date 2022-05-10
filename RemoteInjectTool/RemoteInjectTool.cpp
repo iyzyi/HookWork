@@ -281,6 +281,34 @@ BOOL RemoteUnInjectDllByProcessId(DWORD dwPID, LPCTSTR szDllName)
 }
 
 
+//判断是否管理员模式
+BOOL IsAdministrator() {			
+
+	BOOL bIsElevated = FALSE;
+	HANDLE hToken = NULL;
+	UINT16 uWinVer = LOWORD(GetVersion());
+	uWinVer = MAKEWORD(HIBYTE(uWinVer), LOBYTE(uWinVer));
+
+	if (uWinVer < 0x0600)//不是VISTA、Windows7
+		return(FALSE);
+
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+
+		struct {
+			DWORD TokenIsElevated;
+		} /*TOKEN_ELEVATION*/te;
+		DWORD dwReturnLength = 0;
+
+		if (GetTokenInformation(hToken,/*TokenElevation*/(_TOKEN_INFORMATION_CLASS)20, &te, sizeof(te), &dwReturnLength)) {
+			if (dwReturnLength == sizeof(te))
+				bIsElevated = te.TokenIsElevated;
+		}
+		CloseHandle(hToken);
+	}
+	return bIsElevated;
+}
+
+
 
 
 //int main()

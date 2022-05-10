@@ -34,6 +34,10 @@ BEGIN_MESSAGE_MAP(CLauncherDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CLauncherDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CLauncherDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CLauncherDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CLauncherDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CLauncherDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 
@@ -47,6 +51,19 @@ BOOL CLauncherDlg::OnInitDialog()
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
+
+
+	CString csOldTitle;
+	GetWindowText(csOldTitle);
+	CString csNewTitle;
+#ifdef _WIN64
+	csNewTitle = _T("[x64] ");
+	csNewTitle += csOldTitle;
+#else
+	csNewTitle = _T("[x86] ");
+	csNewTitle += csOldTitle;
+#endif
+	SetWindowText(csNewTitle);
 
 		
 	GetModuleFileNameA(NULL, m_szCurrentDir, MAX_PATH);		// 获取本程序所在路径
@@ -134,21 +151,67 @@ void CLauncherDlg::ShowInfo(PWCHAR fmt, ...)
 }
 
 
-// 网络通信分析框架
-void CLauncherDlg::OnBnClickedButton1()
-{
-	CHAR szRunDllPath[MAX_PATH];
-	sprintf_s(szRunDllPath, "%s%s", m_szCurrentDir, "BypassUAC.dll");
+void CLauncherDlg::RunExe(PCHAR szExeName) {
+	CHAR szDllPath[MAX_PATH];
+	sprintf_s(szDllPath, "%s%s", m_szCurrentDir, "BypassUAC.dll");
 
-	if (!isFileExists(szRunDllPath)) {
-		ShowInfo("[ERROR] %s 不存在\n", szRunDllPath);
-		return ;
+	if (!isFileExists(szDllPath)) {
+		ShowInfo("[ERROR] %s 不存在\n", szDllPath);
+		return;
+	}
+
+	CHAR szExePath[MAX_PATH];
+	sprintf_s(szExePath, "%s%s", m_szCurrentDir, szExeName);
+
+	if (!isFileExists(szExePath)) {
+		ShowInfo("[ERROR] %s 不存在\n", szExePath);
+		return;
 	}
 
 	CHAR szRundll32Path[MAX_PATH] = "C:\\Windows\\System32\\rundll32.exe";
 
 	CHAR szCmdLine[1024];
-	sprintf_s(szCmdLine, "%s \"%s\" %s \"%s%s\"", szRundll32Path, szRunDllPath, "ElevatePrivilegesWinExec", m_szCurrentDir, "FrameNetwork.exe");
-	
+	sprintf_s(szCmdLine, "%s \"%s\" %s \"%s\"", szRundll32Path, szDllPath, "ElevatePrivilegesWinExec", szExePath);
+
 	WinExec(szCmdLine, SW_HIDE);
+}
+
+
+// 网络通信分析框架
+void CLauncherDlg::OnBnClickedButton1()
+{
+	ShowInfo("消息栏");
+	RunExe("FrameNetwork.exe");
+}
+
+
+// 文件操作分析框架
+void CLauncherDlg::OnBnClickedButton2()
+{
+	ShowInfo("消息栏");
+	RunExe("FrameFileOperation.exe");
+}
+
+
+// 注册表分析框架
+void CLauncherDlg::OnBnClickedButton3()
+{
+	ShowInfo("消息栏");
+	RunExe("FrameRegOperation.exe");
+}
+
+
+// 进程线程分析框架
+void CLauncherDlg::OnBnClickedButton4()
+{
+	ShowInfo("消息栏");
+	RunExe("FrameProcessThread.exe");
+}
+
+
+// 键鼠消息分析框架
+void CLauncherDlg::OnBnClickedButton5()
+{
+	ShowInfo("消息栏");
+	RunExe("FrameKeyboardMouse.exe");
 }

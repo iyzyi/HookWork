@@ -109,6 +109,32 @@ BOOL CFrameRegOperationDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+
+	CString csOldTitle;
+	GetWindowText(csOldTitle);
+	CString csNewTitle;
+#ifdef _WIN64
+	if (IsAdministrator()) {
+		csNewTitle = _T("[管理员|x64] ");
+		csNewTitle += csOldTitle;
+	}
+	else {
+		csNewTitle = _T("[x64] ");
+		csNewTitle += csOldTitle;
+	}
+#else
+	if (IsAdministrator()) {
+		csNewTitle = _T("[管理员|x86] ");
+		csNewTitle += csOldTitle;
+	}
+	else {
+		csNewTitle = _T("[x86] ");
+		csNewTitle += csOldTitle;
+	}
+#endif
+	SetWindowText(csNewTitle);
+
+
 	// 设置菜单栏
 	m_Menu.LoadMenu(IDR_MENU1);
 	SetMenu(&m_Menu);

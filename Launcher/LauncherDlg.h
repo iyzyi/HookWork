@@ -41,4 +41,10 @@ public:
 
 	void ShowInfo(PCHAR fmt, ...);
 	void ShowInfo(PWCHAR fmt, ...);
+
+	void RunExe(PCHAR szExeName);
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton5();
 };

@@ -7,6 +7,7 @@
 #include "FrameKeyboardMouse.h"
 #include "FrameKeyboardMouseDlg.h"
 #include "afxdialogex.h"
+#include "../RemoteInjectTool/RemoteInjectTool.h"
 
 #include "Function.h"
 #include <csignal>
@@ -65,7 +66,32 @@ BOOL CFrameKeyboardMouseDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+
+	CString csOldTitle;
+	GetWindowText(csOldTitle);
+	CString csNewTitle;
+#ifdef _WIN64
+	if (IsAdministrator()) {
+		csNewTitle = _T("[管理员|x64] ");
+		csNewTitle += csOldTitle;
+	}
+	else {
+		csNewTitle = _T("[x64] ");
+		csNewTitle += csOldTitle;
+	}
+#else
+	if (IsAdministrator()) {
+		csNewTitle = _T("[管理员|x86] ");
+		csNewTitle += csOldTitle;
+	}
+	else {
+		csNewTitle = _T("[x86] ");
+		csNewTitle += csOldTitle;
+	}
+#endif
+	SetWindowText(csNewTitle);
 	
+
 	// 以下是List Control
 	//标题所需字段
 	CString head[] = { TEXT("时间"), TEXT("消息")};

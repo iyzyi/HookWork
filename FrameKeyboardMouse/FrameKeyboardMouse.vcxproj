@@ -215,6 +215,11 @@
   <ItemGroup>
     <Image Include="res\FrameKeyboardMouse.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteInjectTool\RemoteInjectTool.vcxproj">
+      <Project>{0743d82f-c517-4a69-9c88-fe68831fde57}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -34,3 +34,7 @@ extern BOOL RemoteUnInjectDllByProcessId(DWORD dwPID, LPCTSTR szDllName);
 DWORD GetProcessIDByName(PCHAR szName, PDWORD ProcessIdList);
 HMODULE GetHModuleIDByName(DWORD dwPid, PCHAR szName);
 HMODULE GetModuleBaseAddress(DWORD dwPID, PCHAR szName);
+
+
+
+BOOL IsAdministrator();
