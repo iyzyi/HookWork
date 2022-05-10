@@ -48,6 +48,12 @@
     <ClCompile Include="disasm\misc.c">
       <Filter>源文件\disasm</Filter>
     </ClCompile>
+    <ClCompile Include="BasicHook.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LDE.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -72,6 +78,12 @@
       <Filter>头文件\mhook</Filter>
     </ClInclude>
     <ClInclude Include="SimpleHookEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LDE.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

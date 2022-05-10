@@ -166,6 +166,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BasicHook.cpp" />
+    <ClCompile Include="LDE.cpp" />
     <ClCompile Include="SimpleHookEngine.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -180,6 +182,8 @@
     <ClCompile Include="disasm\misc.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BasicHook.h" />
+    <ClInclude Include="LDE.h" />
     <ClInclude Include="mhook\mhook.h" />
     <ClInclude Include="disasm\cpu.h" />
     <ClInclude Include="disasm\disasm.h" />
