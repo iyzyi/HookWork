@@ -46,7 +46,7 @@ void Display(std::string data) {
 	DWORD dwTime = GetTimeStamp();
 
 	if (bLastKeyIsCombinationKey) {
-		if (dwTime - dwLastKeyTime < 500) {
+		if (dwTime - dwLastKeyTime < 500) {										// 组合键延迟判断为500ms
 			if (data.length() == 1 && data[0] >= 32 && data[0] <= 126) {		// 若这一次的按键与上一次的按键构成组合键
 				csBuffer = CString(CA2T(sLastKey.c_str()));
 				csBuffer += _T(" + ");
