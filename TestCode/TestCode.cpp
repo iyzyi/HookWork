@@ -12,26 +12,30 @@ PFN_MessageBoxA TrueMessageBoxA = (PFN_MessageBoxA)GetProcAddress(GetModuleHandl
 
 int WINAPI MyMessageBoxA(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 {
-    int ret;
-    char newText[1024] = { 0 };
-    char newCaption[] = "iyzyi";
-    strcpy_s(newText, (char*)lpText);
-    strcat_s(newText, "\nMessageBoxA Hacked by iyzyi!");//篡改消息框内容
-    uType |= MB_ICONERROR;
-    ret = TrueMessageBoxA(hWnd, (LPCTSTR)newText, (LPCTSTR)newCaption, uType);
-    return ret;
+    //int ret;
+    //char newText[1024] = { 0 };
+    //char newCaption[] = "iyzyi";
+    //strcpy_s(newText, (char*)lpText);
+    //strcat_s(newText, "\nMessageBoxA Hacked by iyzyi!");//篡改消息框内容
+    //uType |= MB_ICONERROR;
+    //ret = TrueMessageBoxA(hWnd, (LPCTSTR)newText, (LPCTSTR)newCaption, uType);
+    //return ret;
+
+    CHAR szText[] = "已被Hook";
+
+    return TrueMessageBoxA(hWnd, (LPCTSTR)szText, lpCaption, uType);
 }
 
 void test_hook_messagebox() {
-    MessageBoxA(NULL, "测试文本1", "测试1", NULL);
+    MessageBoxA(NULL, "未被Hook", "测试1", NULL);
 
     InstallHook((void**)&TrueMessageBoxA, MyMessageBoxA);
 
-    MessageBoxA(NULL, "测试文本2", "测试2", NULL);
+    MessageBoxA(NULL, "未被Hook", "测试2", NULL);
 
     UninstallHook((void**)&TrueMessageBoxA);
 
-    MessageBoxA(NULL, "测试文本3", "测试3", NULL);
+    MessageBoxA(NULL, "未被Hook", "测试3", NULL);
 }
 
 
@@ -123,7 +127,7 @@ int main() {
     
 
 
-
+    test_hook_messagebox();
 
     //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)test_pipe_thread_func, NULL, 0, NULL);
     //Sleep(4000);
