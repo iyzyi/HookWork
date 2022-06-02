@@ -27,15 +27,15 @@ int WINAPI MyMessageBoxA(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uTyp
 }
 
 void test_hook_messagebox() {
-    MessageBoxA(NULL, "Œ¥±ªHook", "≤‚ ‘1", NULL);
+    MessageBoxA(NULL, "Œ¥±ªHook", "≤‚ ‘-1", NULL);
 
     InstallHook((void**)&TrueMessageBoxA, MyMessageBoxA);
 
-    MessageBoxA(NULL, "Œ¥±ªHook", "≤‚ ‘2", NULL);
+    MessageBoxA(NULL, "Œ¥±ªHook", "≤‚ ‘-2", NULL);
 
     UninstallHook((void**)&TrueMessageBoxA);
 
-    MessageBoxA(NULL, "Œ¥±ªHook", "≤‚ ‘3", NULL);
+    MessageBoxA(NULL, "Œ¥±ªHook", "≤‚ ‘-3", NULL);
 }
 
 
