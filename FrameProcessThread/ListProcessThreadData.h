@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Misc.h"
 #include "FrameProcessThreadDlg.h"
 #include <afxstr.h>
