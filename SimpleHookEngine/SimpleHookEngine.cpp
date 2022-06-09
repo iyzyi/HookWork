@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "mhook/mhook.h"
+#include "GeneralHook.h"
 #include "SimpleHookEngine.h"
 
 

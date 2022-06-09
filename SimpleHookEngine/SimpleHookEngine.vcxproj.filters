@@ -16,14 +16,8 @@
     <Filter Include="源文件\disasm">
       <UniqueIdentifier>{be9cd60b-52fc-47e7-a645-e6545493fed8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\mhook">
-      <UniqueIdentifier>{8cb5c05a-64f7-4f61-a670-df3f82769fe0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\disasm">
       <UniqueIdentifier>{ae48e280-80df-4694-8489-f1a115d112c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\mhook">
-      <UniqueIdentifier>{d18cac3d-f0b8-4766-99c8-c658d008f1a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -32,9 +26,6 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="mhook\mhook.cpp">
-      <Filter>源文件\mhook</Filter>
     </ClCompile>
     <ClCompile Include="disasm\cpu.c">
       <Filter>源文件\disasm</Filter>
@@ -51,8 +42,11 @@
     <ClCompile Include="BasicHook.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="LDE.cpp">
+    <ClCompile Include="GeneralHook.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LDE.cpp">
+      <Filter>源文件\disasm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,17 +68,17 @@
     <ClInclude Include="disasm\misc.h">
       <Filter>头文件\disasm</Filter>
     </ClInclude>
-    <ClInclude Include="mhook\mhook.h">
-      <Filter>头文件\mhook</Filter>
-    </ClInclude>
     <ClInclude Include="SimpleHookEngine.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="BasicHook.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LDE.h">
+    <ClInclude Include="GeneralHook.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LDE.h">
+      <Filter>头文件\disasm</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
