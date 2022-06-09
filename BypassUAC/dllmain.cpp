@@ -5,10 +5,13 @@
 #include <atlconv.h>
 
 
-// 经过配置，不管是Win32还是x64配置下，本项目都是生成x86架构的DLL。因为本DLL通过rundll32调用
+// 经过配置，不管是Win32还是x64配置下，本项目都是生成x86架构Release模式的DLL。因为本DLL通过rundll32调用
 // 但是，如果是x64的话，本DLL生成的目录是Win32下的。因为宏定义中只有项目的平台名，没有整个解决方案的平台名
-// 所以不管是在win32还是x64下对解决方案进行编译，都设置一下生成后命令，使得win32文件夹内的本DLL复制到x64文件夹中
-// echo f | xcopy /f/y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\$(Configuration)\$(TargetFileName)"
+// 而且Debug编译的dll无法被rundll32找到。
+// 所以不管是在win32还是x64下对解决方案进行编译，都设置一下生成后命令，使得win32 release文件夹内的本DLL复制到x64\release x64\debug win32\debug中
+// echo f | xcopy /f/y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\Release\$(TargetFileName)"
+// echo f | xcopy / f / y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\Debug\$(TargetFileName)"
+// echo f | xcopy / f / y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)Win32\Debug\$(TargetFileName)"
 
 
 BOOL APIENTRY DllMain( HMODULE hModule,
