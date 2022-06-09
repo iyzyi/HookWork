@@ -6,11 +6,13 @@
 
 ## 编译
 
-vs2019下编译。
+环境：vs2019。
 
-debug模式下生成的程序会带有控制台窗口，用于显示相关debug信息。
+Debug模式下生成的程序会带有控制台窗口，用于显示相关调试信息。Release模式下生成的程序没有控制台窗口，用于对外发布。
 
-另请手动设置Launcher为启动项目。
+Win32\Debug模式编译的程序可能出现远程注入失败的情况，这是因为目标进程可能缺少InjectDll.dll所依赖的部分用于调试的库，解决方案：把Win32 Release编译的InjectDll.dll放入Win32\Debug目录下。
+
+其他三种模式（Win32\Release, x64\Release, x64\Debug）均经过大量测试，可以正常编译运行。
 
 ## 结构
 
