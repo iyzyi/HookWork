@@ -54,9 +54,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>echo f | xcopy /f/y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\Release\$(TargetFileName)"
-echo f | xcopy /f/y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\Debug\$(TargetFileName)"
-echo f | xcopy /f/y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)Win32\Debug\$(TargetFileName)"</Command>
+      <Command>$(ProjectDir)CopyDllBypassUAC.bat</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
