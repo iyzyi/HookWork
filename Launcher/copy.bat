@@ -1,0 +1,8 @@
+echo f | xcopy /f/y  "..\%1\%2\Launcher.exe" "..\App\%1\%2\Launcher.exe"
+echo f | xcopy /f/y  "..\%1\%2\FrameNetwork.exe" "..\App\%1\%2\FrameNetwork.exe"
+echo f | xcopy /f/y  "..\%1\%2\FrameFileOperation.exe" "..\App\%1\%2\FrameFileOperation.exe"
+echo f | xcopy /f/y  "..\%1\%2\FrameRegOperation.exe" "..\App\%1\%2\FrameRegOperation.exe"
+echo f | xcopy /f/y  "..\%1\%2\FrameProcessThread.exe" "..\App\%1\%2\FrameProcessThread.exe"
+echo f | xcopy /f/y  "..\%1\%2\FrameKeyboardMouse.exe" "..\App\%1\%2\FrameKeyboardMouse.exe"
+echo f | xcopy /f/y  "..\%1\%2\BypassUAC.dll" "..\App\%1\%2\BypassUAC.dll"
+echo f | xcopy /f/y  "..\%1\%2\InjectDll.dll" "..\App\%1\%2\InjectDll.dll"
