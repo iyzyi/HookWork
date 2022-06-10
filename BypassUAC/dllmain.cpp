@@ -9,9 +9,7 @@
 // 但是，如果是x64的话，本DLL生成的目录是Win32下的。因为宏定义中只有项目的平台名，没有整个解决方案的平台名
 // 而且Debug编译的dll无法被rundll32找到。
 // 所以不管是在win32还是x64下对解决方案进行编译，都设置一下生成后命令，使得win32 release文件夹内的本DLL复制到x64\release x64\debug win32\debug中
-// echo f | xcopy /f/y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\Release\$(TargetFileName)"
-// echo f | xcopy / f / y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)x64\Debug\$(TargetFileName)"
-// echo f | xcopy / f / y  "$(SolutionDir)$(IntDir)$(TargetFileName)" "$(SolutionDir)Win32\Debug\$(TargetFileName)"
+// 设置生成后事件，使得生成本DLL后自动调用CopyDllBypassUAC.bat
 
 
 BOOL APIENTRY DllMain( HMODULE hModule,
