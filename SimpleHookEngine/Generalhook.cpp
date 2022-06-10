@@ -5,8 +5,8 @@
 #include "./disasm/disasm.h"
 
 
-#ifndef GOOD_HANDLE
-#define GOOD_HANDLE(a) ((a!=INVALID_HANDLE_VALUE)&&(a!=NULL))
+#ifndef IS_VALID_HANDLE
+#define IS_VALID_HANDLE(a) ((a!=INVALID_HANDLE_VALUE)&&(a!=NULL))
 #endif
 
 
@@ -26,9 +26,9 @@ struct MHOOKS_TRAMPOLINE {
 	PBYTE	pSystemFunction;								// 原函数地址
 	DWORD	cbOverwrittenCode;								// 跳转指令的大小
 	PBYTE	pHookFunction;									// 目标函数
-	BYTE	codeJumpToHookFunction[MAX_CODE_BYTES];	// 跳转指令
-	BYTE	codeTrampoline[MAX_CODE_BYTES];			// Trampoline函数中存储的代码
-	BYTE	codeUntouched[MAX_CODE_BYTES];			// 未修改的原始代码
+	BYTE	codeJumpToHookFunction[MAX_CODE_BYTES];			// 跳转指令
+	BYTE	codeTrampoline[MAX_CODE_BYTES];					// Trampoline函数中存储的代码
+	BYTE	codeUntouched[MAX_CODE_BYTES];					// 未修改的原始代码
 };
 
 
@@ -49,6 +49,7 @@ struct MHOOKS_PATCHDATA
 };
 
 
+// 全局变量
 static BOOL g_bVarsInitialized = FALSE;
 static CRITICAL_SECTION g_cs;
 static MHOOKS_TRAMPOLINE* g_pHooks[MAX_SUPPORTED_HOOKS];
@@ -58,6 +59,7 @@ static DWORD g_nThreadHandles = 0;
 #define MHOOK_JMPSIZE 5
 
 
+// 用于获取线程信息
 typedef HANDLE (WINAPI * _CreateToolhelp32Snapshot)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL (WINAPI * _Thread32First)(HANDLE hSnapshot, LPTHREADENTRY32 lpte);
 typedef BOOL (WINAPI * _Thread32Next)(HANDLE hSnapshot, LPTHREADENTRY32 lpte);
@@ -242,7 +244,7 @@ static VOID TrampolineFree(MHOOKS_TRAMPOLINE* pTrampoline, BOOL bNeverUsed) {
 // 暂停一个给定的线程
 static HANDLE SuspendOneThread(DWORD dwThreadId, PBYTE pbCode, DWORD cbBytes) {
 	HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, dwThreadId);
-	if (GOOD_HANDLE(hThread)) {
+	if (IS_VALID_HANDLE(hThread)) {
 		DWORD dwSuspendCount = SuspendThread(hThread);
 		if (dwSuspendCount != -1) {
 			CONTEXT ctx;
@@ -310,7 +312,7 @@ static BOOL SuspendOtherThreads(PBYTE pbCode, DWORD cbBytes) {
 
 	// 从快照中获取所有线程的句柄
 	HANDLE hSnap = fnCreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetCurrentProcessId());
-	if (GOOD_HANDLE(hSnap)) {
+	if (IS_VALID_HANDLE(hSnap)) {
 		THREADENTRY32 te;
 		te.dwSize = sizeof(te);
 
@@ -343,7 +345,7 @@ static BOOL SuspendOtherThreads(PBYTE pbCode, DWORD cbBytes) {
 							if (te.th32ThreadID != GetCurrentThreadId()) {
 								// 尝试挂起线程
 								g_hThreadHandles[nCurrentThread] = SuspendOneThread(te.th32ThreadID, pbCode, cbBytes);
-								if (GOOD_HANDLE(g_hThreadHandles[nCurrentThread])) {
+								if (IS_VALID_HANDLE(g_hThreadHandles[nCurrentThread])) {
 									DebugPrint("GeneralHook::SuspendOtherThreads: 成功挂起线程%d\n", te.th32ThreadID);
 									nCurrentThread++;
 								} else {
